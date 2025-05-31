@@ -45,7 +45,10 @@ const LandingScreen = () => {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.logoContainer}>
           <Animated.View style={[styles.iconContainer, { transform: [{ scale: logoScale }] }]}>
-            <Icon name="shield" size={100} color="#4A90E2" style={styles.logoIcon} />
+            <View style={{ position: 'relative' }}>
+              <Icon name="shield" size={100} color="#4A90E2" style={styles.logoIcon} />
+              <Icon name="lock-closed" size={50} color="#FFFFFF" style={{ position: 'absolute', top: 25, left: 25 }} />
+            </View>
           </Animated.View>
           <Text style={styles.logoText}>ThreatSense</Text>
           <Text style={styles.tagline}>Securing Your Digital World</Text>
