@@ -82,7 +82,7 @@ const LogHistoryScreen = () => {
     <LinearGradient colors={['#1a237e', '#000000']} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Log History</Text>
+          <Text style={styles.title}>Logs</Text>
           <View style={styles.searchBarRow}>
             <TextInput
               style={styles.searchInput}

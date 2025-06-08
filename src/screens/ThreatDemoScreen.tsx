@@ -73,7 +73,7 @@ const ThreatDemoScreen = () => {
     addLog(newLog);
     Alert.alert('Simulation Complete', `A ${testOptions.find(o => o.value === type)?.label} has been added to your logs.`, [
       {
-        text: 'View Log History',
+        text: 'View Logs',
         onPress: () => (navigation as any).navigate('LogHistory'),
       },
       { text: 'OK' },

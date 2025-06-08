@@ -39,7 +39,7 @@ const App = () => {
         >
           <Drawer.Screen name="Home" component={LandingScreen} />
           <Drawer.Screen name="ThreatDemo" component={ThreatDemoScreen} options={{ title: 'Test' }} />
-          <Drawer.Screen name="LogHistory" component={LogHistoryScreen} options={{ title: 'Log History' }} />
+          <Drawer.Screen name="LogHistory" component={LogHistoryScreen} options={{ title: 'Logs' }} />
           <Drawer.Screen name="LogDetail" component={LogDetailScreen} options={{ drawerItemStyle: { display: 'none' } }} />
           <Drawer.Screen name="KnowledgeBase" component={KnowledgeBaseScreen} options={{ title: 'Knowledge Base' }} />
           <Drawer.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} options={{ drawerItemStyle: { display: 'none' } }} />

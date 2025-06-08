@@ -15,7 +15,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 
 const navItems = [
   { title: 'Test', icon: 'flask', screen: 'ThreatDemo' },
-  { title: 'Log History', icon: 'time', screen: 'LogHistory' },
+  { title: 'Logs', icon: 'time', screen: 'LogHistory' },
   { title: 'Knowledge Base', icon: 'book', screen: 'KnowledgeBase' },
   { title: 'Settings', icon: 'settings', screen: 'Settings' },
   { title: 'About', icon: 'information-circle', screen: 'About' },
