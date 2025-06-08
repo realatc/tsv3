@@ -2,10 +2,16 @@ import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
+const CREATED_DATE = '2024-05-01';
+const UPDATED_DATE = '2024-06-07';
+
 const KnowledgeBaseThreatLevelArticle = () => (
   <LinearGradient colors={['#1a237e', '#000000']} style={{ flex: 1 }}>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.articleMeta}>
+          Created: {CREATED_DATE}  |  Updated: {UPDATED_DATE}
+        </Text>
         <Text style={styles.title}>How Threat Levels Are Calculated</Text>
         <Text style={styles.text}>
           The app calculates threat levels for logs using a simple rule-based scoring system. Here's how it works:
@@ -75,6 +81,11 @@ const styles = StyleSheet.create({
     color: '#B0BEC5',
     fontSize: 16,
     lineHeight: 24,
+    marginBottom: 8,
+  },
+  articleMeta: {
+    color: '#90CAF9',
+    fontSize: 12,
     marginBottom: 8,
   },
 });

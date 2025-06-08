@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { View, StyleSheet, SafeAreaView, ScrollView, Text } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Markdown from 'react-native-markdown-display';
 
@@ -37,10 +37,16 @@ Staying safe online means knowing what to watch out for! Here are some of the mo
 
 Stay alert, trust your instincts, and when in doubt, double-check before you click or share!`;
 
+const CREATED_DATE = '2023-06-01';
+const UPDATED_DATE = '2024-06-07';
+
 const KnowledgeBaseScamsArticle = () => (
   <LinearGradient colors={['#1a237e', '#000000']} style={{ flex: 1 }}>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.articleMeta}>
+          Created: {CREATED_DATE}  |  Updated: {UPDATED_DATE}
+        </Text>
         <Markdown style={markdownStyles}>{scamsMd}</Markdown>
       </ScrollView>
     </SafeAreaView>
@@ -55,6 +61,11 @@ const styles = StyleSheet.create({
   container: {
     padding: 24,
     paddingBottom: 40,
+  },
+  articleMeta: {
+    color: '#90CAF9',
+    fontSize: 12,
+    marginBottom: 8,
   },
 });
 

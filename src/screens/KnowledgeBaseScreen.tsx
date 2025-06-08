@@ -11,6 +11,8 @@ const articles = [
     description: 'Learn how the app determines the risk of each log.',
     icon: 'analytics-outline',
     color: '#4A90E2',
+    created: '2024-05-01',
+    updated: '2024-06-07',
   },
   {
     title: 'Common Digital Scams',
@@ -18,6 +20,8 @@ const articles = [
     description: 'Examples and tips for avoiding common digital scams.',
     icon: 'alert-circle-outline',
     color: '#E53935',
+    created: '2024-06-01',
+    updated: '2024-06-07',
   },
   // Add more articles here as you expand the knowledge base
 ];
@@ -61,6 +65,9 @@ const KnowledgeBaseScreen = () => {
                   </View>
                   <Text style={styles.articleTitle}>{article.title}</Text>
                 </View>
+                <Text style={styles.articleMeta}>
+                  Created: {article.created}  |  Updated: {article.updated}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -81,6 +88,9 @@ const KnowledgeBaseScreen = () => {
                       <Text style={styles.articleTitle}>{preview.title}</Text>
                     </View>
                     <Text style={styles.articleDescription}>{preview.description}</Text>
+                    <Text style={styles.articleMeta}>
+                      Created: {preview.created}  |  Updated: {preview.updated}
+                    </Text>
                     <View style={styles.previewActions}>
                       <TouchableOpacity
                         style={styles.readMoreButton}
@@ -185,6 +195,12 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginLeft: 2,
     marginBottom: 8,
+  },
+  articleMeta: {
+    color: '#90CAF9',
+    fontSize: 12,
+    marginLeft: 2,
+    marginBottom: 4,
   },
   modalOverlay: {
     flex: 1,

@@ -24,11 +24,9 @@ const navItems = [
 const CustomHeader = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const [modalVisible, setModalVisible] = useState(false);
   const canGoBack = navigation.canGoBack() && route.name !== 'Home';
 
   const handleNav = (screen: string) => {
-    setModalVisible(false);
     if (route.name !== screen) {
       // @ts-ignore
       navigation.navigate(screen);
@@ -42,7 +40,7 @@ const CustomHeader = () => {
           {route.name === 'Home' ? (
             <TouchableOpacity
               style={styles.menuButton}
-              onPress={() => setModalVisible(true)}
+              onPress={() => navigation.openDrawer()}
               accessibilityLabel="Open navigation menu"
             >
               <Icon name="menu" size={28} color="#FFFFFF" />
@@ -83,7 +81,7 @@ const CustomHeader = () => {
           {route.name !== 'Home' && (
             <TouchableOpacity
               style={styles.menuButton}
-              onPress={() => setModalVisible(true)}
+              onPress={() => navigation.openDrawer()}
               accessibilityLabel="Open navigation menu"
             >
               <Icon name="menu" size={28} color="#FFFFFF" />
@@ -91,48 +89,6 @@ const CustomHeader = () => {
           )}
         </View>
       </View>
-      <Modal
-        visible={modalVisible}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
-          <View style={styles.modalContent}>
-            {navItems.map((item) => (
-              <TouchableOpacity
-                key={item.title}
-                style={[
-                  styles.navButton,
-                  route.name === item.screen && styles.activeNavButton,
-                ]}
-                onPress={() => handleNav(item.screen)}
-              >
-                <Icon
-                  name={item.icon}
-                  size={24}
-                  color={route.name === item.screen ? '#4A90E2' : '#FFFFFF'}
-                  style={{ marginRight: 12 }}
-                />
-                <Text
-                  style={[
-                    styles.buttonText,
-                    route.name === item.screen && styles.activeButtonText,
-                  ]}
-                >
-                  {item.title}
-                </Text>
-              </TouchableOpacity>
-            ))}
-            {/* Contact Us section at the bottom */}
-            <View style={styles.contactUsContainer}>
-              <Text style={styles.contactUsTitle}>Contact Us</Text>
-              <Text style={styles.contactUsName}>Alex Crandall</Text>
-              <Text style={styles.contactUsEmail}>atcran3549@ung.edu</Text>
-            </View>
-          </View>
-        </Pressable>
-      </Modal>
     </SafeAreaView>
   );
 };

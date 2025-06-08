@@ -19,6 +19,7 @@ import KnowledgeBaseScreen from './src/screens/KnowledgeBaseScreen';
 import KnowledgeBaseThreatLevelArticle from './src/screens/KnowledgeBaseThreatLevelArticle';
 import KnowledgeBaseScamsArticle from './src/screens/KnowledgeBaseScamsArticle';
 import NavigationPanel from './src/components/NavigationPanel';
+import CustomHeader from './src/components/CustomHeader';
 
 const Drawer = createDrawerNavigator();
 
@@ -28,7 +29,7 @@ const App = () => {
       <NavigationContainer>
         <Drawer.Navigator
           screenOptions={{
-            headerShown: false,
+            header: () => <CustomHeader />,
             drawerStyle: { backgroundColor: '#151a3c', width: 260 },
             drawerActiveTintColor: '#4A90E2',
             drawerInactiveTintColor: '#fff',
