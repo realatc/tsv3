@@ -8,6 +8,7 @@ const testOptions = [
   { label: 'Simulate Phishing Email', value: 'phishing_email' },
   { label: 'Simulate Scam Text', value: 'scam_text' },
   { label: 'Simulate Robocall', value: 'robocall' },
+  { label: 'Simulate DMV Toll Scam', value: 'dmv_scam' },
 ];
 
 const demoLogs = {
@@ -54,6 +55,21 @@ const demoLogs = {
       location: 'Austin, TX',
       receivedAt: new Date().toISOString(),
       messageLength: 54,
+    },
+  },
+  dmv_scam: {
+    date: new Date().toISOString().slice(0, 10),
+    category: 'Text',
+    threat: 'High',
+    sender: 'okdy4105727@outlook.com',
+    message: `Department of Motor Vehicles (DMV)\n\nYour toll payment for E-ZPass Lane must be settled by May 20, 2025. To avoid fines and the suspension of your driving privileges, kindly pay by the due date.\n\nPay here: https://e-zpass.com-etciby.icu/us\n\n(Please reply with \"Y,\" then exit the text message. Open it again, click the link, or copy it into your Safari browser and open it.)`,
+    nlpAnalysis: 'Urgent payment request, suspicious link, impersonation detected.',
+    behavioralAnalysis: 'Sender not in contacts. Matches known scam patterns.',
+    metadata: {
+      device: 'iPhone 15',
+      location: 'Austin, TX',
+      receivedAt: new Date().toISOString(),
+      messageLength: 280,
     },
   },
 };
