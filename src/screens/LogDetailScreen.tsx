@@ -46,6 +46,9 @@ const LogDetailScreen = () => {
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
   const [helpModalVisible, setHelpModalVisible] = useState(false);
 
+  // Show threat score breakdown
+  const threatBreakdown = threatResult.breakdown || [];
+
   const handleAddContact = () => {
     Alert.alert(
       'Add Contact',
@@ -251,6 +254,22 @@ const LogDetailScreen = () => {
             <Text style={styles.threatExplain}>
               The threat level is calculated based on NLP and behavioral analysis, sender, and message content. Higher scores are given for urgent, suspicious, or scam-like language, unknown senders, and known scam patterns.
             </Text>
+          </View>
+
+          {/* Threat Score Breakdown Card */}
+          <View style={styles.card}>
+            <View style={styles.sectionHeader}>
+              <Icon name="list" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
+              <Text style={styles.sectionTitle}>Threat Score Breakdown</Text>
+            </View>
+            <Text style={styles.value}>Total Points: {threatResult.score} / 9</Text>
+            {threatBreakdown.length > 0 ? (
+              threatBreakdown.map((item, idx) => (
+                <Text key={idx} style={styles.value}>• {item.label}: +{item.points}</Text>
+              ))
+            ) : (
+              <Text style={styles.value}>No threat points detected.</Text>
+            )}
           </View>
 
           {/* Compact Actions Button */}
