@@ -75,25 +75,6 @@ const CustomHeader = ({ title }: { title?: string }) => {
             )
           )}
         </View>
-        {route.name !== 'Home' && (
-          <TouchableOpacity
-            style={styles.centerLogoContainer}
-            onPress={() => (navigation as any).navigate('Home')}
-            accessibilityLabel="Go to Home"
-          >
-            <View style={styles.iconContainer}>
-              <View style={{ position: 'relative' }}>
-                <Icon name="shield" size={30} color="#4A90E2" style={styles.logoIcon} />
-                <Icon
-                  name="lock-closed"
-                  size={15}
-                  color="#FFFFFF"
-                  style={{ position: 'absolute', top: 7.5, left: 7.5 }}
-                />
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
         <View style={styles.rightPlaceholder} />
       </View>
     </SafeAreaView>
@@ -125,36 +106,6 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
     marginRight: 4,
-  },
-  centerLogoContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    zIndex: 0,
-  },
-  iconContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 15,
-    padding: 8,
-    elevation: 5,
-    shadowColor: '#4A90E2',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-  },
-  logoIcon: {
-    textShadowColor: 'rgba(74, 144, 226, 0.5)',
-    textShadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    textShadowRadius: 2,
   },
   rightPlaceholder: {
     width: 44,

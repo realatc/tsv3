@@ -96,7 +96,7 @@ const KnowledgeBaseScreen = () => {
                         style={styles.readMoreButton}
                         onPress={() => {
                           setPreview(null);
-                          navigation.navigate(preview.screen);
+                          (navigation as any).push(preview.screen);
                         }}
                       >
                         <Text style={styles.readMoreText}>Read More</Text>
