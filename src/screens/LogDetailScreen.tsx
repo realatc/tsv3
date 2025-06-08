@@ -40,7 +40,11 @@ const LogDetailScreen = () => {
   const { logs, addLog } = useLogs();
   // @ts-ignore
   const log = (route.params && route.params.log) ? route.params.log : mockLog;
-  const threatResult = typeof log.threat === 'object' && log.threat.level ? log.threat : calculateThreatLevel(log);
+  const [logState, setLogState] = useState(log);
+  const [recalcKey, setRecalcKey] = useState(0);
+  const threatResult = typeof logState.threat === 'object' && logState.threat.level && logState.threat.breakdown
+    ? logState.threat
+    : calculateThreatLevel(logState);
   const threatLevel = threatResult.level;
   const threatScore = threatResult.score;
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
@@ -158,6 +162,12 @@ const LogDetailScreen = () => {
     );
   };
 
+  const handleRecalculateThreat = () => {
+    const newThreat = calculateThreatLevel(logState);
+    setLogState({ ...logState, threat: newThreat });
+    setRecalcKey(prev => prev + 1); // force rerender if needed
+  };
+
   const actionButtons: ActionButton[] = [
     { label: 'Add Contact', icon: 'person-add', color: '#4A90E2', onPress: handleAddContact },
     { label: 'Block', icon: 'ban', color: '#E53935', onPress: handleBlock },
@@ -271,6 +281,14 @@ const LogDetailScreen = () => {
               <Text style={styles.value}>No threat points detected.</Text>
             )}
           </View>
+
+          {/* Recalculate Threat Button */}
+          <TouchableOpacity style={[styles.card, { backgroundColor: '#263159', marginBottom: 12 }]} onPress={handleRecalculateThreat}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name="refresh" size={18} color="#4A90E2" style={{ marginRight: 8 }} />
+              <Text style={[styles.sectionTitle, { color: '#4A90E2' }]}>Recalculate Threat Level</Text>
+            </View>
+          </TouchableOpacity>
 
           {/* Compact Actions Button */}
           <View style={styles.actionsButtonContainer}>
