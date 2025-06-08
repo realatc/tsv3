@@ -16,6 +16,7 @@ const AVATAR_SIZE = 72;
 const navItems = [
   { title: 'Home', icon: 'home', screen: 'Home' },
   { title: 'Logs', icon: 'time', screen: 'LogHistory' },
+  { title: 'Test', icon: 'flask', screen: 'ThreatDemo' },
   { title: 'Knowledge Base', icon: 'book', screen: 'KnowledgeBase' },
   { title: 'Settings', icon: 'settings', screen: 'Settings' },
   { title: 'About', icon: 'information-circle', screen: 'About' },
