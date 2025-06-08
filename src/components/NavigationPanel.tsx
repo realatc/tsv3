@@ -47,8 +47,8 @@ const NavigationPanel: React.FC<DrawerContentComponentProps> = ({ navigation, st
             resizeMode="cover"
           />
         </Animated.View>
-        <Text style={styles.avatarName}>Alex Contact</Text>
-        <Text style={styles.avatarEmail}>alex@email.com</Text>
+        <Text style={styles.avatarName}>Alex Crandall</Text>
+        <Text style={styles.avatarEmail}>atcran3549@ung.edu</Text>
       </View>
       <View style={styles.menuContainer}>
         {navItems.map((item) => {
@@ -73,8 +73,8 @@ const NavigationPanel: React.FC<DrawerContentComponentProps> = ({ navigation, st
       </View>
       <View style={styles.contactContainer}>
         <Text style={styles.contactLabel}>Contact Us</Text>
-        <Text style={styles.contactText}>Alex Contact</Text>
-        <Text style={styles.contactText}>alex@email.com</Text>
+        <Text style={styles.contactText}>Alex Crandall</Text>
+        <Text style={styles.contactText}>atcran3549@ung.edu</Text>
       </View>
     </View>
   );
