@@ -66,9 +66,6 @@ const LogHistoryScreen = () => {
           <View style={{ marginLeft: 8 }}>
             <ThreatBadge level={threat.level} score={threat.score} />
           </View>
-          {item.simulated && (
-            <View style={styles.simBadge}><Text style={styles.simBadgeText}>Sim</Text></View>
-          )}
         </View>
         <View style={styles.cardSenderRow}>
           <Text style={styles.cardSender}>{item.sender}</Text>

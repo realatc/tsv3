@@ -18,7 +18,6 @@ export type LogEntry = {
     receivedAt: string;
     messageLength: number;
   };
-  simulated?: boolean;
 };
 
 const initialLogs: LogEntry[] = [

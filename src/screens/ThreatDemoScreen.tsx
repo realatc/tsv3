@@ -87,7 +87,6 @@ const ThreatDemoScreen = () => {
     const newLog = {
       ...demoLogs[type],
       id: Date.now().toString() + '_' + type,
-      simulated: true,
     };
     // @ts-ignore
     delete newLog.threat;

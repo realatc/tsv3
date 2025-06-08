@@ -23,7 +23,6 @@ const mockLog = {
     receivedAt: '2024-06-01T10:15:00Z',
     messageLength: 45,
   },
-  simulated: false,
   threat: '',
 };
 
@@ -185,9 +184,6 @@ const LogDetailScreen = () => {
           <View style={styles.headerRow}>
             <Icon name="shield" size={32} color="#4A90E2" style={{ marginRight: 10 }} />
             <Text style={styles.title}>Log Details</Text>
-            {log.simulated && (
-              <View style={styles.simBadge}><Text style={styles.simBadgeText}>Simulated</Text></View>
-            )}
           </View>
 
           <View style={styles.card}>
@@ -377,19 +373,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 18,
-  },
-  simBadge: {
-    backgroundColor: '#4A90E2',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginLeft: 10,
-  },
-  simBadgeText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 13,
-    letterSpacing: 0.5,
   },
   title: {
     color: '#FFFFFF',
