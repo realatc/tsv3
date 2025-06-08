@@ -18,6 +18,7 @@ import CustomHeader from './src/components/CustomHeader';
 import { LogProvider } from './src/context/LogContext';
 import KnowledgeBaseScreen from './src/screens/KnowledgeBaseScreen';
 import KnowledgeBaseThreatLevelArticle from './src/screens/KnowledgeBaseThreatLevelArticle';
+import KnowledgeBaseScamsArticle from './src/screens/KnowledgeBaseScamsArticle';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +37,7 @@ const App = () => {
           <Stack.Screen name="LogDetail" component={LogDetailScreen} />
           <Stack.Screen name="KnowledgeBase" component={KnowledgeBaseScreen} />
           <Stack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} />
+          <Stack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
           <Stack.Screen name="About" component={AboutScreen} />
         </Stack.Navigator>
