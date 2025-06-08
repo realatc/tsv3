@@ -5,68 +5,119 @@ import {
   TouchableOpacity,
   Text,
   Dimensions,
+  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import { DrawerContentComponentProps } from '@react-navigation/drawer';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
-interface NavigationPanelProps {
-  currentScreen?: string;
-}
+const AVATAR_SIZE = 72;
 
-const NavigationPanel: React.FC<NavigationPanelProps> = ({ currentScreen }) => {
-  const navigation = useNavigation();
+const navItems = [
+  { title: 'Home', icon: 'home', screen: 'Home' },
+  { title: 'Log History', icon: 'time', screen: 'LogHistory' },
+  { title: 'Knowledge Base', icon: 'book', screen: 'KnowledgeBase' },
+  { title: 'Settings', icon: 'settings', screen: 'Settings' },
+  { title: 'About', icon: 'information-circle', screen: 'About' },
+];
 
-  const navItems = [
-    { title: 'Home', icon: 'home', screen: 'Home' },
-    { title: 'Log History', icon: 'time', screen: 'LogHistory' },
-  ];
+const NavigationPanel: React.FC<DrawerContentComponentProps> = ({ navigation, state }) => {
+  // Animate avatar scale on drawer open
+  const scale = useSharedValue(1);
+  React.useEffect(() => {
+    scale.value = withSpring(state?.history?.length > 1 ? 1.1 : 1);
+  }, [state?.history?.length]);
+
+  const avatarStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   const handleNavigation = (screen: string) => {
-    // @ts-ignore - navigation type will be properly set up when we add navigation
     navigation.navigate(screen);
   };
 
   return (
     <View style={styles.container}>
-      {navItems.map((item) => (
-        <TouchableOpacity
-          key={item.title}
-          style={[
-            styles.navButton,
-            currentScreen === item.screen && styles.activeNavButton,
-          ]}
-          onPress={() => handleNavigation(item.screen)}>
-          <Icon
-            name={item.icon}
-            size={24}
-            color={currentScreen === item.screen ? '#4A90E2' : '#FFFFFF'}
+      <View style={styles.avatarContainer}>
+        <Animated.View style={[styles.avatar, avatarStyle]}>
+          <Image
+            source={require('../../assets/avatar_placeholder.png')}
+            style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2 }}
+            resizeMode="cover"
           />
-          <Text
-            style={[
-              styles.buttonText,
-              currentScreen === item.screen && styles.activeButtonText,
-            ]}>
-            {item.title}
-          </Text>
-        </TouchableOpacity>
-      ))}
+        </Animated.View>
+        <Text style={styles.avatarName}>Alex Contact</Text>
+        <Text style={styles.avatarEmail}>alex@email.com</Text>
+      </View>
+      <View style={styles.menuContainer}>
+        {navItems.map((item) => {
+          const focused = state.routeNames[state.index] === item.screen;
+          return (
+            <TouchableOpacity
+              key={item.title}
+              style={[styles.navButton, focused && styles.activeNavButton]}
+              onPress={() => handleNavigation(item.screen)}
+            >
+              <Icon
+                name={item.icon}
+                size={24}
+                color={focused ? '#4A90E2' : '#FFFFFF'}
+              />
+              <Text style={[styles.buttonText, focused && styles.activeButtonText]}>
+                {item.title}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+      <View style={styles.contactContainer}>
+        <Text style={styles.contactLabel}>Contact Us</Text>
+        <Text style={styles.contactText}>Alex Contact</Text>
+        <Text style={styles.contactText}>alex@email.com</Text>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    flex: 1,
+    paddingTop: 40,
+    backgroundColor: '#151a3c',
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  avatar: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+    overflow: 'hidden',
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: '#4A90E2',
+    backgroundColor: '#222',
+  },
+  avatarName: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginTop: 4,
+  },
+  avatarEmail: {
+    color: '#aaa',
+    fontSize: 13,
+    marginBottom: 2,
+  },
+  menuContainer: {
+    flex: 1,
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   navButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     padding: 15,
     borderRadius: 12,
     marginBottom: 10,
@@ -74,7 +125,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   activeNavButton: {
-    backgroundColor: 'rgba(74, 144, 226, 0.2)',
+    backgroundColor: 'rgba(74, 144, 226, 0.18)',
     borderColor: '#4A90E2',
   },
   buttonText: {
@@ -85,6 +136,21 @@ const styles = StyleSheet.create({
   },
   activeButtonText: {
     color: '#4A90E2',
+  },
+  contactContainer: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+  },
+  contactLabel: {
+    color: '#aaa',
+    fontSize: 12,
+    marginBottom: 2,
+  },
+  contactText: {
+    color: '#fff',
+    fontSize: 13,
   },
 });
 

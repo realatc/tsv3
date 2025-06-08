@@ -7,40 +7,45 @@
 
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createDrawerNavigator, DrawerContentComponentProps } from '@react-navigation/drawer';
 import LandingScreen from './src/screens/LandingScreen';
 import LogHistoryScreen from './src/screens/LogHistoryScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import AboutScreen from './src/screens/AboutScreen';
 import LogDetailScreen from './src/screens/LogDetailScreen';
 import ThreatDemoScreen from './src/screens/ThreatDemoScreen';
-import CustomHeader from './src/components/CustomHeader';
 import { LogProvider } from './src/context/LogContext';
 import KnowledgeBaseScreen from './src/screens/KnowledgeBaseScreen';
 import KnowledgeBaseThreatLevelArticle from './src/screens/KnowledgeBaseThreatLevelArticle';
 import KnowledgeBaseScamsArticle from './src/screens/KnowledgeBaseScamsArticle';
+import NavigationPanel from './src/components/NavigationPanel';
 
-const Stack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
 
 const App = () => {
   return (
     <LogProvider>
       <NavigationContainer>
-        <Stack.Navigator
+        <Drawer.Navigator
           screenOptions={{
-            header: () => <CustomHeader />,
-            contentStyle: { backgroundColor: 'transparent' },
-          }}>
-          <Stack.Screen name="Home" component={LandingScreen} />
-          <Stack.Screen name="ThreatDemo" component={ThreatDemoScreen} />
-          <Stack.Screen name="LogHistory" component={LogHistoryScreen} />
-          <Stack.Screen name="LogDetail" component={LogDetailScreen} />
-          <Stack.Screen name="KnowledgeBase" component={KnowledgeBaseScreen} />
-          <Stack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} />
-          <Stack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} />
-          <Stack.Screen name="Settings" component={SettingsScreen} />
-          <Stack.Screen name="About" component={AboutScreen} />
-        </Stack.Navigator>
+            headerShown: false,
+            drawerStyle: { backgroundColor: '#151a3c', width: 260 },
+            drawerActiveTintColor: '#4A90E2',
+            drawerInactiveTintColor: '#fff',
+            drawerLabelStyle: { fontWeight: 'bold', fontSize: 16 },
+          }}
+          drawerContent={(props: DrawerContentComponentProps) => <NavigationPanel {...props} />}
+        >
+          <Drawer.Screen name="Home" component={LandingScreen} />
+          <Drawer.Screen name="ThreatDemo" component={ThreatDemoScreen} options={{ title: 'Test' }} />
+          <Drawer.Screen name="LogHistory" component={LogHistoryScreen} options={{ title: 'Log History' }} />
+          <Drawer.Screen name="LogDetail" component={LogDetailScreen} options={{ drawerItemStyle: { display: 'none' } }} />
+          <Drawer.Screen name="KnowledgeBase" component={KnowledgeBaseScreen} options={{ title: 'Knowledge Base' }} />
+          <Drawer.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} options={{ drawerItemStyle: { display: 'none' } }} />
+          <Drawer.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} options={{ drawerItemStyle: { display: 'none' } }} />
+          <Drawer.Screen name="Settings" component={SettingsScreen} />
+          <Drawer.Screen name="About" component={AboutScreen} />
+        </Drawer.Navigator>
       </NavigationContainer>
     </LogProvider>
   );
