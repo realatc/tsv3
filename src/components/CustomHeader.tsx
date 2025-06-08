@@ -89,15 +89,6 @@ const CustomHeader = () => {
               <Icon name="menu" size={28} color="#FFFFFF" />
             </TouchableOpacity>
           )}
-          {route.name === 'Home' && (
-            <TouchableOpacity
-              style={styles.settingsButton}
-              onPress={() => handleNav('Settings')}
-              accessibilityLabel="Go to Settings"
-            >
-              <Icon name="settings" size={26} color="#FFFFFF" />
-            </TouchableOpacity>
-          )}
         </View>
       </View>
       <Modal
@@ -133,6 +124,12 @@ const CustomHeader = () => {
                 </Text>
               </TouchableOpacity>
             ))}
+            {/* Contact Us section at the bottom */}
+            <View style={styles.contactUsContainer}>
+              <Text style={styles.contactUsTitle}>Contact Us</Text>
+              <Text style={styles.contactUsName}>Alex Crandall</Text>
+              <Text style={styles.contactUsEmail}>atcran3549@ung.edu</Text>
+            </View>
           </View>
         </Pressable>
       </Modal>
@@ -239,6 +236,10 @@ const styles = StyleSheet.create({
   activeButtonText: {
     color: '#4A90E2',
   },
+  contactUsContainer: { marginTop: 32, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)', paddingTop: 18, alignItems: 'center' },
+  contactUsTitle: { color: '#4A90E2', fontWeight: 'bold', fontSize: 15, marginBottom: 4 },
+  contactUsName: { color: '#fff', fontSize: 14, marginBottom: 2 },
+  contactUsEmail: { color: '#B0BEC5', fontSize: 13 },
 });
 
 export default CustomHeader; 
