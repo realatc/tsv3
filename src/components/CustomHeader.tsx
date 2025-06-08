@@ -21,11 +21,29 @@ const navItems = [
   { title: 'About', icon: 'information-circle', screen: 'About' },
 ];
 
-const CustomHeader = () => {
+const mainDrawerScreens = [
+  'Home',
+  'ThreatDemo',
+  'LogHistory',
+  'KnowledgeBase',
+  'Settings',
+  'About',
+];
+
+const CustomHeader = ({ title }: { title?: string }) => {
   const navigation = useNavigation();
   const route = useRoute();
-  const canGoBack = navigation.canGoBack() && route.name !== 'Home';
-
+  const canGoBack = navigation.canGoBack();
+  const mainDrawerScreens = [
+    'Home',
+    'ThreatDemo',
+    'LogHistory',
+    'KnowledgeBase',
+    'Settings',
+    'About',
+  ];
+  const showMenu = mainDrawerScreens.includes(route.name as string);
+  const displayTitle = title || (route.name === 'LogDetail' ? 'Log Details' : route.name);
   const handleNav = (screen: string) => {
     if (route.name !== screen) {
       // @ts-ignore
@@ -37,10 +55,10 @@ const CustomHeader = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.leftContainer}>
-          {route.name === 'Home' ? (
+          {showMenu ? (
             <TouchableOpacity
               style={styles.menuButton}
-              onPress={() => navigation.openDrawer()}
+              onPress={() => (navigation as any).openDrawer()}
               accessibilityLabel="Open navigation menu"
             >
               <Icon name="menu" size={28} color="#FFFFFF" />
@@ -57,11 +75,10 @@ const CustomHeader = () => {
             )
           )}
         </View>
-        {/* Centered logo as a go home button, hidden on Home screen */}
         {route.name !== 'Home' && (
           <TouchableOpacity
             style={styles.centerLogoContainer}
-            onPress={() => handleNav('Home')}
+            onPress={() => (navigation as any).navigate('Home')}
             accessibilityLabel="Go to Home"
           >
             <View style={styles.iconContainer}>
@@ -77,17 +94,7 @@ const CustomHeader = () => {
             </View>
           </TouchableOpacity>
         )}
-        <View style={styles.rightPlaceholder}>
-          {route.name !== 'Home' && (
-            <TouchableOpacity
-              style={styles.menuButton}
-              onPress={() => navigation.openDrawer()}
-              accessibilityLabel="Open navigation menu"
-            >
-              <Icon name="menu" size={28} color="#FFFFFF" />
-            </TouchableOpacity>
-          )}
-        </View>
+        <View style={styles.rightPlaceholder} />
       </View>
     </SafeAreaView>
   );
@@ -123,6 +130,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 0,
   },
   iconContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -196,6 +207,17 @@ const styles = StyleSheet.create({
   contactUsTitle: { color: '#4A90E2', fontWeight: 'bold', fontSize: 15, marginBottom: 4 },
   contactUsName: { color: '#fff', fontSize: 14, marginBottom: 2 },
   contactUsEmail: { color: '#B0BEC5', fontSize: 13 },
+  headerTitle: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 20,
+    letterSpacing: 0.5,
+    zIndex: 0,
+  },
 });
 
 export default CustomHeader; 
