@@ -48,11 +48,11 @@ const LogHistoryScreen = () => {
   });
 
   const renderItem = ({ item }: { item: LogEntry }) => {
-    let threat: { level: string; percentage?: number };
+    let threat: { level: string; score?: number };
     if (typeof item.threat === 'object' && item.threat.level) {
       threat = item.threat;
     } else {
-      threat = { level: typeof item.threat === 'string' && item.threat ? item.threat : 'Low', percentage: undefined };
+      threat = { level: typeof item.threat === 'string' && item.threat ? item.threat : 'Low', score: undefined };
     }
     return (
       <TouchableOpacity
@@ -64,7 +64,7 @@ const LogHistoryScreen = () => {
           <Text style={styles.cardDate}>{item.date}</Text>
           <CategoryBadge category={item.category} />
           <View style={{ marginLeft: 8 }}>
-            <ThreatBadge level={threat.level} percentage={threat.percentage} />
+            <ThreatBadge level={threat.level} score={threat.score} />
           </View>
           {item.simulated && (
             <View style={styles.simBadge}><Text style={styles.simBadgeText}>Sim</Text></View>

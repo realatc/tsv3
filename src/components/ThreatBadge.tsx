@@ -14,11 +14,11 @@ const threatIcons = {
   Low: 'shield-checkmark',
 };
 
-export const ThreatBadge = ({ level, percentage }: { level: 'High' | 'Medium' | 'Low', percentage?: number }) => (
+export const ThreatBadge = ({ level, score }: { level: 'High' | 'Medium' | 'Low', score?: number }) => (
   <View style={[styles.badge, { backgroundColor: threatColors[level] + '22', borderColor: threatColors[level] }]}> 
     <Icon name={threatIcons[level]} size={18} color={threatColors[level]} style={{ marginRight: 6 }} />
     <Text style={[styles.text, { color: threatColors[level] }]}>
-      {level}{percentage !== undefined ? ` (${percentage}%)` : ''}
+      {level}{score !== undefined ? ` (${score}/9)` : ''}
     </Text>
   </View>
 );

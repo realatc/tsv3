@@ -42,7 +42,7 @@ const LogDetailScreen = () => {
   const log = (route.params && route.params.log) ? route.params.log : mockLog;
   const threatResult = typeof log.threat === 'object' && log.threat.level ? log.threat : calculateThreatLevel(log);
   const threatLevel = threatResult.level;
-  const threatPercent = threatResult.percentage;
+  const threatScore = threatResult.score;
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
   const [helpModalVisible, setHelpModalVisible] = useState(false);
 
@@ -185,7 +185,7 @@ const LogDetailScreen = () => {
                 <Text style={styles.value}>{log.date}</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <ThreatBadge level={threatLevel} percentage={threatPercent} />
+                <ThreatBadge level={threatLevel} score={threatScore} />
                 <TouchableOpacity onPress={() => setHelpModalVisible(true)} style={styles.helpIconButton}>
                   <Icon name="help-circle-outline" size={20} color="#B0BEC5" />
                 </TouchableOpacity>
@@ -310,11 +310,11 @@ const LogDetailScreen = () => {
           >
             <View style={styles.helpModalOverlay}>
               <View style={styles.helpModalContent}>
-                <Text style={styles.helpModalTitle}>Threat Level Percentages</Text>
-                <Text style={styles.helpModalText}>• High: 45% - 100%</Text>
-                <Text style={styles.helpModalText}>• Medium: 23% - 44%</Text>
-                <Text style={styles.helpModalText}>• Low: 0% - 22%</Text>
-                <Text style={styles.helpModalText}>The threat percentage is calculated based on message content and sender behavior. Higher percentages indicate greater risk.</Text>
+                <Text style={styles.helpModalTitle}>Threat Level Scoring</Text>
+                <Text style={styles.helpModalText}>• High: 4 - 9 points</Text>
+                <Text style={styles.helpModalText}>• Medium: 2 - 3 points</Text>
+                <Text style={styles.helpModalText}>• Low: 0 - 1 point</Text>
+                <Text style={styles.helpModalText}>The threat score is calculated based on message content and sender behavior. Higher scores indicate greater risk. The maximum possible score is 9.</Text>
                 <TouchableOpacity style={styles.helpModalButton} onPress={() => setHelpModalVisible(false)}>
                   <Text style={styles.helpModalButtonText}>Close</Text>
                 </TouchableOpacity>

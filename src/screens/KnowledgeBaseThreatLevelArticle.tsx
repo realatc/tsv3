@@ -30,13 +30,13 @@ const KnowledgeBaseThreatLevelArticle = () => (
         <Text style={styles.text}>  • If it contains "matches scam" or "matches robocall" → +2 points</Text>
         <Text style={styles.text}>Sender:</Text>
         <Text style={styles.text}>  • If the sender ends with "@fakebank.com", or includes "irs" or "randomsms" → +2 points</Text>
-        <Text style={styles.sectionTitle}>Threat Level & Percentage</Text>
+        <Text style={styles.sectionTitle}>Threat Level & Scoring</Text>
         <Text style={styles.text}>• The maximum possible score is 9.</Text>
-        <Text style={styles.text}>• The percentage is calculated as: percentage = round((score / 9) * 100)</Text>
         <Text style={styles.text}>• The threat level is assigned as:</Text>
         <Text style={styles.text}>    • High: score ≥ 4</Text>
         <Text style={styles.text}>    • Medium: score ≥ 2 and {'<'} 4</Text>
         <Text style={styles.text}>    • Low: score {'<'} 2</Text>
+        <Text style={styles.text}>• The badge will display the threat level and the score (e.g., High (7/9)).</Text>
         <Text style={styles.sectionTitle}>Example</Text>
         <Text style={styles.text}>If a log's NLP analysis is "Urgent language, suspicious link, impersonation detected." and the behavioral analysis is "Sender not in contacts. Matches known phishing patterns." the score would be:</Text>
         <Text style={styles.text}>  • "urgent" → +2</Text>

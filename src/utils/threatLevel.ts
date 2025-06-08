@@ -11,12 +11,12 @@ export function calculateThreatLevel({ nlpAnalysis, behavioralAnalysis, sender }
   if (senderLower.endsWith('@fakebank.com') || senderLower.includes('irs') || senderLower.includes('randomsms')) score += 2;
 
   // Max possible score is 9
-  const percentage = Math.min(Math.round((score / 9) * 100), 100);
+  // Return the raw score (1-9)
 
   let level: 'High' | 'Medium' | 'Low';
   if (score >= 4) level = 'High';
   else if (score >= 2) level = 'Medium';
   else level = 'Low';
 
-  return { level, percentage };
+  return { level, score };
 } 
