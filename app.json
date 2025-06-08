@@ -1,4 +1,18 @@
 {
   "name": "ThreatSense",
-  "displayName": "ThreatSense"
+  "displayName": "ThreatSense",
+  "icon": "./assets/icon.png",
+  "splash": {
+    "image": "./assets/splash.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#1a237e"
+  },
+  "ios": {
+    "bundleIdentifier": "com.threatsense.app",
+    "buildNumber": "1.0.0"
+  },
+  "android": {
+    "package": "com.threatsense.app",
+    "versionCode": 1
+  }
 }
