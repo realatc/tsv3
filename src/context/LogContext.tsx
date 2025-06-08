@@ -7,7 +7,7 @@ export type LogEntry = {
   id: string;
   date: string;
   category: string;
-  threat: string;
+  threat: string | { level: 'High' | 'Medium' | 'Low'; percentage: number };
   sender: string;
   message: string;
   nlpAnalysis: string;
@@ -37,7 +37,7 @@ const initialLogs: LogEntry[] = [
     id: '2',
     date: '2024-06-02',
     category: 'Text',
-    sender: 'fraudster@texts.com',
+    sender: '+15551234567',
     message: 'Your account is locked. Reply to unlock.',
     nlpAnalysis: 'Urgency and threat detected. Possible scam.',
     behavioralAnalysis: 'Unusual sender. Similar to previous high-risk texts.',
@@ -70,7 +70,7 @@ const initialLogs: LogEntry[] = [
     id: '5',
     date: '2024-06-05',
     category: 'Text',
-    sender: 'friend@trusted.com',
+    sender: '+15557654321',
     message: 'Hey, are we still on for lunch?',
     nlpAnalysis: 'No threat detected.',
     behavioralAnalysis: 'Sender in contacts. Normal behavior.',
@@ -129,6 +129,20 @@ function runBehavioralAnalysis(sender: string, logs: LogEntry[]): string {
   return 'Sender in contacts, normal behavior.';
 }
 
+function normalizeSender(category: string, sender: string): string {
+  if (category === 'Mail') {
+    // If not an email, fake one
+    if (!sender.includes('@')) return sender + '@example.com';
+    return sender;
+  }
+  if (category === 'Text' || category === 'Phone Call') {
+    // If not a phone number, fake one
+    if (!sender.match(/^\+?\d{10,15}$/)) return '+1' + Math.floor(Math.random() * 9000000000 + 1000000000);
+    return sender;
+  }
+  return sender;
+}
+
 export const LogProvider = ({ children }: { children: ReactNode }) => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
@@ -157,7 +171,8 @@ export const LogProvider = ({ children }: { children: ReactNode }) => {
     // If nlpAnalysis or behavioralAnalysis are missing, generate them
     const nlpAnalysis = log.nlpAnalysis || runNlpAnalysis(log.message);
     const behavioralAnalysis = log.behavioralAnalysis || runBehavioralAnalysis(log.sender, logs);
-    setLogs(prev => [withThreat({ ...log, nlpAnalysis, behavioralAnalysis }), ...prev]);
+    const normalizedSender = normalizeSender(log.category, log.sender);
+    setLogs(prev => [withThreat({ ...log, nlpAnalysis, behavioralAnalysis, sender: normalizedSender }), ...prev]);
   };
 
   const clearLogs = () => setLogs([]);

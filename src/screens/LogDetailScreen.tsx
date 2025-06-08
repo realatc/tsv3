@@ -4,6 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useRoute } from '@react-navigation/native';
 import { calculateThreatLevel } from '../utils/threatLevel';
 import { ThreatBadge } from '../components/ThreatBadge';
+import { CategoryBadge } from '../components/CategoryBadge';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useLogs } from '../context/LogContext';
 
@@ -43,6 +44,7 @@ const LogDetailScreen = () => {
   const threatLevel = threatResult.level;
   const threatPercent = threatResult.percentage;
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
+  const [helpModalVisible, setHelpModalVisible] = useState(false);
 
   const handleAddContact = () => {
     Alert.alert(
@@ -183,15 +185,17 @@ const LogDetailScreen = () => {
                 <Text style={styles.value}>{log.date}</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <ThreatBadge level={threatLevel} />
-                <Text style={styles.threatPercent}>{threatPercent}%</Text>
+                <ThreatBadge level={threatLevel} percentage={threatPercent} />
+                <TouchableOpacity onPress={() => setHelpModalVisible(true)} style={styles.helpIconButton}>
+                  <Icon name="help-circle-outline" size={20} color="#B0BEC5" />
+                </TouchableOpacity>
               </View>
             </View>
             <View style={styles.rowBetween}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Icon name="mail" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
                 <Text style={styles.label}>Category:</Text>
-                <Text style={styles.value}>{log.category}</Text>
+                <CategoryBadge category={log.category} />
               </View>
             </View>
           </View>
@@ -295,6 +299,27 @@ const LogDetailScreen = () => {
                 </TouchableOpacity>
               </View>
             </TouchableOpacity>
+          </Modal>
+
+          {/* Help Modal for Threat Level */}
+          <Modal
+            visible={helpModalVisible}
+            animationType="fade"
+            transparent
+            onRequestClose={() => setHelpModalVisible(false)}
+          >
+            <View style={styles.helpModalOverlay}>
+              <View style={styles.helpModalContent}>
+                <Text style={styles.helpModalTitle}>Threat Level Percentages</Text>
+                <Text style={styles.helpModalText}>• High: 45% - 100%</Text>
+                <Text style={styles.helpModalText}>• Medium: 23% - 44%</Text>
+                <Text style={styles.helpModalText}>• Low: 0% - 22%</Text>
+                <Text style={styles.helpModalText}>The threat percentage is calculated based on message content and sender behavior. Higher percentages indicate greater risk.</Text>
+                <TouchableOpacity style={styles.helpModalButton} onPress={() => setHelpModalVisible(false)}>
+                  <Text style={styles.helpModalButtonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </Modal>
         </ScrollView>
       </SafeAreaView>
@@ -442,13 +467,51 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  threatPercent: {
+  helpIconButton: {
+    marginLeft: 4,
+    padding: 2,
+  },
+  helpModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  helpModalContent: {
+    backgroundColor: '#23294d',
+    borderRadius: 16,
+    padding: 24,
+    minWidth: 260,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  helpModalTitle: {
+    color: '#4A90E2',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  helpModalText: {
     color: '#B0BEC5',
     fontSize: 15,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  helpModalButton: {
+    marginTop: 10,
+    backgroundColor: '#4A90E2',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+  },
+  helpModalButtonText: {
+    color: '#fff',
     fontWeight: 'bold',
-    marginLeft: 8,
-    minWidth: 38,
-    textAlign: 'right',
+    fontSize: 15,
   },
 });
 
