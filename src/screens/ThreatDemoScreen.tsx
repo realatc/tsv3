@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useLogs } from '../context/LogContext';
 
+const scamTextOptions = [
+  { label: 'Simulate Package Scam Text', value: 'scam_text' },
+  { label: 'Simulate DMV Toll Scam', value: 'dmv_scam' },
+];
+
 const testOptions = [
   { label: 'Simulate Phishing Email', value: 'phishing_email' },
-  { label: 'Simulate Scam Text', value: 'scam_text' },
+  { label: 'Simulate Scam Text', value: 'scam_text_menu' },
   { label: 'Simulate Robocall', value: 'robocall' },
-  { label: 'Simulate DMV Toll Scam', value: 'dmv_scam' },
 ];
 
 const demoLogs = {
@@ -77,6 +81,7 @@ const demoLogs = {
 const ThreatDemoScreen = () => {
   const navigation = useNavigation();
   const { addLog } = useLogs();
+  const [showScamTextMenu, setShowScamTextMenu] = useState(false);
 
   const runSimulation = (type: keyof typeof demoLogs) => {
     const newLog = {
@@ -87,7 +92,7 @@ const ThreatDemoScreen = () => {
     // @ts-ignore
     delete newLog.threat;
     addLog(newLog);
-    Alert.alert('Simulation Complete', `A ${testOptions.find(o => o.value === type)?.label} has been added to your logs.`, [
+    Alert.alert('Simulation Complete', `A ${scamTextOptions.find(o => o.value === type)?.label || testOptions.find(o => o.value === type)?.label} has been added to your logs.`, [
       {
         text: 'View Logs',
         onPress: () => (navigation as any).navigate('LogHistory'),
@@ -105,15 +110,41 @@ const ThreatDemoScreen = () => {
             Select a test scenario to simulate a threat event:
           </Text>
           <View style={styles.optionsContainer}>
-            {testOptions.map(option => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.optionButton}
-                onPress={() => runSimulation(option.value as keyof typeof demoLogs)}
-              >
-                <Text style={styles.optionText}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
+            {!showScamTextMenu ? (
+              testOptions.map(option => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={styles.optionButton}
+                  onPress={() => {
+                    if (option.value === 'scam_text_menu') {
+                      setShowScamTextMenu(true);
+                    } else {
+                      runSimulation(option.value as keyof typeof demoLogs);
+                    }
+                  }}
+                >
+                  <Text style={styles.optionText}>{option.label}</Text>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <>
+                {scamTextOptions.map(option => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={styles.optionButton}
+                    onPress={() => runSimulation(option.value as keyof typeof demoLogs)}
+                  >
+                    <Text style={styles.optionText}>{option.label}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity
+                  style={[styles.optionButton, { backgroundColor: 'rgba(255,255,255,0.08)', borderColor: '#B0BEC5' }]}
+                  onPress={() => setShowScamTextMenu(false)}
+                >
+                  <Text style={[styles.optionText, { color: '#B0BEC5' }]}>Back</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </SafeAreaView>
