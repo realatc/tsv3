@@ -74,6 +74,11 @@ const NavigationPanel: React.FC<DrawerContentComponentProps> = ({ navigation, st
           );
         })}
       </View>
+      <View style={styles.contactContainer}>
+        <Text style={styles.contactLabel}>Contact Us</Text>
+        <Text style={styles.contactText}>Alex Crandall</Text>
+        <Text style={styles.contactText}>atcran3549@ung.edu</Text>
+      </View>
       {/* Terms of Service Link */}
       <TouchableOpacity style={styles.tosLinkContainer} onPress={() => setTosVisible(true)} activeOpacity={0.7}>
         <Text style={styles.tosLink}>Terms of Service</Text>
@@ -97,11 +102,6 @@ const NavigationPanel: React.FC<DrawerContentComponentProps> = ({ navigation, st
           </View>
         </View>
       </Modal>
-      <View style={styles.contactContainer}>
-        <Text style={styles.contactLabel}>Contact Us</Text>
-        <Text style={styles.contactText}>Alex Crandall</Text>
-        <Text style={styles.contactText}>atcran3549@ung.edu</Text>
-      </View>
     </View>
   );
 };
