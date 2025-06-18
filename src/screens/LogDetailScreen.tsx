@@ -149,7 +149,7 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
             <Text style={styles.sectionTitle}>URL Safety Check</Text>
             <Pressable onPress={() => setShowUrlHelp(true)} style={styles.helpIconButton} hitSlop={8}>
-              <Icon name="help-circle-outline" size={18} color="#B0BEC5" />
+              <Icon name="help-circle-outline" size={18} color="#4A90E2" />
             </Pressable>
           </View>
           {urls.length > 0 ? (
@@ -301,7 +301,7 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
               <View style={styles.topCardCenter}>
                 <ThreatBadge level={threatInfo.level || 'Low'} score={threatInfo.score} />
                 <TouchableOpacity style={styles.helpIconButton} onPress={() => Alert.alert('Threat Level Info', 'Threat level is calculated based on NLP and behavioral analysis, sender, and message content. Higher scores are given for urgent, suspicious, or scam-like language, unknown senders, and known scam patterns.') }>
-                  <Icon name="help-circle-outline" size={20} color="#B0BEC5" />
+                  <Icon name="help-circle-outline" size={20} color="#4A90E2" />
                 </TouchableOpacity>
               </View>
               <View style={styles.topCardRight} />
