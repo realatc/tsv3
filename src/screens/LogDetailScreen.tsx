@@ -261,6 +261,15 @@ const LogDetailScreen = () => {
           <View style={styles.headerRow}>
             <Icon name="shield" size={32} color="#4A90E2" style={{ marginRight: 10 }} />
             <AccessibleText variant="title" style={styles.title}>Log Details</AccessibleText>
+            <TouchableOpacity
+              style={styles.headerActionsButton}
+              onPress={() => setActionSheetVisible(true)}
+              accessible={true}
+              accessibilityLabel="Actions menu"
+              accessibilityHint="Tap to open actions menu for this log entry"
+            >
+              <Icon name="ellipsis-horizontal" size={28} color="#4A90E2" />
+            </TouchableOpacity>
           </View>
 
           <View style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.06)' }]}>
@@ -374,20 +383,6 @@ const LogDetailScreen = () => {
               <AccessibleText variant="subtitle" style={[styles.sectionTitle, { color: '#4A90E2' }]}>Recalculate Threat Level</AccessibleText>
             </View>
           </TouchableOpacity>
-
-          {/* Compact Actions Button */}
-          <View style={styles.actionsButtonContainer}>
-            <TouchableOpacity
-              style={styles.actionsButton}
-              onPress={() => setActionSheetVisible(true)}
-              accessible={true}
-              accessibilityLabel="Actions menu"
-              accessibilityHint="Tap to open actions menu for this log entry"
-            >
-              <Icon name="ellipsis-horizontal" size={28} color="#4A90E2" />
-              <AccessibleText variant="button" style={styles.actionsButtonText}>Actions</AccessibleText>
-            </TouchableOpacity>
-          </View>
 
           {/* Action Sheet Modal */}
           <Modal
@@ -724,6 +719,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15,
   },
+  headerActionsButton: { marginLeft: 'auto', padding: 8 },
 });
 
 export default LogDetailScreen; 
