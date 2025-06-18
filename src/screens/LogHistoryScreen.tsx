@@ -5,12 +5,15 @@ import { useNavigation } from '@react-navigation/native';
 import { useLogs } from '../context/LogContext';
 import { CategoryBadge } from '../components/CategoryBadge';
 import { ThreatBadgeCompact } from '../components/ThreatBadge';
+import { AccessibleText } from '../components/AccessibleText';
+import { useAccessibility } from '../context/AccessibilityContext';
 import DropDownPicker from 'react-native-dropdown-picker';
 import type { LogEntry } from '../context/LogContext';
 
 const LogHistoryScreen = () => {
   const navigation = useNavigation();
   const { logs } = useLogs();
+  const { settings } = useAccessibility();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [threatFilter, setThreatFilter] = useState('All');
@@ -55,23 +58,30 @@ const LogHistoryScreen = () => {
       const threatLevel = typeof item.threat === 'string' && item.threat ? item.threat : 'Low';
       threat = { level: threatLevel as 'High' | 'Medium' | 'Low', score: undefined };
     }
+    
+    const accessibilityLabel = `${item.category} from ${item.sender}, ${threat.level} threat level. ${item.message}`;
+    
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.07)' }]}
         onPress={() => (navigation as any).navigate('LogDetail', { log: item })}
         activeOpacity={0.85}
+        accessible={true}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint="Double tap to view detailed analysis"
+        accessibilityRole="button"
       >
         <View style={styles.cardHeader}>
           <View style={styles.cardLeft}>
-            <Text style={styles.cardDate}>{item.date}</Text>
-            <Text style={styles.cardSender}>{item.sender}</Text>
+            <AccessibleText variant="caption" style={styles.cardDate}>{item.date}</AccessibleText>
+            <AccessibleText variant="body" style={styles.cardSender}>{item.sender}</AccessibleText>
           </View>
           <View style={styles.cardRight}>
             <CategoryBadge category={item.category} />
             <ThreatBadgeCompact level={threat.level} score={threat.score} />
           </View>
         </View>
-        <Text style={styles.cardMessagePreview} numberOfLines={2}>{item.message}</Text>
+        <AccessibleText variant="body" style={styles.cardMessagePreview} numberOfLines={2}>{item.message}</AccessibleText>
       </TouchableOpacity>
     );
   };
@@ -80,14 +90,20 @@ const LogHistoryScreen = () => {
     <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Logs</Text>
+          <AccessibleText variant="title" style={styles.title}>Logs</AccessibleText>
           <View style={styles.searchBarRow}>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { 
+                backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
+                color: settings.highContrastMode ? '#000000' : '#fff'
+              }]}
               placeholder="Search sender or message..."
-              placeholderTextColor="#B0BEC5"
+              placeholderTextColor={settings.highContrastMode ? '#666666' : "#B0BEC5"}
               value={search}
               onChangeText={setSearch}
+              accessible={true}
+              accessibilityLabel="Search logs"
+              accessibilityHint="Type to search through your security logs"
             />
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 18 }}>
@@ -136,6 +152,9 @@ const LogHistoryScreen = () => {
           contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 18 }}
           showsVerticalScrollIndicator={false}
           style={{ marginTop: 8 }}
+          accessible={true}
+          accessibilityLabel="Security logs list"
+          accessibilityHint="Scroll to view all security logs"
         />
       </SafeAreaView>
     </LinearGradient>

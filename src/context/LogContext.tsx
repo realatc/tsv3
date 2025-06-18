@@ -20,6 +20,13 @@ export type LogEntry = {
   };
 };
 
+export type BlockedSender = {
+  sender: string;
+  blockedAt: string;
+  reason: string;
+  category: string;
+};
+
 const initialLogs: LogEntry[] = [
   {
     id: '1',
@@ -84,11 +91,17 @@ const withThreat = (log: Omit<LogEntry, 'threat'>): LogEntry => ({
 });
 
 const STORAGE_KEY = '@threatsense/logs';
+const BLOCKED_SENDERS_KEY = '@threatsense/blocked_senders';
 
 const LogContext = createContext<{
   logs: LogEntry[];
+  blockedSenders: BlockedSender[];
   addLog: (log: Omit<LogEntry, 'threat'>) => void;
   clearLogs: () => void;
+  blockSender: (sender: string, reason: string, category: string) => void;
+  unblockSender: (sender: string) => void;
+  isSenderBlocked: (sender: string) => boolean;
+  getBlockedSendersCount: () => number;
 } | undefined>(undefined);
 
 // Mock contacts list (replace with real contacts integration as needed)
@@ -144,19 +157,29 @@ function normalizeSender(category: string, sender: string): string {
 
 export const LogProvider = ({ children }: { children: ReactNode }) => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [blockedSenders, setBlockedSenders] = useState<BlockedSender[]>([]);
 
-  // Load logs from AsyncStorage on mount
+  // Load logs and blocked senders from AsyncStorage on mount
   useEffect(() => {
     (async () => {
       try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          setLogs(JSON.parse(stored));
+        const [storedLogs, storedBlockedSenders] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEY),
+          AsyncStorage.getItem(BLOCKED_SENDERS_KEY)
+        ]);
+        
+        if (storedLogs) {
+          setLogs(JSON.parse(storedLogs));
         } else {
           setLogs(initialLogs.map(withThreat));
         }
+        
+        if (storedBlockedSenders) {
+          setBlockedSenders(JSON.parse(storedBlockedSenders));
+        }
       } catch (e) {
         setLogs(initialLogs.map(withThreat));
+        setBlockedSenders([]);
       }
     })();
   }, []);
@@ -165,6 +188,11 @@ export const LogProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
   }, [logs]);
+
+  // Save blocked senders to AsyncStorage whenever they change
+  useEffect(() => {
+    AsyncStorage.setItem(BLOCKED_SENDERS_KEY, JSON.stringify(blockedSenders));
+  }, [blockedSenders]);
 
   const addLog = (log: Omit<LogEntry, 'threat'>) => {
     // If nlpAnalysis or behavioralAnalysis are missing, generate them
@@ -176,8 +204,43 @@ export const LogProvider = ({ children }: { children: ReactNode }) => {
 
   const clearLogs = () => setLogs([]);
 
+  const blockSender = (sender: string, reason: string, category: string) => {
+    const newBlockedSender: BlockedSender = {
+      sender,
+      blockedAt: new Date().toISOString(),
+      reason,
+      category
+    };
+    setBlockedSenders(prev => {
+      // Remove if already exists and add new one
+      const filtered = prev.filter(blocked => blocked.sender !== sender);
+      return [...filtered, newBlockedSender];
+    });
+  };
+
+  const unblockSender = (sender: string) => {
+    setBlockedSenders(prev => prev.filter(blocked => blocked.sender !== sender));
+  };
+
+  const isSenderBlocked = (sender: string): boolean => {
+    return blockedSenders.some(blocked => blocked.sender === sender);
+  };
+
+  const getBlockedSendersCount = (): number => {
+    return blockedSenders.length;
+  };
+
   return (
-    <LogContext.Provider value={{ logs, addLog, clearLogs }}>
+    <LogContext.Provider value={{ 
+      logs, 
+      blockedSenders,
+      addLog, 
+      clearLogs,
+      blockSender,
+      unblockSender,
+      isSenderBlocked,
+      getBlockedSendersCount
+    }}>
       {children}
     </LogContext.Provider>
   );

@@ -1,212 +1,319 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput, Animated, Modal } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { AccessibleText } from '../components/AccessibleText';
+import { useAccessibility } from '../context/AccessibilityContext';
+import { useLogs } from '../context/LogContext';
+import { useNavigation } from '@react-navigation/native';
 
 const HomeScreen = () => {
+  const { settings } = useAccessibility();
+  const { logs, getBlockedSendersCount } = useLogs();
   const navigation = useNavigation();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [tosVisible, setTosVisible] = useState(false);
-  const logoScale = React.useRef(new Animated.Value(1)).current;
 
-  useEffect(() => {
-    const pulseAnimation = Animated.sequence([
-      Animated.timing(logoScale, {
-        toValue: 1.1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.timing(logoScale, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-    ]);
-    Animated.loop(pulseAnimation).start();
-  }, [logoScale]);
-
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      (navigation as any).navigate('SearchResults', { query: searchQuery.trim() });
-    }
+  // Calculate real statistics from logs
+  const calculateStats = () => {
+    const totalLogs = logs.length;
+    const highThreatLogs = logs.filter(log => {
+      if (typeof log.threat === 'object' && log.threat.level) {
+        return log.threat.level === 'High';
+      }
+      return log.threat === 'High';
+    }).length;
+    
+    const safeLogs = logs.filter(log => {
+      if (typeof log.threat === 'object' && log.threat.level) {
+        return log.threat.level === 'Low';
+      }
+      return log.threat === 'Low' || !log.threat;
+    }).length;
+    
+    const blockedSenders = getBlockedSendersCount();
+    
+    const securityScore = totalLogs > 0 ? Math.round(((totalLogs - highThreatLogs) / totalLogs) * 100) : 100;
+    
+    return {
+      threatsDetected: highThreatLogs,
+      safeMessages: safeLogs,
+      blockedSenders,
+      securityScore
+    };
   };
+
+  const stats = calculateStats();
+
+  const renderStatCard = (title: string, value: string | number, icon: string, color: string, onPress?: () => void) => (
+    <TouchableOpacity 
+      style={[styles.statCard, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)' }]}
+      onPress={onPress}
+      disabled={!onPress}
+      accessible={true}
+      accessibilityLabel={`${title}: ${value}`}
+      accessibilityHint={onPress ? "Tap to view details" : undefined}
+    >
+      <View style={styles.statHeader}>
+        <Icon name={icon} size={24} color={color} />
+        <AccessibleText variant="caption" style={styles.statTitle}>{title}</AccessibleText>
+      </View>
+      <AccessibleText variant="title" style={[styles.statValue, { color }]}>{value}</AccessibleText>
+    </TouchableOpacity>
+  );
+
+  const renderQuickAction = (title: string, icon: string, onPress: () => void) => (
+    <TouchableOpacity 
+      style={[styles.quickAction, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)' }]}
+      onPress={onPress}
+      accessible={true}
+      accessibilityLabel={`Quick action: ${title}`}
+      accessibilityHint={`Tap to ${title.toLowerCase()}`}
+    >
+      <Icon name={icon} size={28} color="#4A90E2" />
+      <AccessibleText variant="button" style={styles.quickActionText}>{title}</AccessibleText>
+    </TouchableOpacity>
+  );
+
+  const handleViewThreats = () => {
+    // Navigate to logs with high threat filter
+    (navigation as any).navigate('LogHistory');
+  };
+
+  const handleViewSafeMessages = () => {
+    // Navigate to logs with low threat filter
+    (navigation as any).navigate('LogHistory');
+  };
+
+  const handleScanMessages = () => {
+    // Navigate to threat demo or scan functionality
+    (navigation as any).navigate('ThreatDemo');
+  };
+
+  const handleViewLogs = () => {
+    (navigation as any).navigate('LogHistory');
+  };
+
+  const handleOpenSettings = () => {
+    (navigation as any).navigate('Settings');
+  };
+
+  const handleOpenHelp = () => {
+    (navigation as any).navigate('KnowledgeBase');
+  };
+
+  const handleViewBlockedSenders = () => {
+    // Navigate to blocked senders management screen
+    (navigation as any).navigate('BlockedSenders');
+  };
+
+  // Get recent activity from logs
+  const getRecentActivity = () => {
+    const recentLogs = logs.slice(0, 2); // Get 2 most recent logs
+    return recentLogs.map(log => {
+      const threatLevel = typeof log.threat === 'object' && log.threat.level ? log.threat.level : 'Low';
+      const isHighThreat = threatLevel === 'High';
+      const icon = isHighThreat ? 'mail' : 'chatbubble';
+      const color = isHighThreat ? '#FF6B6B' : '#43A047';
+      const title = isHighThreat ? 'High threat detected' : 'Safe message received';
+      
+      return {
+        icon,
+        color,
+        title,
+        time: log.date,
+        category: log.category
+      };
+    });
+  };
+
+  const recentActivity = getRecentActivity();
 
   return (
     <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-          <View style={styles.logoContainer}>
-            <Animated.View style={[styles.iconContainer, { transform: [{ scale: logoScale }] }]}> 
-              <View style={{ position: 'relative' }}>
-                <Icon name="shield" size={100} color="#4A90E2" style={styles.logoIcon} />
-                <Icon name="lock-closed" size={50} color="#FFFFFF" style={{ position: 'absolute', top: 25, left: 25 }} />
-              </View>
-            </Animated.View>
-            <Text style={styles.logoText}>ThreatSense</Text>
-            <Text style={styles.tagline}>Securing Your Digital World</Text>
+        <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.header}>
+            <Icon name="shield-checkmark" size={40} color="#4A90E2" />
+            <AccessibleText variant="title" style={styles.welcomeText}>
+              ThreatSense
+            </AccessibleText>
           </View>
-          <View style={styles.searchContainer}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search (e.g. phone, email, sender, etc.)"
-              placeholderTextColor="#B0BEC5"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              returnKeyType="search"
-              onSubmitEditing={handleSearch}
-            />
-            <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-              <Icon name="search" size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
-          {/* (other home content) */}
-        </View>
-        <View style={styles.tosContainer}>
-          <Text style={styles.tosLink} onPress={() => setTosVisible(true)}>
-            Terms of Service
-          </Text>
-        </View>
-        <Modal
-          visible={tosVisible}
-          animationType="fade"
-          transparent
-          onRequestClose={() => setTosVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Terms of Service</Text>
-              <Text style={styles.modalText}>
-                By using this app, you agree to our totally serious Terms of Service: Don't hack the planet, don't feed the trolls, and always use strong passwords. ThreatSense is not responsible for any sudden urges to become a cybersecurity superhero. 🦸‍♂️
-              </Text>
-              <TouchableOpacity style={styles.modalButton} onPress={() => setTosVisible(false)}>
-                <Text style={styles.modalButtonText}>Close</Text>
-              </TouchableOpacity>
+
+          {/* Stats Overview */}
+          <View style={styles.statsSection}>
+            <AccessibleText variant="subtitle" style={styles.sectionTitle}>
+              Security Overview
+            </AccessibleText>
+            <View style={styles.statsGrid}>
+              {renderStatCard('Threats Detected', stats.threatsDetected, 'warning', '#FF6B6B', handleViewThreats)}
+              {renderStatCard('Safe Messages', stats.safeMessages, 'shield-checkmark', '#43A047', handleViewSafeMessages)}
+              {renderStatCard('Blocked Senders', stats.blockedSenders, 'ban', '#FFB300', handleViewBlockedSenders)}
+              {renderStatCard('Security Score', `${stats.securityScore}%`, 'trending-up', '#4A90E2')}
             </View>
           </View>
-        </Modal>
+
+          {/* Quick Actions */}
+          <View style={styles.quickActionsSection}>
+            <AccessibleText variant="subtitle" style={styles.sectionTitle}>
+              Quick Actions
+            </AccessibleText>
+            <View style={styles.quickActionsGrid}>
+              {renderQuickAction('Scan Messages', 'search', handleScanMessages)}
+              {renderQuickAction('View Logs', 'list', handleViewLogs)}
+              {renderQuickAction('Settings', 'settings', handleOpenSettings)}
+              {renderQuickAction('Help', 'help-circle', handleOpenHelp)}
+            </View>
+          </View>
+
+          {/* Recent Activity */}
+          <View style={styles.recentSection}>
+            <AccessibleText variant="subtitle" style={styles.sectionTitle}>
+              Recent Activity
+            </AccessibleText>
+            <View style={[styles.recentCard, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)' }]}>
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity, index) => (
+                  <View key={index} style={styles.recentItem}>
+                    <Icon name={activity.icon} size={20} color={activity.color} />
+                    <View style={styles.recentContent}>
+                      <AccessibleText variant="body" style={styles.recentTitle}>
+                        {activity.title}
+                      </AccessibleText>
+                      <AccessibleText variant="caption" style={styles.recentTime}>
+                        {activity.time} • {activity.category}
+                      </AccessibleText>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.recentItem}>
+                  <Icon name="information-circle" size={20} color="#B0BEC5" />
+                  <View style={styles.recentContent}>
+                    <AccessibleText variant="body" style={styles.recentTitle}>
+                      No recent activity
+                    </AccessibleText>
+                    <AccessibleText variant="caption" style={styles.recentTime}>
+                      Start scanning messages to see activity
+                    </AccessibleText>
+                  </View>
+                </View>
+              )}
+            </View>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: 'transparent' },
-  container: { flex: 1, padding: 18 },
-  logoContainer: {
-    alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 40,
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
   },
-  iconContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 50,
+  container: {
     padding: 20,
-    elevation: 5,
-    shadowColor: '#4A90E2',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    paddingBottom: 40,
   },
-  logoIcon: {
-    textShadowColor: 'rgba(74, 144, 226, 0.5)',
-    textShadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    textShadowRadius: 4,
+  header: {
+    alignItems: 'center',
+    marginBottom: 30,
   },
-  logoText: {
+  welcomeText: {
     color: '#FFFFFF',
-    fontSize: 40,
-    fontWeight: 'bold',
-    marginTop: 20,
-    letterSpacing: 1,
-    textShadowColor: 'rgba(74, 144, 226, 0.5)',
-    textShadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    textShadowRadius: 4,
+    marginTop: 15,
+    marginBottom: 5,
   },
-  tagline: {
+  subtitleText: {
     color: '#B0BEC5',
-    fontSize: 18,
-    marginTop: 10,
-    fontStyle: 'italic',
   },
-  searchContainer: {
+  statsSection: {
+    marginBottom: 30,
+  },
+  sectionTitle: {
+    color: '#4A90E2',
+    marginBottom: 15,
+    fontWeight: 'bold',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  statCard: {
+    width: '48%',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 18,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    marginBottom: 8,
   },
-  searchInput: {
-    flex: 1,
-    color: '#fff',
-    fontSize: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-  },
-  searchButton: {
+  statTitle: {
+    color: '#B0BEC5',
     marginLeft: 8,
-    backgroundColor: '#4A90E2',
-    borderRadius: 8,
-    padding: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  tosContainer: { alignItems: 'center', marginBottom: 10, paddingHorizontal: 18 },
-  tosLink: { color: '#4A90E2', fontSize: 13, textAlign: 'center', opacity: 0.9, textDecorationLine: 'underline', fontWeight: 'bold' },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  statValue: {
+    fontWeight: 'bold',
   },
-  modalContent: {
-    backgroundColor: 'rgba(26, 35, 126, 0.98)',
-    borderRadius: 16,
-    padding: 24,
-    minWidth: 260,
+  quickActionsSection: {
+    marginBottom: 30,
+  },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  quickAction: {
+    width: '48%',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 10,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  modalTitle: {
+  quickActionText: {
     color: '#4A90E2',
-    fontWeight: 'bold',
-    fontSize: 18,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  recentSection: {
+    marginBottom: 20,
+  },
+  recentCard: {
+    borderRadius: 12,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  recentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12,
-    textAlign: 'center',
   },
-  modalText: {
+  recentContent: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  recentTitle: {
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  recentTime: {
     color: '#B0BEC5',
-    fontSize: 15,
-    marginBottom: 18,
-    textAlign: 'center',
-  },
-  modalButton: {
-    marginTop: 10,
-    backgroundColor: '#4A90E2',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-  },
-  modalButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 15,
   },
 });
 

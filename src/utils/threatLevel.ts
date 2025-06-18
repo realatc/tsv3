@@ -28,12 +28,12 @@ export function calculateThreatLevel({ nlpAnalysis, behavioralAnalysis, sender }
   }
 
   // Max possible score is 9
-  // Return the raw score (1-9)
+  const percentage = Math.round((score / 9) * 100);
 
   let level: 'High' | 'Medium' | 'Low';
   if (score >= 4) level = 'High';
   else if (score >= 2) level = 'Medium';
   else level = 'Low';
 
-  return { level, score, breakdown };
+  return { level, percentage, breakdown };
 } 

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert, Modal } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { calculateThreatLevel } from '../utils/threatLevel';
 import { ThreatBadge } from '../components/ThreatBadge';
 import { CategoryBadgeDetailed } from '../components/CategoryBadge';
+import { AccessibleText } from '../components/AccessibleText';
+import { useAccessibility } from '../context/AccessibilityContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useLogs } from '../context/LogContext';
 
@@ -32,11 +34,14 @@ type ActionButton = {
   icon: string;
   color: string;
   onPress: () => void;
+  disabled?: boolean;
 };
 
 const LogDetailScreen = () => {
   const route = useRoute();
-  const { logs, addLog } = useLogs();
+  const { logs, addLog, blockSender, isSenderBlocked } = useLogs();
+  const { settings } = useAccessibility();
+  const navigation = useNavigation();
   // @ts-ignore
   const log = (route.params && route.params.log) ? route.params.log : mockLog;
   const [logState, setLogState] = useState(log);
@@ -45,12 +50,23 @@ const LogDetailScreen = () => {
     ? logState.threat
     : calculateThreatLevel(logState);
   const threatLevel = threatResult.level;
-  const threatScore = threatResult.score;
+  const threatScore = threatResult.percentage;
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
   const [helpModalVisible, setHelpModalVisible] = useState(false);
+  const [blockModalVisible, setBlockModalVisible] = useState(false);
+  const [selectedBlockReason, setSelectedBlockReason] = useState('');
 
   // Show threat score breakdown
   const threatBreakdown = threatResult.breakdown || [];
+
+  const blockReasons = [
+    'Spam or unwanted messages',
+    'Phishing attempt',
+    'Scam or fraud',
+    'Harassment',
+    'Suspicious behavior',
+    'Other'
+  ];
 
   const handleAddContact = () => {
     Alert.alert(
@@ -70,18 +86,30 @@ const LogDetailScreen = () => {
   };
 
   const handleBlock = () => {
+    if (isSenderBlocked(log.sender)) {
+      Alert.alert('Already Blocked', `${log.sender} is already blocked.`);
+      return;
+    }
+    setBlockModalVisible(true);
+  };
+
+  const confirmBlock = () => {
+    if (!selectedBlockReason) {
+      Alert.alert('Error', 'Please select a reason for blocking.');
+      return;
+    }
+
+    blockSender(log.sender, selectedBlockReason, log.category);
+    setBlockModalVisible(false);
+    setSelectedBlockReason('');
+    
     Alert.alert(
-      'Block Sender',
-      `Are you sure you want to block ${log.sender}?`,
+      'Sender Blocked',
+      `${log.sender} has been blocked successfully.`,
       [
-        { text: 'Cancel', style: 'cancel' },
         { 
-          text: 'Block',
-          style: 'destructive',
-          onPress: () => {
-            // TODO: Implement blocking
-            Alert.alert('Success', 'Sender has been blocked');
-          }
+          text: 'OK',
+          onPress: () => navigation.goBack()
         }
       ]
     );
@@ -169,7 +197,13 @@ const LogDetailScreen = () => {
 
   const actionButtons: ActionButton[] = [
     { label: 'Add Contact', icon: 'person-add', color: '#4A90E2', onPress: handleAddContact },
-    { label: 'Block', icon: 'ban', color: '#FF6B6B', onPress: handleBlock },
+    { 
+      label: isSenderBlocked(log.sender) ? 'Already Blocked' : 'Block', 
+      icon: isSenderBlocked(log.sender) ? 'ban' : 'ban', 
+      color: isSenderBlocked(log.sender) ? '#B0BEC5' : '#FF6B6B', 
+      onPress: handleBlock,
+      disabled: isSenderBlocked(log.sender)
+    },
     { label: 'Report', icon: 'flag', color: '#FFB300', onPress: handleReport },
     { label: 'Ignore', icon: 'checkmark-circle', color: '#43A047', onPress: handleIgnore },
     { label: 'Archive', icon: 'archive', color: '#7B1FA2', onPress: handleArchive },
@@ -183,19 +217,25 @@ const LogDetailScreen = () => {
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.headerRow}>
             <Icon name="shield" size={32} color="#4A90E2" style={{ marginRight: 10 }} />
-            <Text style={styles.title}>Log Details</Text>
+            <AccessibleText variant="title" style={styles.title}>Log Details</AccessibleText>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.06)' }]}>
             <View style={styles.rowBetween}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Icon name="calendar" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
-                <Text style={styles.label}>Date:</Text>
-                <Text style={styles.value}>{log.date}</Text>
+                <AccessibleText variant="body" style={styles.label}>Date:</AccessibleText>
+                <AccessibleText variant="body" style={styles.value}>{log.date}</AccessibleText>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <ThreatBadge level={threatLevel} score={threatScore} />
-                <TouchableOpacity onPress={() => setHelpModalVisible(true)} style={styles.helpIconButton}>
+                <TouchableOpacity 
+                  onPress={() => setHelpModalVisible(true)} 
+                  style={styles.helpIconButton}
+                  accessible={true}
+                  accessibilityLabel="Help with threat level scoring"
+                  accessibilityHint="Tap to learn how threat levels are calculated"
+                >
                   <Icon name="help-circle-outline" size={20} color="#B0BEC5" />
                 </TouchableOpacity>
               </View>
@@ -203,86 +243,92 @@ const LogDetailScreen = () => {
             <View style={styles.rowBetween}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Icon name="mail" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
-                <Text style={styles.label}>Category:</Text>
+                <AccessibleText variant="body" style={styles.label}>Category:</AccessibleText>
                 <CategoryBadgeDetailed category={log.category} />
               </View>
             </View>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.06)' }]}>
             <View style={styles.sectionHeader}>
               <Icon name="person" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
-              <Text style={styles.sectionTitle}>Sender</Text>
+              <AccessibleText variant="subtitle" style={styles.sectionTitle}>Sender</AccessibleText>
             </View>
-            <Text style={styles.value}>{log.sender}</Text>
+            <AccessibleText variant="body" style={styles.value}>{log.sender}</AccessibleText>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.06)' }]}>
             <View style={styles.sectionHeader}>
               <Icon name="document-text" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
-              <Text style={styles.sectionTitle}>Message</Text>
+              <AccessibleText variant="subtitle" style={styles.sectionTitle}>Message</AccessibleText>
             </View>
-            <Text style={styles.value}>{log.message}</Text>
+            <AccessibleText variant="body" style={styles.value}>{log.message}</AccessibleText>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.06)' }]}>
             <View style={styles.sectionHeader}>
               <Icon name="analytics" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
-              <Text style={styles.sectionTitle}>NLP Analysis</Text>
+              <AccessibleText variant="subtitle" style={styles.sectionTitle}>NLP Analysis</AccessibleText>
             </View>
-            <Text style={styles.value}>{log.nlpAnalysis}</Text>
+            <AccessibleText variant="body" style={styles.value}>{log.nlpAnalysis}</AccessibleText>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.06)' }]}>
             <View style={styles.sectionHeader}>
               <Icon name="pulse" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
-              <Text style={styles.sectionTitle}>Behavioral Analysis</Text>
+              <AccessibleText variant="subtitle" style={styles.sectionTitle}>Behavioral Analysis</AccessibleText>
             </View>
-            <Text style={styles.value}>{log.behavioralAnalysis}</Text>
+            <AccessibleText variant="body" style={styles.value}>{log.behavioralAnalysis}</AccessibleText>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.06)' }]}>
             <View style={styles.sectionHeader}>
               <Icon name="information-circle" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
-              <Text style={styles.sectionTitle}>Metadata</Text>
+              <AccessibleText variant="subtitle" style={styles.sectionTitle}>Metadata</AccessibleText>
             </View>
-            <Text style={styles.value}>Device: {log.metadata.device}</Text>
-            <Text style={styles.value}>Location: {log.metadata.location}</Text>
-            <Text style={styles.value}>Received At: {log.metadata.receivedAt}</Text>
-            <Text style={styles.value}>Message Length: {log.metadata.messageLength}</Text>
+            <AccessibleText variant="body" style={styles.value}>Device: {log.metadata.device}</AccessibleText>
+            <AccessibleText variant="body" style={styles.value}>Location: {log.metadata.location}</AccessibleText>
+            <AccessibleText variant="body" style={styles.value}>Received At: {log.metadata.receivedAt}</AccessibleText>
+            <AccessibleText variant="body" style={styles.value}>Message Length: {log.metadata.messageLength}</AccessibleText>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.06)' }]}>
             <View style={styles.sectionHeader}>
               <Icon name="color-wand" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
-              <Text style={styles.sectionTitle}>Threat Level Calculation</Text>
+              <AccessibleText variant="subtitle" style={styles.sectionTitle}>Threat Level Calculation</AccessibleText>
             </View>
-            <Text style={styles.threatExplain}>
+            <AccessibleText variant="caption" style={styles.threatExplain}>
               The threat level is calculated based on NLP and behavioral analysis, sender, and message content. Higher scores are given for urgent, suspicious, or scam-like language, unknown senders, and known scam patterns.
-            </Text>
+            </AccessibleText>
           </View>
 
           {/* Threat Score Breakdown Card */}
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.06)' }]}>
             <View style={styles.sectionHeader}>
               <Icon name="list" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
-              <Text style={styles.sectionTitle}>Threat Score Breakdown</Text>
+              <AccessibleText variant="subtitle" style={styles.sectionTitle}>Threat Score Breakdown</AccessibleText>
             </View>
-            <Text style={styles.value}>Total Points: {threatResult.score} / 9</Text>
+            <AccessibleText variant="body" style={styles.value}>Total Points: {threatResult.score} / 9</AccessibleText>
             {threatBreakdown.length > 0 ? (
-              threatBreakdown.map((item, idx) => (
-                <Text key={idx} style={styles.value}>• {item.label}: +{item.points}</Text>
+              threatBreakdown.map((item: any, idx: number) => (
+                <AccessibleText key={idx} variant="body" style={styles.value}>• {item.label}: +{item.points}</AccessibleText>
               ))
             ) : (
-              <Text style={styles.value}>No threat points detected.</Text>
+              <AccessibleText variant="body" style={styles.value}>No threat points detected.</AccessibleText>
             )}
           </View>
 
           {/* Recalculate Threat Button */}
-          <TouchableOpacity style={[styles.card, { backgroundColor: '#263159', marginBottom: 12 }]} onPress={handleRecalculateThreat}>
+          <TouchableOpacity 
+            style={[styles.card, { backgroundColor: '#263159', marginBottom: 12 }]} 
+            onPress={handleRecalculateThreat}
+            accessible={true}
+            accessibilityLabel="Recalculate threat level"
+            accessibilityHint="Tap to recalculate the threat level for this log entry"
+          >
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
               <Icon name="refresh" size={18} color="#4A90E2" style={{ marginRight: 8 }} />
-              <Text style={[styles.sectionTitle, { color: '#4A90E2' }]}>Recalculate Threat Level</Text>
+              <AccessibleText variant="subtitle" style={[styles.sectionTitle, { color: '#4A90E2' }]}>Recalculate Threat Level</AccessibleText>
             </View>
           </TouchableOpacity>
 
@@ -291,9 +337,12 @@ const LogDetailScreen = () => {
             <TouchableOpacity
               style={styles.actionsButton}
               onPress={() => setActionSheetVisible(true)}
+              accessible={true}
+              accessibilityLabel="Actions menu"
+              accessibilityHint="Tap to open actions menu for this log entry"
             >
               <Icon name="ellipsis-horizontal" size={28} color="#4A90E2" />
-              <Text style={styles.actionsButtonText}>Actions</Text>
+              <AccessibleText variant="button" style={styles.actionsButtonText}>Actions</AccessibleText>
             </TouchableOpacity>
           </View>
 
@@ -314,14 +363,29 @@ const LogDetailScreen = () => {
                 {actionButtons.map((button) => (
                   <TouchableOpacity
                     key={button.label}
-                    style={styles.actionSheetButton}
+                    style={[
+                      styles.actionSheetButton,
+                      button.disabled && styles.actionSheetButtonDisabled
+                    ]}
                     onPress={() => {
+                      if (button.disabled) return;
                       setActionSheetVisible(false);
                       setTimeout(button.onPress, 200); // Delay to allow modal to close
                     }}
+                    disabled={button.disabled}
                   >
-                    <Icon name={button.icon} size={22} color={button.color} style={{ marginRight: 14 }} />
-                    <Text style={[styles.actionSheetButtonText, { color: button.color }]}>{button.label}</Text>
+                    <Icon 
+                      name={button.icon} 
+                      size={22} 
+                      color={button.disabled ? '#666666' : button.color} 
+                      style={{ marginRight: 14 }} 
+                    />
+                    <Text style={[
+                      styles.actionSheetButtonText, 
+                      { color: button.disabled ? '#666666' : button.color }
+                    ]}>
+                      {button.label}
+                    </Text>
                   </TouchableOpacity>
                 ))}
                 <TouchableOpacity
@@ -350,6 +414,36 @@ const LogDetailScreen = () => {
                 <Text style={styles.helpModalText}>The threat score is calculated based on message content and sender behavior. Higher scores indicate greater risk. The maximum possible score is 9.</Text>
                 <TouchableOpacity style={styles.helpModalButton} onPress={() => setHelpModalVisible(false)}>
                   <Text style={styles.helpModalButtonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
+          {/* Block Modal */}
+          <Modal
+            visible={blockModalVisible}
+            animationType="fade"
+            transparent
+            onRequestClose={() => setBlockModalVisible(false)}
+          >
+            <View style={styles.blockModalOverlay}>
+              <View style={styles.blockModalContent}>
+                <Text style={styles.blockModalTitle}>Block Sender</Text>
+                <Text style={styles.blockModalText}>Please select a reason for blocking:</Text>
+                {blockReasons.map((reason) => (
+                  <TouchableOpacity
+                    key={reason}
+                    style={styles.blockModalReasonButton}
+                    onPress={() => setSelectedBlockReason(reason)}
+                  >
+                    <Text style={styles.blockModalReasonText}>{reason}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity
+                  style={styles.blockModalConfirmButton}
+                  onPress={confirmBlock}
+                >
+                  <Text style={styles.blockModalConfirmText}>Confirm</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -474,6 +568,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.07)',
   },
+  actionSheetButtonDisabled: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
+  },
   actionSheetButtonText: {
     fontSize: 16,
     fontWeight: '600',
@@ -529,6 +626,57 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   helpModalButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  blockModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  blockModalContent: {
+    backgroundColor: '#23294d',
+    borderRadius: 16,
+    padding: 24,
+    minWidth: 260,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  blockModalTitle: {
+    color: '#4A90E2',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  blockModalText: {
+    color: '#B0BEC5',
+    fontSize: 15,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  blockModalReasonButton: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.07)',
+  },
+  blockModalReasonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  blockModalConfirmButton: {
+    marginTop: 10,
+    backgroundColor: '#4A90E2',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+  },
+  blockModalConfirmText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 15,

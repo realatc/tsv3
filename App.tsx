@@ -17,7 +17,9 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import AboutScreen from './src/screens/AboutScreen';
 import LogDetailScreen from './src/screens/LogDetailScreen';
 import ThreatDemoScreen from './src/screens/ThreatDemoScreen';
+import BlockedSendersScreen from './src/screens/BlockedSendersScreen';
 import { LogProvider } from './src/context/LogContext';
+import { AccessibilityProvider } from './src/context/AccessibilityContext';
 import KnowledgeBaseScreen from './src/screens/KnowledgeBaseScreen';
 import KnowledgeBaseThreatLevelArticle from './src/screens/KnowledgeBaseThreatLevelArticle';
 import KnowledgeBaseScamsArticle from './src/screens/KnowledgeBaseScamsArticle';
@@ -52,15 +54,18 @@ function DrawerNavigator() {
 const App = () => {
   return (
     <LogProvider>
-      <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name="Main" component={DrawerNavigator} options={{ headerShown: false }} />
-          <Stack.Screen name="LogDetail" component={LogDetailScreen} options={{ header: () => <CustomHeader title="Log Details" /> }} />
-          <Stack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} options={{ header: () => <CustomHeader title="How Threat Levels Are Calculated" /> }} />
-          <Stack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} options={{ header: () => <CustomHeader title="Common Digital Scams" /> }} />
-          <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ header: () => <CustomHeader title="Search Results" /> }} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <AccessibilityProvider>
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen name="Main" component={DrawerNavigator} options={{ headerShown: false }} />
+            <Stack.Screen name="LogDetail" component={LogDetailScreen} options={{ header: () => <CustomHeader title="Log Details" /> }} />
+            <Stack.Screen name="BlockedSenders" component={BlockedSendersScreen} options={{ header: () => <CustomHeader title="Blocked Senders" /> }} />
+            <Stack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} options={{ header: () => <CustomHeader title="How Threat Levels Are Calculated" /> }} />
+            <Stack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} options={{ header: () => <CustomHeader title="Common Digital Scams" /> }} />
+            <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ header: () => <CustomHeader title="Search Results" /> }} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AccessibilityProvider>
     </LogProvider>
   );
 };
