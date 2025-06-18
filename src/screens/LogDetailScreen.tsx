@@ -32,10 +32,10 @@ const mockLog = {
 };
 
 const tabs = [
-  { id: 'general', label: 'General Details' },
-  { id: 'security', label: 'Security Analysis' },
+  { id: 'general', label: 'Details' },
+  { id: 'security', label: 'Analysis' },
   { id: 'metadata', label: 'Metadata' },
-  { id: 'threat', label: 'Threat Assessment' }
+  { id: 'threat', label: 'Threat' }
 ];
 
 const formatDate = (dateString: string) => {
