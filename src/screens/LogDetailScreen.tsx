@@ -28,6 +28,15 @@ const mockLog = {
     device: 'iPhone 15',
     location: 'Austin, TX',
     receivedAt: '2024-06-01T10:15:00Z',
+    messageLength: 45,
+    senderHistory: 3,
+    senderFlagged: true,
+    attachments: 'None',
+    links: 1,
+    network: 'Wi-Fi',
+    appVersion: '1.2.3',
+    threatDetection: 'NLP, Safe Browsing',
+    geolocation: 'Austin, TX, USA',
   },
 };
 
@@ -190,15 +199,34 @@ const LogDetailScreen = () => {
         </View>
       );
     } else if (activeTab === 'metadata') {
+      const m = log.metadata || {};
       return (
         <View style={styles.tabContent}>
           <Text style={styles.sectionTitle}>Message Metadata</Text>
           <Text style={styles.label}>Device:</Text>
-          <Text style={styles.value}>{log.metadata?.device || 'Unknown'}</Text>
+          <Text style={styles.value}>{m.device || 'Unknown'}</Text>
           <Text style={styles.label}>Location:</Text>
-          <Text style={styles.value}>{log.metadata?.location || 'Unknown'}</Text>
+          <Text style={styles.value}>{m.location || 'Unknown'}</Text>
           <Text style={styles.label}>Received At:</Text>
-          <Text style={styles.value}>{log.metadata?.receivedAt || 'Unknown'}</Text>
+          <Text style={styles.value}>{m.receivedAt || 'Unknown'}</Text>
+          <Text style={styles.label}>Message Length:</Text>
+          <Text style={styles.value}>{m.messageLength ? m.messageLength + ' characters' : 'Unknown'}</Text>
+          <Text style={styles.label}>Sender History:</Text>
+          <Text style={styles.value}>{typeof m.senderHistory === 'number' ? m.senderHistory + ' previous messages' : 'Unknown'}</Text>
+          <Text style={styles.label}>Sender Flagged:</Text>
+          <Text style={styles.value}>{m.senderFlagged === true ? 'Yes' : m.senderFlagged === false ? 'No' : 'Unknown'}</Text>
+          <Text style={styles.label}>Attachments:</Text>
+          <Text style={styles.value}>{m.attachments || 'N/A'}</Text>
+          <Text style={styles.label}>Links:</Text>
+          <Text style={styles.value}>{typeof m.links === 'number' ? m.links : 'N/A'}</Text>
+          <Text style={styles.label}>Network:</Text>
+          <Text style={styles.value}>{m.network || 'Unknown'}</Text>
+          <Text style={styles.label}>App Version:</Text>
+          <Text style={styles.value}>{m.appVersion || 'Unknown'}</Text>
+          <Text style={styles.label}>Threat Detection:</Text>
+          <Text style={styles.value}>{m.threatDetection || 'Unknown'}</Text>
+          <Text style={styles.label}>Geolocation:</Text>
+          <Text style={styles.value}>{m.geolocation || 'Unknown'}</Text>
         </View>
       );
     } else if (activeTab === 'threat') {
