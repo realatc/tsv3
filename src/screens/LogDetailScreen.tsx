@@ -50,7 +50,8 @@ const LogDetailScreen = () => {
     ? logState.threat
     : calculateThreatLevel(logState);
   const threatLevel = threatResult.level;
-  const threatScore = threatResult.percentage;
+  const threatScore = threatResult.score || 0;
+  const threatPercentage = threatResult.percentage;
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
   const [helpModalVisible, setHelpModalVisible] = useState(false);
   const [blockModalVisible, setBlockModalVisible] = useState(false);
@@ -308,7 +309,7 @@ const LogDetailScreen = () => {
               <Icon name="list" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
               <AccessibleText variant="subtitle" style={styles.sectionTitle}>Threat Score Breakdown</AccessibleText>
             </View>
-            <AccessibleText variant="body" style={styles.value}>Total Points: {threatResult.score} / 9</AccessibleText>
+            <AccessibleText variant="body" style={styles.value}>Total Points: {threatScore} / 9 ({threatPercentage}%)</AccessibleText>
             {threatBreakdown.length > 0 ? (
               threatBreakdown.map((item: any, idx: number) => (
                 <AccessibleText key={idx} variant="body" style={styles.value}>• {item.label}: +{item.points}</AccessibleText>

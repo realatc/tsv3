@@ -35,5 +35,5 @@ export function calculateThreatLevel({ nlpAnalysis, behavioralAnalysis, sender }
   else if (score >= 2) level = 'Medium';
   else level = 'Low';
 
-  return { level, percentage, breakdown };
+  return { level, percentage, score, breakdown };
 } 

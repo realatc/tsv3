@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, SafeAreaView, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useLogs } from '../context/LogContext';
 import { CategoryBadge } from '../components/CategoryBadge';
 import { ThreatBadgeCompact } from '../components/ThreatBadge';
@@ -12,6 +12,7 @@ import type { LogEntry } from '../context/LogContext';
 
 const LogHistoryScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute();
   const { logs } = useLogs();
   const { settings } = useAccessibility();
   const [search, setSearch] = useState('');
@@ -19,6 +20,16 @@ const LogHistoryScreen = () => {
   const [threatFilter, setThreatFilter] = useState('All');
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [threatOpen, setThreatOpen] = useState(false);
+  
+  // Get initial filter from navigation params
+  useEffect(() => {
+    // @ts-ignore
+    const initialThreatFilter = route.params?.threatFilter;
+    if (initialThreatFilter) {
+      setThreatFilter(initialThreatFilter);
+    }
+  }, [route.params]);
+
   const [categoryItems] = useState([
     { label: 'All', value: 'All' },
     { label: 'Mail', value: 'Mail' },
@@ -49,6 +60,28 @@ const LogHistoryScreen = () => {
     const matchesThreat = threatFilter === 'All' || threatLevel === threatFilter;
     return matchesSearch && matchesCategory && matchesThreat;
   });
+
+  // Get title based on active filters
+  const getTitle = () => {
+    if (threatFilter === 'High') return 'High Threat Logs';
+    if (threatFilter === 'Low') return 'Safe Messages';
+    if (threatFilter === 'Medium') return 'Medium Threat Logs';
+    if (categoryFilter !== 'All') return `${categoryFilter} Logs`;
+    return 'Logs';
+  };
+
+  // Get subtitle based on active filters
+  const getSubtitle = () => {
+    const activeFilters = [];
+    if (threatFilter !== 'All') activeFilters.push(`${threatFilter} Threat`);
+    if (categoryFilter !== 'All') activeFilters.push(categoryFilter);
+    if (search) activeFilters.push(`"${search}"`);
+    
+    if (activeFilters.length > 0) {
+      return `Filtered by: ${activeFilters.join(', ')}`;
+    }
+    return `${filteredLogs.length} total logs`;
+  };
 
   const renderItem = ({ item }: { item: LogEntry }) => {
     let threat: { level: 'High' | 'Medium' | 'Low'; score?: number };
@@ -90,7 +123,25 @@ const LogHistoryScreen = () => {
     <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.headerContainer}>
-          <AccessibleText variant="title" style={styles.title}>Logs</AccessibleText>
+          <AccessibleText variant="title" style={styles.title}>{getTitle()}</AccessibleText>
+          {(threatFilter !== 'All' || categoryFilter !== 'All' || search) && (
+            <View style={styles.filterIndicator}>
+              <AccessibleText variant="caption" style={styles.subtitle}>{getSubtitle()}</AccessibleText>
+              <TouchableOpacity
+                style={styles.clearFiltersButton}
+                onPress={() => {
+                  setThreatFilter('All');
+                  setCategoryFilter('All');
+                  setSearch('');
+                }}
+                accessible={true}
+                accessibilityLabel="Clear all filters"
+                accessibilityHint="Tap to remove all active filters"
+              >
+                <AccessibleText variant="caption" style={styles.clearFiltersText}>Clear Filters</AccessibleText>
+              </TouchableOpacity>
+            </View>
+          )}
           <View style={styles.searchBarRow}>
             <TextInput
               style={[styles.searchInput, { 
@@ -269,6 +320,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   headerContainer: { paddingTop: 18, paddingBottom: 8, backgroundColor: 'transparent' },
+  subtitle: {
+    color: '#B0BEC5',
+    fontSize: 13,
+    marginBottom: 10,
+  },
+  filterIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    paddingHorizontal: 4,
+  },
+  clearFiltersButton: {
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+  },
+  clearFiltersText: {
+    color: '#FF6B6B',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
 });
 
 export default LogHistoryScreen; 

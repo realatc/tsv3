@@ -7,7 +7,7 @@ export type LogEntry = {
   id: string;
   date: string;
   category: string;
-  threat: string | { level: 'High' | 'Medium' | 'Low'; percentage: number };
+  threat: string | { level: 'High' | 'Medium' | 'Low'; percentage: number; score: number; breakdown?: { label: string; points: number }[] };
   sender: string;
   message: string;
   nlpAnalysis: string;
