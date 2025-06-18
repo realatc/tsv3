@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Alert, Modal } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -6,12 +6,32 @@ import { AccessibleText } from '../components/AccessibleText';
 import { useAccessibility, getAccessibleSpacing, getAccessiblePadding, getAccessibleBorderRadius } from '../context/AccessibilityContext';
 import { useLogs } from '../context/LogContext';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const RECENT_ACTIVITY_KEY = '@threatsense/recent_activity_meta';
 
 const HomeScreen = () => {
   const { settings } = useAccessibility();
   const { logs, getBlockedSendersCount } = useLogs();
   const navigation = useNavigation();
   const [securityScoreHelpVisible, setSecurityScoreHelpVisible] = useState(false);
+  const [recentModalVisible, setRecentModalVisible] = useState(false);
+  const [recentMeta, setRecentMeta] = useState<{ [logId: string]: { read: boolean; dismissed: boolean } }>({});
+
+  // Load read/dismissed state from AsyncStorage
+  useEffect(() => {
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem(RECENT_ACTIVITY_KEY);
+        if (stored) setRecentMeta(JSON.parse(stored));
+      } catch {}
+    })();
+  }, []);
+
+  // Save read/dismissed state to AsyncStorage
+  useEffect(() => {
+    AsyncStorage.setItem(RECENT_ACTIVITY_KEY, JSON.stringify(recentMeta));
+  }, [recentMeta]);
 
   // Get accessible spacing values
   const spacing = getAccessibleSpacing(settings);
@@ -152,37 +172,63 @@ const HomeScreen = () => {
     (navigation as any).navigate('BlockedSenders');
   };
 
-  // Get recent activity from logs
+  // Get recent activity from logs (up to 5, not dismissed)
   const getRecentActivity = () => {
-    const recentLogs = logs.slice(0, 2); // Get 2 most recent logs
+    const recentLogs = logs.filter(log => !recentMeta[log.id]?.dismissed).slice(0, 5);
     return recentLogs.map(log => {
       const threatLevel = typeof log.threat === 'object' && log.threat.level ? log.threat.level : 'Low';
       const isHighThreat = threatLevel === 'High';
       const icon = isHighThreat ? 'mail' : 'chatbubble';
       const color = isHighThreat ? '#FF6B6B' : '#43A047';
       const title = isHighThreat ? 'High threat detected' : 'Safe message received';
-      
       return {
         icon,
         color,
         title,
         time: log.date,
-        category: log.category
+        category: log.category,
+        log,
+        id: log.id,
+        read: !!recentMeta[log.id]?.read,
       };
     });
   };
-
   const recentActivity = getRecentActivity();
+  const hasUnreadHighThreat = recentActivity.some(a => a.title === 'High threat detected' && !a.read);
+
+  // Mark as read
+  const markAsRead = (id: string) => {
+    setRecentMeta(prev => ({ ...prev, [id]: { ...prev[id], read: true } }));
+  };
+
+  // Dismiss event
+  const dismissEvent = (id: string) => {
+    setRecentMeta(prev => ({ ...prev, [id]: { ...prev[id], dismissed: true } }));
+  };
 
   return (
     <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.container}>
-          <View style={styles.header}>
-            <Icon name="shield-checkmark" size={40} color="#4A90E2" />
+          <View style={styles.headerRow}>
+            <View style={styles.headerLeft}>
+              <Icon name="shield-checkmark" size={40} color="#4A90E2" />
+            </View>
             <AccessibleText variant="title" style={styles.welcomeText}>
               ThreatSense
             </AccessibleText>
+            <TouchableOpacity
+              style={styles.headerRight}
+              onPress={() => setRecentModalVisible(true)}
+              accessible={true}
+              accessibilityLabel="Show recent activity"
+              accessibilityHint="Tap to view recent activity"
+            >
+              <Icon name="notifications-outline" size={28} color="#4A90E2" />
+              {hasUnreadHighThreat && (
+                <View style={styles.badgeDot} />
+              )}
+            </TouchableOpacity>
           </View>
 
           {/* Stats Overview */}
@@ -208,42 +254,6 @@ const HomeScreen = () => {
               {renderQuickAction('View Logs', 'list', handleViewLogs)}
               {renderQuickAction('Settings', 'settings', handleOpenSettings)}
               {renderQuickAction('Help', 'help-circle', handleOpenHelp)}
-            </View>
-          </View>
-
-          {/* Recent Activity */}
-          <View style={styles.recentSection}>
-            <AccessibleText variant="subtitle" style={styles.sectionTitle}>
-              Recent Activity
-            </AccessibleText>
-            <View style={[styles.recentCard, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)' }]}>
-              {recentActivity.length > 0 ? (
-                recentActivity.map((activity, index) => (
-                  <View key={index} style={styles.recentItem}>
-                    <Icon name={activity.icon} size={20} color={activity.color} />
-                    <View style={styles.recentContent}>
-                      <AccessibleText variant="body" style={styles.recentTitle}>
-                        {activity.title}
-                      </AccessibleText>
-                      <AccessibleText variant="caption" style={styles.recentTime}>
-                        {activity.time} • {activity.category}
-                      </AccessibleText>
-                    </View>
-                  </View>
-                ))
-              ) : (
-                <View style={styles.recentItem}>
-                  <Icon name="information-circle" size={20} color="#B0BEC5" />
-                  <View style={styles.recentContent}>
-                    <AccessibleText variant="body" style={styles.recentTitle}>
-                      No recent activity
-                    </AccessibleText>
-                    <AccessibleText variant="caption" style={styles.recentTime}>
-                      Start scanning messages to see activity
-                    </AccessibleText>
-                  </View>
-                </View>
-              )}
             </View>
           </View>
 
@@ -283,6 +293,80 @@ const HomeScreen = () => {
               </View>
             </View>
           </Modal>
+
+          {/* Recent Activity Modal */}
+          <Modal
+            visible={recentModalVisible}
+            animationType="fade"
+            transparent
+            onRequestClose={() => setRecentModalVisible(false)}
+          >
+            <View style={styles.recentModalOverlay}>
+              <View style={styles.recentModalContent}>
+                <AccessibleText variant="subtitle" style={styles.recentModalTitle}>Recent Activity</AccessibleText>
+                {recentActivity.length > 0 ? (
+                  recentActivity.map((activity, index) => (
+                    <TouchableOpacity
+                      key={activity.id}
+                      style={[styles.recentModalItem, activity.read && { opacity: 0.5 }]}
+                      onPress={() => {
+                        markAsRead(activity.id);
+                        setRecentModalVisible(false);
+                        (navigation as any).navigate('LogDetail', { log: activity.log });
+                      }}
+                      activeOpacity={0.7}
+                      accessible={true}
+                      accessibilityLabel={`View details for ${activity.title}`}
+                      accessibilityHint="Tap to view log details"
+                    >
+                      <Icon name={activity.icon} size={20} color={activity.color} />
+                      <View style={styles.recentModalContentText}>
+                        <AccessibleText variant="body" style={styles.recentModalItemTitle}>
+                          {activity.title}
+                        </AccessibleText>
+                        <AccessibleText variant="caption" style={styles.recentModalItemTime}>
+                          {activity.time} • {activity.category}
+                        </AccessibleText>
+                      </View>
+                      {/* Dismiss button */}
+                      <TouchableOpacity
+                        style={styles.recentModalDismiss}
+                        onPress={e => {
+                          e.stopPropagation();
+                          dismissEvent(activity.id);
+                        }}
+                        accessible={true}
+                        accessibilityLabel={`Dismiss ${activity.title}`}
+                        accessibilityHint="Remove from recent activity"
+                      >
+                        <Icon name="close-circle" size={20} color="#B0BEC5" />
+                      </TouchableOpacity>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <View style={styles.recentModalItem}>
+                    <Icon name="information-circle" size={20} color="#B0BEC5" />
+                    <View style={styles.recentModalContentText}>
+                      <AccessibleText variant="body" style={styles.recentModalItemTitle}>
+                        No recent activity
+                      </AccessibleText>
+                      <AccessibleText variant="caption" style={styles.recentModalItemTime}>
+                        Start scanning messages to see activity
+                      </AccessibleText>
+                    </View>
+                  </View>
+                )}
+                <TouchableOpacity
+                  style={styles.recentModalClose}
+                  onPress={() => setRecentModalVisible(false)}
+                  accessible={true}
+                  accessibilityLabel="Close recent activity"
+                >
+                  <AccessibleText variant="button" style={styles.recentModalCloseText}>Close</AccessibleText>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -298,9 +382,16 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
-  header: {
+  headerRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 30,
+  },
+  headerLeft: {
+    marginRight: 10,
+  },
+  headerRight: {
+    marginLeft: 'auto',
   },
   welcomeText: {
     color: '#FFFFFF',
@@ -383,34 +474,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
-  recentSection: {
-    marginBottom: 20,
-  },
-  recentCard: {
-    borderRadius: 12,
-    padding: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  recentItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  recentContent: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  recentTitle: {
-    color: '#FFFFFF',
-    marginBottom: 2,
-  },
-  recentTime: {
-    color: '#B0BEC5',
-  },
   helpIcon: {
     marginLeft: 4,
   },
@@ -458,6 +521,70 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  badgeDot: {
+    backgroundColor: '#FF6B6B',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    position: 'absolute',
+    top: 4,
+    right: 4,
+  },
+  recentModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  recentModalContent: {
+    backgroundColor: '#1a1a1a',
+    padding: 24,
+    borderRadius: 16,
+    width: '85%',
+    maxHeight: '80%',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  recentModalTitle: {
+    color: '#4A90E2',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  recentModalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  recentModalContentText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  recentModalItemTitle: {
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  recentModalItemTime: {
+    color: '#B0BEC5',
+  },
+  recentModalClose: {
+    backgroundColor: '#4A90E2',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 16,
+    alignSelf: 'center',
+  },
+  recentModalCloseText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  recentModalDismiss: {
+    marginLeft: 8,
+    alignSelf: 'center',
   },
 });
 
