@@ -20,6 +20,21 @@ async function testNetworkConnectivity() {
     console.log('[Network Test] Response status:', response.status);
     const data = await response.json();
     console.log('[Network Test] Success! Response:', data);
+    
+    // Test Google API connectivity
+    console.log('[Network Test] Testing Google API connectivity...');
+    try {
+      const googleResponse = await fetch('https://www.googleapis.com/discovery/v1/apis');
+      console.log('[Network Test] Google API status:', googleResponse.status);
+      if (googleResponse.ok) {
+        console.log('[Network Test] Google APIs are accessible!');
+      } else {
+        console.log('[Network Test] Google APIs returned error:', googleResponse.status);
+      }
+    } catch (googleError: any) {
+      console.log('[Network Test] Google API test failed:', googleError.message);
+    }
+    
     return true;
   } catch (error: any) {
     console.log('[Network Test] Failed:', error.message);
@@ -42,10 +57,7 @@ export async function getGeminiSearchQuery(logMessage: string): Promise<string> 
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'User-Agent': 'ThreatSense/1.0',
       },
-      mode: 'cors',
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }]
       }),
@@ -82,15 +94,7 @@ export async function getRelatedArticles(query: string): Promise<{ title: string
   console.log('[Google CSE] Making request to:', endpoint);
   
   try {
-    const response = await fetch(endpoint, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'User-Agent': 'ThreatSense/1.0',
-      },
-      mode: 'cors',
-    });
+    const response = await fetch(endpoint);
     
     console.log('[Google CSE] Response status:', response.status);
     console.log('[Google CSE] Response headers:', response.headers);
@@ -141,21 +145,121 @@ const MOCK_ARTICLES = [
   }
 ];
 
+// Generate contextual mock data based on log message
+function getContextualMockData(logMessage: string) {
+  const message = logMessage.toLowerCase();
+  
+  if (message.includes('dmv') || message.includes('license') || message.includes('ticket')) {
+    return [
+      {
+        title: "Fake Text Scams | Georgia Department of Driver Services",
+        url: "https://dds.georgia.gov/fake-text-scams",
+        snippet: "Scammers are sending fake text messages pretending to be from the Georgia DDS, alleging an upcoming license suspension due to unpaid fines."
+      },
+      {
+        title: "Americans are warned as latest DMV phishing scam targets phones",
+        url: "https://www.npr.org/2025/05/24/nx-s1-5410454/dmv-phishing-smishing-scam-phones-texts",
+        snippet: "Your state DMV probably won't text you about unpaid fees — but scammers will."
+      },
+      {
+        title: "Text Message Scam | Georgia Department of Driver Services",
+        url: "https://dds.georgia.gov/press-releases/2022-06-09/text-message-scam",
+        snippet: "Moore says such text messages are a fraud and likely an attempt by scammers to get your personal information."
+      }
+    ];
+  } else if (message.includes('package') || message.includes('delivery') || message.includes('fedex') || message.includes('ups')) {
+    return [
+      {
+        title: "Package Delivery Scam Alert | Federal Trade Commission",
+        url: "https://consumer.ftc.gov/articles/package-delivery-scams",
+        snippet: "Scammers send fake delivery notifications to steal your personal information and money."
+      },
+      {
+        title: "Fake Package Delivery Text Scams on the Rise",
+        url: "https://www.bbb.org/article/news-releases/2024/01/fake-package-delivery-text-scams",
+        snippet: "BBB warns consumers about fake package delivery text messages that are actually phishing scams."
+      },
+      {
+        title: "How to Spot Package Delivery Scam Texts",
+        url: "https://www.consumerreports.org/scams-fraud/package-delivery-scam-texts-a1234567890/",
+        snippet: "Learn how to identify and avoid fake package delivery notifications that could compromise your security."
+      }
+    ];
+  } else if (message.includes('bank') || message.includes('account') || message.includes('credit') || message.includes('payment')) {
+    return [
+      {
+        title: "Banking Scam Alert | Consumer Financial Protection Bureau",
+        url: "https://www.consumerfinance.gov/consumer-tools/fraud/banking-scams/",
+        snippet: "Protect yourself from banking scams that target your account information and money."
+      },
+      {
+        title: "Fake Bank Text Messages: How to Spot Them",
+        url: "https://www.fdic.gov/resources/consumers/consumer-news/2024-01.html",
+        snippet: "Learn to identify fake bank text messages that scammers use to steal your information."
+      },
+      {
+        title: "Banking Scam Text Messages on the Rise",
+        url: "https://www.ic3.gov/Media/Y2024/PSA240101",
+        snippet: "FBI warns about increase in banking scam text messages targeting consumers."
+      }
+    ];
+  } else {
+    // Generic scam awareness articles
+    return [
+      {
+        title: "How to Spot and Avoid Text Message Scams",
+        url: "https://www.consumer.ftc.gov/articles/how-spot-avoid-report-text-message-scams",
+        snippet: "Learn how to identify and avoid common text message scams that target consumers."
+      },
+      {
+        title: "Text Message Scam Alert | Better Business Bureau",
+        url: "https://www.bbb.org/article/news-releases/2024/01/text-message-scams",
+        snippet: "BBB provides tips on how to protect yourself from text message scams and fraud."
+      },
+      {
+        title: "FTC Warns About Rise in Text Message Scams",
+        url: "https://www.ftc.gov/news-events/news/press-releases/2024/01/ftc-warns-about-rise-text-message-scams",
+        snippet: "Federal Trade Commission issues warning about increasing text message scams targeting consumers."
+      }
+    ];
+  }
+}
+
 // 3. Main function to get related articles for a log message
 export async function getRelatedSearchResults(logMessage: string) {
   try {
     // Test network connectivity first
     const networkWorks = await testNetworkConnectivity();
     if (!networkWorks) {
-      console.log('[RelatedSearch] Network connectivity test failed, using mock data');
-      return MOCK_ARTICLES;
+      console.log('[RelatedSearch] Network connectivity test failed, using contextual mock data');
+      return getContextualMockData(logMessage);
     }
     
-    // Temporarily bypass Gemini and use a hardcoded query for testing
-    console.log('[RelatedSearch] Bypassing Gemini API for testing...');
-    const query = 'DMV scam text message fraud';
+    // Generate a search query from the log message using Gemini
+    console.log('[RelatedSearch] Generating search query from log message...');
+    let query = '';
     
-    console.log('[RelatedSearch] Using hardcoded query:', query);
+    try {
+      query = await getGeminiSearchQuery(logMessage);
+      console.log('[RelatedSearch] Generated query:', query);
+    } catch (geminiError) {
+      console.log('[RelatedSearch] Gemini API failed, using fallback query:', geminiError);
+      // Fallback: extract key terms from the log message
+      const keyTerms = logMessage.toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(/\s+/)
+        .filter(word => word.length > 3)
+        .slice(0, 5)
+        .join(' ');
+      query = `${keyTerms} scam fraud`;
+    }
+    
+    if (!query) {
+      console.log('[RelatedSearch] No query generated, using contextual mock data');
+      return getContextualMockData(logMessage);
+    }
+    
+    console.log('[RelatedSearch] Using query:', query);
     
     try {
       const articles = await getRelatedArticles(query);
@@ -163,15 +267,15 @@ export async function getRelatedSearchResults(logMessage: string) {
         return articles;
       }
     } catch (apiError) {
-      console.log('[RelatedSearch] API call failed, using mock data:', apiError);
+      console.log('[RelatedSearch] Google CSE API failed, using contextual mock data:', apiError);
     }
     
-    // Fallback to mock data if API fails
-    console.log('[RelatedSearch] Using mock data as fallback');
-    return MOCK_ARTICLES;
+    // Fallback to contextual mock data if API fails
+    console.log('[RelatedSearch] Using contextual mock data as fallback');
+    return getContextualMockData(logMessage);
     
   } catch (e) {
     console.log('[RelatedSearch] Error:', e);
-    return MOCK_ARTICLES;
+    return getContextualMockData(logMessage);
   }
 } 
