@@ -32,7 +32,7 @@ function DrawerNavigator() {
     <Drawer.Navigator
       screenOptions={{
         header: () => <CustomHeader />, 
-        drawerStyle: { backgroundColor: '#151a3c', width: 260 },
+        drawerStyle: { backgroundColor: '#1a1a1a', width: 260 },
         drawerActiveTintColor: '#4A90E2',
         drawerInactiveTintColor: '#fff',
         drawerLabelStyle: { fontWeight: 'bold', fontSize: 16 },

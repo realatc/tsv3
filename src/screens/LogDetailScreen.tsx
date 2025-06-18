@@ -169,16 +169,16 @@ const LogDetailScreen = () => {
 
   const actionButtons: ActionButton[] = [
     { label: 'Add Contact', icon: 'person-add', color: '#4A90E2', onPress: handleAddContact },
-    { label: 'Block', icon: 'ban', color: '#E53935', onPress: handleBlock },
+    { label: 'Block', icon: 'ban', color: '#FF6B6B', onPress: handleBlock },
     { label: 'Report', icon: 'flag', color: '#FFB300', onPress: handleReport },
     { label: 'Ignore', icon: 'checkmark-circle', color: '#43A047', onPress: handleIgnore },
     { label: 'Archive', icon: 'archive', color: '#7B1FA2', onPress: handleArchive },
     { label: 'Share', icon: 'share-social', color: '#00ACC1', onPress: handleShare },
-    { label: 'Delete', icon: 'trash', color: '#E53935', onPress: handleDelete },
+    { label: 'Delete', icon: 'trash', color: '#FF6B6B', onPress: handleDelete },
   ];
 
   return (
-    <LinearGradient colors={['#1a237e', '#000000']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.headerRow}>

@@ -19,7 +19,7 @@ const articles = [
     screen: 'KnowledgeBaseScamsArticle',
     description: 'Examples and tips for avoiding common digital scams.',
     icon: 'alert-circle-outline',
-    color: '#E53935',
+    color: '#FF6B6B',
     created: '2024-06-01',
     updated: '2024-06-07',
   },
@@ -38,7 +38,7 @@ const KnowledgeBaseScreen = () => {
   );
 
   return (
-    <LinearGradient colors={['#1a237e', '#000000']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <Text style={styles.title}>Knowledge Base</Text>

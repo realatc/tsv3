@@ -34,7 +34,7 @@ const HomeScreen = () => {
   };
 
   return (
-    <LinearGradient colors={['#1a237e', '#000000']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
           <View style={styles.logoContainer}>

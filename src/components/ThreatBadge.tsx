@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const threatColors = {
-  High: '#E53935',
+  High: '#FF6B6B',
   Medium: '#FFB300',
   Low: '#43A047',
 };

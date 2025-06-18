@@ -41,7 +41,7 @@ const CREATED_DATE = '2023-06-01';
 const UPDATED_DATE = '2024-06-07';
 
 const KnowledgeBaseScamsArticle = () => (
-  <LinearGradient colors={['#1a237e', '#000000']} style={{ flex: 1 }}>
+  <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.articleMeta}>

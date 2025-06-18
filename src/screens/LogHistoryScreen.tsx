@@ -76,7 +76,7 @@ const LogHistoryScreen = () => {
   };
 
   return (
-    <LinearGradient colors={['#1a237e', '#000000']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.headerContainer}>
           <Text style={styles.title}>Logs</Text>
@@ -117,8 +117,8 @@ const LogHistoryScreen = () => {
                 setValue={setThreatFilter}
                 setItems={() => {}}
                 placeholder="Threat Level"
-                style={{ backgroundColor: '#263159', borderColor: '#E53935' }}
-                dropDownContainerStyle={{ backgroundColor: '#263159', borderColor: '#E53935', elevation: 5 }}
+                style={{ backgroundColor: '#263159', borderColor: '#FF6B6B' }}
+                dropDownContainerStyle={{ backgroundColor: '#263159', borderColor: '#FF6B6B', elevation: 5 }}
                 textStyle={{ color: '#fff' }}
                 listItemLabelStyle={{ color: '#fff' }}
                 placeholderStyle={{ color: '#B0BEC5' }}
