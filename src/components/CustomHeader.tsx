@@ -30,7 +30,7 @@ const mainDrawerScreens = [
   'About',
 ];
 
-const CustomHeader = ({ title }: { title?: string }) => {
+const CustomHeader = ({ title, onActionMenuPress }: { title?: string, onActionMenuPress?: () => void }) => {
   const navigation = useNavigation();
   const route = useRoute();
   const canGoBack = navigation.canGoBack();
@@ -75,7 +75,18 @@ const CustomHeader = ({ title }: { title?: string }) => {
             )
           )}
         </View>
-        <View style={styles.rightPlaceholder} />
+        <Text style={styles.headerTitle}>{displayTitle}</Text>
+        <View style={styles.rightPlaceholder}>
+          {route.name === 'LogDetail' && onActionMenuPress && (
+            <TouchableOpacity
+              style={styles.settingsButton}
+              onPress={onActionMenuPress}
+              accessibilityLabel="Show actions menu"
+            >
+              <Icon name="ellipsis-horizontal" size={28} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </SafeAreaView>
   );

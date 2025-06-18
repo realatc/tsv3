@@ -58,7 +58,15 @@ const App = () => {
         <NavigationContainer>
           <Stack.Navigator>
             <Stack.Screen name="Main" component={DrawerNavigator} options={{ headerShown: false }} />
-            <Stack.Screen name="LogDetail" component={LogDetailScreen} options={{ header: () => <CustomHeader title="Log Details" /> }} />
+            <Stack.Screen 
+              name="LogDetail" 
+              component={LogDetailScreen} 
+              options={({ navigation }) => ({
+                header: () => <CustomHeader title="Log Details" onActionMenuPress={() => {
+                  // This will be handled in LogDetailScreen via navigation.setParams or a callback
+                }} />
+              })}
+            />
             <Stack.Screen name="BlockedSenders" component={BlockedSendersScreen} options={{ header: () => <CustomHeader title="Blocked Senders" /> }} />
             <Stack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} options={{ header: () => <CustomHeader title="How Threat Levels Are Calculated" /> }} />
             <Stack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} options={{ header: () => <CustomHeader title="Common Digital Scams" /> }} />
