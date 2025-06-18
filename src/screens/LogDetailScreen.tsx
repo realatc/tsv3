@@ -299,10 +299,16 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
                 <CategoryBadge category={log.category} />
               </View>
               <View style={styles.topCardCenter}>
-                <ThreatBadge level={threatInfo.level || 'Low'} score={threatInfo.score} />
-                <TouchableOpacity style={styles.helpIconButton} onPress={() => Alert.alert('Threat Level Info', 'Threat level is calculated based on NLP and behavioral analysis, sender, and message content. Higher scores are given for urgent, suspicious, or scam-like language, unknown senders, and known scam patterns.') }>
-                  <Icon name="help-circle-outline" size={20} color="#4A90E2" />
-                </TouchableOpacity>
+                <View style={styles.badgeWithHelpContainer}>
+                  <ThreatBadge level={threatInfo.level || 'Low'} score={threatInfo.score} />
+                  <TouchableOpacity
+                    style={styles.helpIconInsideBadge}
+                    onPress={() => Alert.alert('Threat Level Info', 'Threat level is calculated based on NLP and behavioral analysis, sender, and message content. Higher scores are given for urgent, suspicious, or scam-like language, unknown senders, and known scam patterns.')}
+                    hitSlop={8}
+                  >
+                    <Icon name="help-circle-outline" size={18} color="#4A90E2" />
+                  </TouchableOpacity>
+                </View>
               </View>
               <View style={styles.topCardRight} />
             </View>
@@ -471,7 +477,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   helpIconButton: {
-    marginLeft: 8,
+    marginLeft: 6,
     padding: 4,
   },
   helpModalOverlay: {
@@ -579,6 +585,16 @@ const styles = StyleSheet.create({
   helpLink: {
     color: '#4A90E2',
     textDecorationLine: 'underline',
+  },
+  badgeWithHelpContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+  },
+  helpIconInsideBadge: {
+    marginLeft: 8,
+    alignSelf: 'center',
   },
 });
 

@@ -53,16 +53,9 @@ export const ThreatBadge = ({ level, score }: { level: 'High' | 'Medium' | 'Low'
   const { settings } = useAccessibility();
   
   return (
-    <View style={[
-      styles.detailedBadge, 
-      { 
-        backgroundColor: settings.colorBlindFriendly ? 'rgba(255,255,255,0.15)' : threatColors[level] + '22', 
-        borderColor: threatColors[level],
-        borderWidth: settings.colorBlindFriendly ? 2 : 1.5,
-      }
-    ]}> 
+    <View style={styles.detailedBadge}> 
       <Icon name={threatIcons[level]} size={18} color={threatColors[level]} style={{ marginRight: 6 }} />
-      <Text style={[styles.text, { color: threatColors[level] }]}>
+      <Text style={[styles.text, { color: threatColors[level] }]}> 
         {level}{score !== undefined ? ` (${score}/9)` : ''}
       </Text>
       {settings.colorBlindFriendly && (
@@ -100,7 +93,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderWidth: 1.5,
     alignSelf: 'flex-start',
   },
   text: {
