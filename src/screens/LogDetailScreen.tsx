@@ -4,7 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useRoute } from '@react-navigation/native';
 import { calculateThreatLevel } from '../utils/threatLevel';
 import { ThreatBadge } from '../components/ThreatBadge';
-import { CategoryBadge } from '../components/CategoryBadge';
+import { CategoryBadgeDetailed } from '../components/CategoryBadge';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useLogs } from '../context/LogContext';
 
@@ -204,7 +204,7 @@ const LogDetailScreen = () => {
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Icon name="mail" size={18} color="#B0BEC5" style={{ marginRight: 6 }} />
                 <Text style={styles.label}>Category:</Text>
-                <CategoryBadge category={log.category} />
+                <CategoryBadgeDetailed category={log.category} />
               </View>
             </View>
           </View>

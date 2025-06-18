@@ -4,7 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useLogs } from '../context/LogContext';
 import { CategoryBadge } from '../components/CategoryBadge';
-import { ThreatBadge } from '../components/ThreatBadge';
+import { ThreatBadgeCompact } from '../components/ThreatBadge';
 import DropDownPicker from 'react-native-dropdown-picker';
 import type { LogEntry } from '../context/LogContext';
 
@@ -48,11 +48,12 @@ const LogHistoryScreen = () => {
   });
 
   const renderItem = ({ item }: { item: LogEntry }) => {
-    let threat: { level: string; score?: number };
+    let threat: { level: 'High' | 'Medium' | 'Low'; score?: number };
     if (typeof item.threat === 'object' && item.threat.level) {
-      threat = item.threat;
+      threat = item.threat as { level: 'High' | 'Medium' | 'Low'; score?: number };
     } else {
-      threat = { level: typeof item.threat === 'string' && item.threat ? item.threat : 'Low', score: undefined };
+      const threatLevel = typeof item.threat === 'string' && item.threat ? item.threat : 'Low';
+      threat = { level: threatLevel as 'High' | 'Medium' | 'Low', score: undefined };
     }
     return (
       <TouchableOpacity
@@ -61,14 +62,14 @@ const LogHistoryScreen = () => {
         activeOpacity={0.85}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.cardDate}>{item.date}</Text>
-          <CategoryBadge category={item.category} />
-          <View style={{ marginLeft: 8 }}>
-            <ThreatBadge level={threat.level} score={threat.score} />
+          <View style={styles.cardLeft}>
+            <Text style={styles.cardDate}>{item.date}</Text>
+            <Text style={styles.cardSender}>{item.sender}</Text>
           </View>
-        </View>
-        <View style={styles.cardSenderRow}>
-          <Text style={styles.cardSender}>{item.sender}</Text>
+          <View style={styles.cardRight}>
+            <CategoryBadge category={item.category} />
+            <ThreatBadgeCompact level={threat.level} score={threat.score} />
+          </View>
         </View>
         <Text style={styles.cardMessagePreview} numberOfLines={2}>{item.message}</Text>
       </TouchableOpacity>
@@ -207,23 +208,27 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  cardLeft: {
+    flex: 1,
+    marginRight: 12,
   },
   cardDate: {
     color: '#B0BEC5',
-    fontSize: 15,
-    marginRight: 10,
-    fontWeight: 'bold',
-  },
-  cardSenderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    fontSize: 13,
     marginBottom: 2,
   },
   cardSender: {
     color: '#4A90E2',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  cardRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   cardMessagePreview: {
     color: '#FFFFFF',
