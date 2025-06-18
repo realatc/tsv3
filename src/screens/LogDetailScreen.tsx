@@ -127,7 +127,7 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
   const renderTabContent = () => {
     if (activeTab === 'general') {
       return (
-        <View style={styles.tabContent}>
+        <View style={styles.card}>
           <Text style={styles.sectionTitle}>Date</Text>
           <Text style={styles.value}>{formatDate(log.date)}</Text>
           <Text style={styles.sectionTitle}>Sender Information</Text>
@@ -291,7 +291,7 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
   return (
     <LinearGradient colors={['#1a1a1a', '#2d2d2d']} style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
-        <ScrollView style={{ padding: 18 }}>
+        <ScrollView style={{ padding: 16 }}>
           {/* Top Card */}
           <View style={styles.card}>
             <View style={styles.topCardRowCentered}>
@@ -330,6 +330,11 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
           </View>
           {/* Tab Content */}
           {renderTabContent()}
+          {/* Related Search Card */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Related Search</Text>
+            <Text style={styles.value}>No related searches found.</Text>
+          </View>
           {/* Action Sheet Modal */}
           <Modal
             visible={actionSheetVisible}
