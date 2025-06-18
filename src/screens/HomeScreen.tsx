@@ -111,7 +111,7 @@ const HomeScreen = () => {
             accessibilityLabel={`Help for ${title}`}
             accessibilityHint="Tap to learn more about this metric"
           >
-            <Icon name="help-circle-outline" size={settings.largeTextMode ? 20 : 16} color="#B0BEC5" style={styles.helpIcon} />
+            <Icon name="help-circle-outline" size={settings.largeTextMode ? 20 : 16} color="#4A90E2" style={styles.helpIcon} />
           </TouchableOpacity>
         )}
       </View>
