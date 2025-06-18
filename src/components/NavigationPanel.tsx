@@ -6,6 +6,7 @@ import {
   Text,
   Dimensions,
   Image,
+  Modal,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
@@ -36,6 +37,8 @@ const NavigationPanel: React.FC<DrawerContentComponentProps> = ({ navigation, st
   const handleNavigation = (screen: string) => {
     navigation.navigate(screen);
   };
+
+  const [tosVisible, setTosVisible] = React.useState(false);
 
   return (
     <View style={styles.container}>
@@ -71,6 +74,29 @@ const NavigationPanel: React.FC<DrawerContentComponentProps> = ({ navigation, st
           );
         })}
       </View>
+      {/* Terms of Service Link */}
+      <TouchableOpacity style={styles.tosLinkContainer} onPress={() => setTosVisible(true)} activeOpacity={0.7}>
+        <Text style={styles.tosLink}>Terms of Service</Text>
+      </TouchableOpacity>
+      {/* TOS Modal */}
+      <Modal
+        visible={tosVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setTosVisible(false)}
+      >
+        <View style={styles.tosModalOverlay}>
+          <View style={styles.tosModalContent}>
+            <Text style={styles.tosModalTitle}>Terms of Service</Text>
+            <Text style={styles.tosModalText}>
+              By using this app, you agree to our totally serious Terms of Service: Don't hack the planet, don't feed the trolls, and always use strong passwords. ThreatSense is not responsible for any sudden urges to become a cybersecurity superhero. 🦸‍♂️
+            </Text>
+            <TouchableOpacity style={styles.tosModalButton} onPress={() => setTosVisible(false)}>
+              <Text style={styles.tosModalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       <View style={styles.contactContainer}>
         <Text style={styles.contactLabel}>Contact Us</Text>
         <Text style={styles.contactText}>Alex Crandall</Text>
@@ -152,6 +178,59 @@ const styles = StyleSheet.create({
   contactText: {
     color: '#fff',
     fontSize: 13,
+  },
+  tosLinkContainer: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  tosLink: {
+    color: '#B0BEC5',
+    fontSize: 13,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+    opacity: 0.8,
+  },
+  tosModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tosModalContent: {
+    backgroundColor: '#23294d',
+    borderRadius: 16,
+    padding: 24,
+    minWidth: 260,
+    maxWidth: '85%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  tosModalTitle: {
+    color: '#4A90E2',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  tosModalText: {
+    color: '#B0BEC5',
+    fontSize: 14,
+    marginBottom: 18,
+    textAlign: 'center',
+  },
+  tosModalButton: {
+    backgroundColor: '#4A90E2',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+  },
+  tosModalButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
   },
 });
 

@@ -368,12 +368,6 @@ const HomeScreen = () => {
           </Modal>
         </ScrollView>
       </SafeAreaView>
-      {/* Fixed Terms of Service Footer */}
-      <View style={styles.tosFooter} pointerEvents="box-none">
-        <Text style={styles.tosText}>
-          By using this app, you agree to our totally serious Terms of Service: Don't hack the planet, don't feed the trolls, and always use strong passwords. ThreatSense is not responsible for any sudden urges to become a cybersecurity superhero. 🦸‍♂️
-        </Text>
-      </View>
     </LinearGradient>
   );
 };
@@ -590,23 +584,6 @@ const styles = StyleSheet.create({
   recentModalDismiss: {
     marginLeft: 8,
     alignSelf: 'center',
-  },
-  tosFooter: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(26, 35, 126, 0.95)',
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  tosText: {
-    color: '#B0BEC5',
-    fontSize: 11,
-    textAlign: 'center',
-    opacity: 0.7,
   },
 });
 
