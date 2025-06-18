@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Modal, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Modal, Linking, Alert, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { ThreatBadge } from '../components/ThreatBadge';
@@ -81,6 +81,7 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
   const [urlSafety, setUrlSafety] = useState<{ [url: string]: string }>({});
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
   const [showUrlWarning, setShowUrlWarning] = useState(false);
+  const [showUrlHelp, setShowUrlHelp] = useState(false);
 
   // Debug logging
   console.log('LogDetailScreen mounted:', {
@@ -145,10 +146,11 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
           <Text style={styles.value}>{log.nlpAnalysis}</Text>
           <Text style={styles.sectionTitle}>Behavioral Analysis</Text>
           <Text style={styles.value}>{log.behavioralAnalysis}</Text>
-          <Text style={styles.sectionTitle}>URL Safety Check</Text>
-          <View style={styles.helpTextContainer}>
-            <Icon name="shield-checkmark" size={14} color="#B0BEC5" style={styles.helpIcon} />
-            <Text style={styles.helpText}>Powered by Google Safe Browsing API</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+            <Text style={styles.sectionTitle}>URL Safety Check</Text>
+            <Pressable onPress={() => setShowUrlHelp(true)} style={styles.helpIconButton} hitSlop={8}>
+              <Icon name="help-circle-outline" size={18} color="#B0BEC5" />
+            </Pressable>
           </View>
           {urls.length > 0 ? (
             urls.map((url, idx) => (
@@ -198,6 +200,28 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
                     <Text style={styles.helpModalButtonText}>Proceed</Text>
                   </TouchableOpacity>
                 </View>
+              </View>
+            </View>
+          </Modal>
+          {/* URL Safety Help Modal */}
+          <Modal
+            visible={showUrlHelp}
+            animationType="fade"
+            transparent
+            onRequestClose={() => setShowUrlHelp(false)}
+          >
+            <View style={styles.helpModalOverlay}>
+              <View style={styles.helpModalContent}>
+                <Text style={styles.helpModalTitle}>About URL Safety Check</Text>
+                <Text style={styles.helpModalText}>
+                  URL checks are powered by{' '}
+                  <Text style={styles.helpLink} onPress={() => Linking.openURL('https://developers.google.com/safe-browsing/v4')}>
+                    Google Safe Browsing API
+                  </Text>.
+                </Text>
+                <TouchableOpacity style={styles.helpModalButton} onPress={() => setShowUrlHelp(false)}>
+                  <Text style={styles.helpModalButtonText}>Close</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </Modal>
@@ -542,6 +566,10 @@ const styles = StyleSheet.create({
   },
   helpIcon: {
     marginRight: 4,
+  },
+  helpLink: {
+    color: '#4A90E2',
+    textDecorationLine: 'underline',
   },
 });
 
