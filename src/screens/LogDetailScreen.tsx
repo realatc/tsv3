@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert, Modal, Platform, Linking } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -10,6 +10,8 @@ import { useAccessibility } from '../context/AccessibilityContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useLogs } from '../context/LogContext';
 import Contacts from 'react-native-contacts';
+import { extractUrls } from '../utils/nlp/urlUtils';
+import { checkUrlSafety } from '../services/threatReader/safeBrowsing';
 
 // Mock data for demonstration
 const mockLog = {
@@ -96,6 +98,27 @@ const LogDetailScreen = () => {
     'Suspicious behavior',
     'Other'
   ];
+
+  // URL safety state
+  const [urlSafety, setUrlSafety] = useState<{ [url: string]: 'safe' | 'malware' | 'phishing' | 'uncommon' | 'unknown' | 'loading' }>({});
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
+  const [showUrlWarning, setShowUrlWarning] = useState(false);
+  const urls = extractUrls(log.message);
+
+  useEffect(() => {
+    if (urls.length === 0) return;
+    const checkAll = async () => {
+      const results: { [url: string]: 'safe' | 'malware' | 'phishing' | 'uncommon' | 'unknown' | 'loading' } = {};
+      for (const url of urls) {
+        results[url] = 'loading';
+        setUrlSafety(prev => ({ ...prev, [url]: 'loading' }));
+        const status = await checkUrlSafety(url);
+        setUrlSafety(prev => ({ ...prev, [url]: status }));
+      }
+    };
+    checkAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [log.message]);
 
   const handleAddContact = () => {
     Alert.alert(
@@ -238,6 +261,16 @@ const LogDetailScreen = () => {
     setRecalcKey(prev => prev + 1); // force rerender if needed
   };
 
+  const handleUrlPress = (url: string) => {
+    const status = urlSafety[url];
+    if (status === 'safe') {
+      Linking.openURL(url.startsWith('http') ? url : `https://${url}`);
+    } else {
+      setPendingUrl(url);
+      setShowUrlWarning(true);
+    }
+  };
+
   const actionButtons: ActionButton[] = [
     { label: 'Add Contact', icon: 'person-add', color: '#4A90E2', onPress: handleAddContact },
     { 
@@ -316,6 +349,65 @@ const LogDetailScreen = () => {
             </View>
             <AccessibleText variant="body" style={styles.value}>{log.message}</AccessibleText>
           </View>
+
+          {urls.length > 0 && (
+            <View style={{ marginTop: 10 }}>
+              <AccessibleText variant="subtitle" style={{ color: '#4A90E2', marginBottom: 4 }}>URL Safety Check</AccessibleText>
+              {urls.map(url => (
+                <View key={url} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                  <TouchableOpacity onPress={() => handleUrlPress(url)} activeOpacity={0.7}>
+                    <AccessibleText variant="body" style={{ color: '#4A90E2', textDecorationLine: 'underline', marginRight: 8 }}>{url}</AccessibleText>
+                  </TouchableOpacity>
+                  {urlSafety[url] === 'loading' && <AccessibleText variant="caption" style={{ color: '#B0BEC5' }}>Checking...</AccessibleText>}
+                  {urlSafety[url] === 'safe' && <AccessibleText variant="caption" style={{ color: '#43A047' }}>Safe</AccessibleText>}
+                  {urlSafety[url] === 'malware' && <AccessibleText variant="caption" style={{ color: '#FF6B6B' }}>Malware</AccessibleText>}
+                  {urlSafety[url] === 'phishing' && <AccessibleText variant="caption" style={{ color: '#FFB300' }}>Phishing</AccessibleText>}
+                  {urlSafety[url] === 'uncommon' && <AccessibleText variant="caption" style={{ color: '#FFB300' }}>Uncommon</AccessibleText>}
+                  {urlSafety[url] === 'unknown' && <AccessibleText variant="caption" style={{ color: '#B0BEC5' }}>Unknown</AccessibleText>}
+                </View>
+              ))}
+              {/* Warning Modal for unsafe links */}
+              <Modal
+                visible={showUrlWarning}
+                animationType="fade"
+                transparent
+                onRequestClose={() => setShowUrlWarning(false)}
+              >
+                <View style={styles.helpModalOverlay}>
+                  <View style={styles.helpModalContent}>
+                    <AccessibleText variant="subtitle" style={styles.helpModalTitle}>Warning: Unsafe Link</AccessibleText>
+                    <AccessibleText variant="body" style={styles.helpModalText}>
+                      This link may be dangerous (malware, phishing, or unknown). Are you sure you want to open it?
+                    </AccessibleText>
+                    <AccessibleText variant="body" style={styles.helpModalText}>
+                      {pendingUrl}
+                    </AccessibleText>
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 18 }}>
+                      <TouchableOpacity
+                        style={[styles.helpModalButton, { backgroundColor: '#FF6B6B', marginRight: 12 }]}
+                        onPress={() => setShowUrlWarning(false)}
+                        accessible={true}
+                        accessibilityLabel="Cancel"
+                      >
+                        <AccessibleText variant="button" style={styles.helpModalButtonText}>Cancel</AccessibleText>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.helpModalButton}
+                        onPress={() => {
+                          if (pendingUrl) Linking.openURL(pendingUrl.startsWith('http') ? pendingUrl : `https://${pendingUrl}`);
+                          setShowUrlWarning(false);
+                        }}
+                        accessible={true}
+                        accessibilityLabel="Proceed anyway"
+                      >
+                        <AccessibleText variant="button" style={styles.helpModalButtonText}>Proceed</AccessibleText>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
+            </View>
+          )}
 
           <View style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.06)' }]}>
             <View style={styles.sectionHeader}>
