@@ -7,6 +7,7 @@ import { CategoryBadge } from '../components/CategoryBadge';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { calculateThreatLevel } from '../utils/threatLevel';
 import { checkUrlSafety } from '../services/threatReader/safeBrowsing';
+import { getRelatedSearchResults } from '../services/threatReader/relatedSearch';
 
 // Simple URL extraction utility
 function extractUrls(text: string): string[] {
@@ -83,6 +84,11 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
   const [showUrlWarning, setShowUrlWarning] = useState(false);
   const [showUrlHelp, setShowUrlHelp] = useState(false);
 
+  // Related search state
+  const [relatedSearchResults, setRelatedSearchResults] = useState<any[]>([]);
+  const [loadingRelated, setLoadingRelated] = useState(false);
+  const [relatedError, setRelatedError] = useState<string | null>(null);
+
   // Debug logging
   console.log('LogDetailScreen mounted:', {
     routeName: route.name,
@@ -99,6 +105,16 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
       });
     });
     // eslint-disable-next-line
+  }, [log.message]);
+
+  useEffect(() => {
+    console.log('[LogDetailScreen] Fetching related search for:', log.message);
+    setLoadingRelated(true);
+    setRelatedError(null);
+    getRelatedSearchResults(log.message)
+      .then(results => setRelatedSearchResults(results))
+      .catch(() => setRelatedError('Failed to fetch related searches.'))
+      .finally(() => setLoadingRelated(false));
   }, [log.message]);
 
   const handleUrlPress = (url: string) => {
@@ -333,7 +349,20 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
           {/* Related Search Card */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Related Search</Text>
-            <Text style={styles.value}>No related searches found.</Text>
+            {loadingRelated ? (
+              <Text style={styles.value}>Loading...</Text>
+            ) : relatedError ? (
+              <Text style={styles.value}>{relatedError}</Text>
+            ) : relatedSearchResults.length === 0 ? (
+              <Text style={styles.value}>No related searches found.</Text>
+            ) : (
+              relatedSearchResults.map((item, idx) => (
+                <TouchableOpacity key={idx} onPress={() => Linking.openURL(item.url)}>
+                  <Text style={[styles.value, { color: '#4A90E2', textDecorationLine: 'underline', fontWeight: 'bold' }]}>{item.title}</Text>
+                  <Text style={styles.value}>{item.snippet}</Text>
+                </TouchableOpacity>
+              ))
+            )}
           </View>
           {/* Action Sheet Modal */}
           <Modal
