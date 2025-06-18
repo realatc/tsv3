@@ -314,8 +314,11 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
                 key={tab.id}
                 style={[styles.tab, activeTab === tab.id && styles.activeTab]}
                 onPress={() => setActiveTab(tab.id)}
+                activeOpacity={0.85}
               >
-                <Text style={[styles.tabText, activeTab === tab.id && styles.activeTabText]}>{tab.label}</Text>
+                <Text style={[styles.tabText, activeTab === tab.id && styles.activeTabText]}>
+                  {tab.label}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -395,16 +398,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 18,
     marginTop: 8,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 24,
+    padding: 4,
   },
   tab: {
     flex: 1,
-    padding: 10,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    paddingVertical: 10,
     alignItems: 'center',
+    borderRadius: 20,
+    marginHorizontal: 4,
   },
   activeTab: {
-    borderBottomColor: '#4A90E2',
+    backgroundColor: 'rgba(74, 144, 226, 0.18)',
+    borderRadius: 20,
   },
   tabText: {
     color: '#B0BEC5',
@@ -413,6 +420,8 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: '#4A90E2',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   tabContent: {
     paddingTop: 8,

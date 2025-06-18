@@ -13,8 +13,7 @@ const LogDetailScreenWrapper = (props: WrapperProps) => {
 
   // Always set setActionSheetVisible in navigation params for the header
   useEffect(() => {
-    // @ts-ignore
-    navigation.setParams({ setActionSheetVisible });
+    navigation.setOptions({ setActionSheetVisible });
   }, [setActionSheetVisible, navigation]);
 
   return (
