@@ -160,5 +160,50 @@ export const getAccessibleSpacing = (settings: AccessibilitySettings) => {
     'extra-large': 1.5,
   };
   
-  return baseSpacing * multipliers[settings.fontSize];
+  let spacing = baseSpacing * multipliers[settings.fontSize];
+  
+  // Additional spacing for large text mode
+  if (settings.largeTextMode) {
+    spacing *= 1.2;
+  }
+  
+  return spacing;
+};
+
+export const getAccessiblePadding = (settings: AccessibilitySettings) => {
+  const basePadding = 16;
+  const multipliers = {
+    small: 0.875,
+    medium: 1,
+    large: 1.25,
+    'extra-large': 1.5,
+  };
+  
+  let padding = basePadding * multipliers[settings.fontSize];
+  
+  // Additional padding for large text mode
+  if (settings.largeTextMode) {
+    padding *= 1.15;
+  }
+  
+  return padding;
+};
+
+export const getAccessibleBorderRadius = (settings: AccessibilitySettings) => {
+  const baseRadius = 12;
+  const multipliers = {
+    small: 0.875,
+    medium: 1,
+    large: 1.25,
+    'extra-large': 1.5,
+  };
+  
+  let radius = baseRadius * multipliers[settings.fontSize];
+  
+  // Slightly larger radius for large text mode
+  if (settings.largeTextMode) {
+    radius *= 1.1;
+  }
+  
+  return radius;
 }; 

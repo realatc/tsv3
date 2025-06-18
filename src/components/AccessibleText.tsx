@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TextProps } from 'react-native';
-import { useAccessibility, getAccessibleFontSize } from '../context/AccessibilityContext';
+import { useAccessibility, getAccessibleFontSize, getAccessibleColors } from '../context/AccessibilityContext';
 
 interface AccessibleTextProps extends TextProps {
   variant?: 'title' | 'subtitle' | 'body' | 'caption' | 'button';
@@ -20,7 +20,14 @@ export const AccessibleText: React.FC<AccessibleTextProps> = ({
 }) => {
   const { settings } = useAccessibility();
   
-  const baseFontSize = getAccessibleFontSize(settings);
+  // Get accessible colors based on settings
+  const colors = getAccessibleColors(settings);
+  
+  // Calculate font size with large text mode
+  let baseFontSize = getAccessibleFontSize(settings);
+  if (settings.largeTextMode) {
+    baseFontSize *= 1.2; // Additional 20% increase for large text mode
+  }
   
   const variantStyles = {
     title: {
@@ -52,11 +59,19 @@ export const AccessibleText: React.FC<AccessibleTextProps> = ({
     accessibilityRole: 'text' as const,
   } : {};
 
+  // Determine text color based on accessibility settings
+  let textColor = colors.text;
+  if (settings.highContrastMode) {
+    textColor = '#FFFFFF';
+  } else if (settings.colorBlindFriendly) {
+    textColor = colors.text;
+  }
+
   return (
     <Text
       style={[
         variantStyles[variant],
-        { color: settings.highContrastMode ? '#FFFFFF' : '#FFFFFF' },
+        { color: textColor },
         style,
       ]}
       {...accessibleProps}

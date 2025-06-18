@@ -88,7 +88,7 @@ const SettingsScreen = () => {
               
               <SettingItem
                 title="Large Text Mode"
-                description="Increase text size throughout the app"
+                description="Increase text size throughout the app (20% larger)"
                 value={settings.largeTextMode}
                 onValueChange={(value) => updateSetting('largeTextMode', value)}
                 icon="text"
@@ -96,7 +96,7 @@ const SettingsScreen = () => {
               
               <SettingItem
                 title="Color Blind Friendly"
-                description="Use colorblind-friendly color schemes"
+                description="Add patterns and symbols to distinguish threat levels"
                 value={settings.colorBlindFriendly}
                 onValueChange={(value) => updateSetting('colorBlindFriendly', value)}
                 icon="color-palette"
@@ -207,6 +207,56 @@ const SettingsScreen = () => {
                 type="select"
                 icon="contrast"
               />
+            </View>
+          </View>
+
+          {/* Accessibility Demo Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Icon name="eye" size={20} color="#4A90E2" />
+              <Text style={styles.sectionTitle}>Accessibility Preview</Text>
+            </View>
+            
+            <View style={styles.sectionContent}>
+              <View style={styles.demoContainer}>
+                <Text style={styles.demoTitle}>Threat Level Examples:</Text>
+                <View style={styles.demoThreats}>
+                  <View style={styles.demoThreat}>
+                    <Text style={styles.demoLabel}>High Threat</Text>
+                    <View style={[styles.demoBadge, { borderColor: '#FF6B6B' }]}>
+                      <Icon name="warning" size={16} color="#FF6B6B" />
+                      <Text style={[styles.demoText, { color: '#FF6B6B' }]}>High (7/9)</Text>
+                      {settings.colorBlindFriendly && <Text style={styles.demoPattern}>⚠️</Text>}
+                    </View>
+                  </View>
+                  <View style={styles.demoThreat}>
+                    <Text style={styles.demoLabel}>Medium Threat</Text>
+                    <View style={[styles.demoBadge, { borderColor: '#FFB300' }]}>
+                      <Icon name="alert-circle" size={16} color="#FFB300" />
+                      <Text style={[styles.demoText, { color: '#FFB300' }]}>Medium (3/9)</Text>
+                      {settings.colorBlindFriendly && <Text style={styles.demoPattern}>⚡</Text>}
+                    </View>
+                  </View>
+                  <View style={styles.demoThreat}>
+                    <Text style={styles.demoLabel}>Low Threat</Text>
+                    <View style={[styles.demoBadge, { borderColor: '#43A047' }]}>
+                      <Icon name="shield-checkmark" size={16} color="#43A047" />
+                      <Text style={[styles.demoText, { color: '#43A047' }]}>Low (1/9)</Text>
+                      {settings.colorBlindFriendly && <Text style={styles.demoPattern}>✅</Text>}
+                    </View>
+                  </View>
+                </View>
+                
+                <Text style={styles.demoNote}>
+                  {settings.largeTextMode ? '📏 Large text mode is active - text is 20% larger' : '📏 Large text mode is off'}
+                </Text>
+                <Text style={styles.demoNote}>
+                  {settings.colorBlindFriendly ? '🎨 Colorblind-friendly mode is active - patterns added' : '🎨 Colorblind-friendly mode is off'}
+                </Text>
+                <Text style={styles.demoNote}>
+                  {settings.highContrastMode ? '⚫ High contrast mode is active - enhanced contrast' : '⚫ High contrast mode is off'}
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -358,6 +408,50 @@ const styles = StyleSheet.create({
     color: '#B0BEC5',
     fontSize: 14,
     lineHeight: 20,
+  },
+  demoContainer: {
+    padding: 20,
+  },
+  demoTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  demoThreats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  demoThreat: {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  demoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    borderWidth: 2,
+    borderRadius: 8,
+  },
+  demoLabel: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  demoText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+  },
+  demoPattern: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginLeft: 5,
+  },
+  demoNote: {
+    color: '#B0BEC5',
+    fontSize: 14,
+    marginTop: 10,
   },
 });
 

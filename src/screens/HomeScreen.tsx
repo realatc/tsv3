@@ -3,7 +3,7 @@ import { View, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Alert, Mo
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { AccessibleText } from '../components/AccessibleText';
-import { useAccessibility } from '../context/AccessibilityContext';
+import { useAccessibility, getAccessibleSpacing, getAccessiblePadding, getAccessibleBorderRadius } from '../context/AccessibilityContext';
 import { useLogs } from '../context/LogContext';
 import { useNavigation } from '@react-navigation/native';
 
@@ -12,6 +12,11 @@ const HomeScreen = () => {
   const { logs, getBlockedSendersCount } = useLogs();
   const navigation = useNavigation();
   const [securityScoreHelpVisible, setSecurityScoreHelpVisible] = useState(false);
+
+  // Get accessible spacing values
+  const spacing = getAccessibleSpacing(settings);
+  const padding = getAccessiblePadding(settings);
+  const borderRadius = getAccessibleBorderRadius(settings);
 
   // Calculate real statistics from logs
   const calculateStats = () => {
@@ -44,23 +49,44 @@ const HomeScreen = () => {
 
   const stats = calculateStats();
 
+  const CARD_MIN_WIDTH = 110;
+  const CARD_MAX_WIDTH = 150;
+
   const renderStatCard = (title: string, value: string | number, icon: string, color: string, onPress?: () => void, showHelp?: boolean, helpContent?: string) => (
-    <View style={[styles.statCard, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)' }]}>
-      <View style={styles.statHeader}>
-        <Icon name={icon} size={24} color={color} />
-        <View style={styles.statTitleContainer}>
-          <AccessibleText variant="caption" style={styles.statTitle}>{title}</AccessibleText>
-          {showHelp && (
-            <TouchableOpacity
-              onPress={() => setSecurityScoreHelpVisible(true)}
-              accessible={true}
-              accessibilityLabel={`Help for ${title}`}
-              accessibilityHint="Tap to learn more about this metric"
-            >
-              <Icon name="help-circle-outline" size={16} color="#B0BEC5" style={styles.helpIcon} />
-            </TouchableOpacity>
-          )}
-        </View>
+    <View style={[
+      styles.statCard, 
+      { 
+        backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
+        padding: padding,
+        borderRadius: borderRadius,
+        marginBottom: spacing,
+        width: '48%',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }
+    ]}>
+      <View style={[styles.statHeader, { justifyContent: 'center' }]}> 
+        <Icon name={icon} size={settings.largeTextMode ? 28 : 24} color={color} />
+      </View>
+      <View style={[styles.statTitleContainer, { justifyContent: 'center' }]}> 
+        <AccessibleText 
+          variant="caption" 
+          style={[styles.statTitle, { textAlign: 'center' }]} 
+          numberOfLines={1} 
+          ellipsizeMode="tail"
+        >
+          {title}
+        </AccessibleText>
+        {showHelp && (
+          <TouchableOpacity
+            onPress={() => setSecurityScoreHelpVisible(true)}
+            accessible={true}
+            accessibilityLabel={`Help for ${title}`}
+            accessibilityHint="Tap to learn more about this metric"
+          >
+            <Icon name="help-circle-outline" size={settings.largeTextMode ? 20 : 16} color="#B0BEC5" style={styles.helpIcon} />
+          </TouchableOpacity>
+        )}
       </View>
       <TouchableOpacity 
         onPress={onPress}
@@ -69,20 +95,27 @@ const HomeScreen = () => {
         accessibilityLabel={`${title}: ${value}`}
         accessibilityHint={onPress ? "Tap to view details" : undefined}
       >
-        <AccessibleText variant="title" style={[styles.statValue, { color }]}>{value}</AccessibleText>
+        <AccessibleText variant="title" style={[styles.statValue, { color, textAlign: 'center' }]}>{value}</AccessibleText>
       </TouchableOpacity>
     </View>
   );
 
   const renderQuickAction = (title: string, icon: string, onPress: () => void) => (
     <TouchableOpacity 
-      style={[styles.quickAction, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)' }]}
+      style={[
+        styles.quickAction, 
+        { 
+          backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
+          padding: padding,
+          borderRadius: borderRadius,
+        }
+      ]}
       onPress={onPress}
       accessible={true}
       accessibilityLabel={`Quick action: ${title}`}
       accessibilityHint={`Tap to ${title.toLowerCase()}`}
     >
-      <Icon name={icon} size={28} color="#4A90E2" />
+      <Icon name={icon} size={settings.largeTextMode ? 32 : 28} color="#4A90E2" />
       <AccessibleText variant="button" style={styles.quickActionText}>{title}</AccessibleText>
     </TouchableOpacity>
   );
@@ -161,7 +194,7 @@ const HomeScreen = () => {
               {renderStatCard('Threats Detected', stats.threatsDetected, 'warning', '#FF6B6B', handleViewThreats)}
               {renderStatCard('Safe Messages', stats.safeMessages, 'shield-checkmark', '#43A047', handleViewSafeMessages)}
               {renderStatCard('Blocked Senders', stats.blockedSenders, 'ban', '#FFB300', handleViewBlockedSenders)}
-              {renderStatCard('Security Score', `${stats.securityScore}%`, 'trending-up', '#4A90E2', undefined, true, 'The Security Score represents the percentage of safe messages in your communications. It is calculated as: (Safe Messages ÷ Total Messages) × 100. Higher scores indicate better overall security.')}
+              {renderStatCard('Score', `${stats.securityScore}%`, 'trending-up', '#4A90E2', undefined, true, 'The Security Score represents the percentage of safe messages in your communications. It is calculated as: (Safe Messages ÷ Total Messages) × 100. Higher scores indicate better overall security.')}
             </View>
           </View>
 
@@ -291,15 +324,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   statCard: {
-    width: '48%',
-    padding: 15,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 12,
-    marginBottom: 10,
+    padding: 16,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
   },
   statHeader: {
     flexDirection: 'row',
@@ -324,24 +357,26 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   quickActionsSection: {
-    marginBottom: 30,
+    marginTop: 24,
   },
   quickActionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: 12,
   },
   quickAction: {
-    width: '48%',
-    padding: 20,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 12,
-    marginBottom: 10,
+    padding: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    width: '48%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
   },
   quickActionText: {
     color: '#4A90E2',
