@@ -73,18 +73,25 @@ const HomeScreen = () => {
   const CARD_MAX_WIDTH = 150;
 
   const renderStatCard = (title: string, value: string | number, icon: string, color: string, onPress?: () => void, showHelp?: boolean, helpContent?: string) => (
-    <View style={[
-      styles.statCard, 
-      { 
-        backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
-        padding: padding,
-        borderRadius: borderRadius,
-        marginBottom: spacing,
-        width: '48%',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }
-    ]}>
+    <TouchableOpacity 
+      style={[
+        styles.statCard, 
+        { 
+          backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
+          padding: padding,
+          borderRadius: borderRadius,
+          marginBottom: spacing,
+          width: '48%',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }
+      ]}
+      onPress={onPress}
+      disabled={!onPress}
+      accessible={true}
+      accessibilityLabel={`${title}: ${value}`}
+      accessibilityHint={onPress ? "Tap to view details" : undefined}
+    >
       <View style={[styles.statHeader, { justifyContent: 'center' }]}> 
         <Icon name={icon} size={settings.largeTextMode ? 28 : 24} color={color} />
       </View>
@@ -108,16 +115,8 @@ const HomeScreen = () => {
           </TouchableOpacity>
         )}
       </View>
-      <TouchableOpacity 
-        onPress={onPress}
-        disabled={!onPress}
-        accessible={true}
-        accessibilityLabel={`${title}: ${value}`}
-        accessibilityHint={onPress ? "Tap to view details" : undefined}
-      >
-        <AccessibleText variant="title" style={[styles.statValue, { color, textAlign: 'center' }]}>{value}</AccessibleText>
-      </TouchableOpacity>
-    </View>
+      <AccessibleText variant="title" style={[styles.statValue, { color, textAlign: 'center' }]}>{value}</AccessibleText>
+    </TouchableOpacity>
   );
 
   const renderQuickAction = (title: string, icon: string, onPress: () => void) => (

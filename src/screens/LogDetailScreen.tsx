@@ -146,6 +146,10 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
           <Text style={styles.sectionTitle}>Behavioral Analysis</Text>
           <Text style={styles.value}>{log.behavioralAnalysis}</Text>
           <Text style={styles.sectionTitle}>URL Safety Check</Text>
+          <View style={styles.helpTextContainer}>
+            <Icon name="shield-checkmark" size={14} color="#B0BEC5" style={styles.helpIcon} />
+            <Text style={styles.helpText}>Powered by Google Safe Browsing API</Text>
+          </View>
           {urls.length > 0 ? (
             urls.map((url, idx) => (
               <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
@@ -525,6 +529,19 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 15,
+  },
+  helpText: {
+    color: '#B0BEC5',
+    fontSize: 13,
+    marginBottom: 10,
+  },
+  helpTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  helpIcon: {
+    marginRight: 4,
   },
 });
 
