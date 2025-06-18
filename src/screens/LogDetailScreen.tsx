@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert, Modal } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert, Modal, Platform, Linking } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { calculateThreatLevel } from '../utils/threatLevel';
@@ -9,6 +9,7 @@ import { AccessibleText } from '../components/AccessibleText';
 import { useAccessibility } from '../context/AccessibilityContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useLogs } from '../context/LogContext';
+import Contacts from 'react-native-contacts';
 
 // Mock data for demonstration
 const mockLog = {
@@ -35,6 +36,33 @@ type ActionButton = {
   color: string;
   onPress: () => void;
   disabled?: boolean;
+};
+
+const addOrOpenContact = async (sender: string, category: string) => {
+  let contact;
+  if (category === 'Mail') {
+    contact = { emailAddresses: [{ label: 'work', email: sender }], givenName: sender };
+  } else {
+    contact = { phoneNumbers: [{ label: 'mobile', number: sender }], givenName: sender };
+  }
+  try {
+    // Check if contact exists
+    const existing = await Contacts.getContactsMatchingString(sender);
+    let contactObj;
+    if (existing && existing.length > 0) {
+      contactObj = existing[0];
+    } else {
+      contactObj = await Contacts.addContact(contact);
+    }
+    // Open contact in system app
+    if (Platform.OS === 'ios') {
+      Contacts.openExistingContact(contactObj);
+    } else {
+      Contacts.openContactForm(contactObj);
+    }
+  } catch (e) {
+    Alert.alert('Error', 'Could not add or open contact. Please check permissions.');
+  }
 };
 
 const LogDetailScreen = () => {
@@ -86,10 +114,24 @@ const LogDetailScreen = () => {
     );
   };
 
-  const handleBlock = () => {
+  const handleBlock = async () => {
     if (isSenderBlocked(log.sender)) {
       Alert.alert('Already Blocked', `${log.sender} is already blocked.`);
       return;
+    }
+    // Add to contacts and open system contact app
+    await addOrOpenContact(log.sender, log.category);
+    // Show platform-specific instructions
+    if (Platform.OS === 'ios') {
+      Alert.alert(
+        'Block Sender',
+        'To block this sender, scroll down in the contact and tap "Block this Caller".'
+      );
+    } else {
+      Alert.alert(
+        'Block Sender',
+        'To block this sender, tap the menu in the contact and select "Block numbers" (if available).'
+      );
     }
     setBlockModalVisible(true);
   };
