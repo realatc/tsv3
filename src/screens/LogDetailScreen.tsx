@@ -53,9 +53,15 @@ const formatDate = (dateString: string) => {
   return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: '2-digit' });
 };
 
-const LogDetailScreen = () => {
+type LogDetailScreenProps = {
+  actionSheetVisible: boolean;
+  setActionSheetVisible: (visible: boolean) => void;
+};
+
+const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetailScreenProps) => {
   const route = useRoute();
   const navigation = useNavigation();
+  
   // @ts-ignore
   const log = (route.params && route.params.log) ? route.params.log : mockLog;
   const [activeTab, setActiveTab] = useState('general');
@@ -75,18 +81,13 @@ const LogDetailScreen = () => {
   const [urlSafety, setUrlSafety] = useState<{ [url: string]: string }>({});
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
   const [showUrlWarning, setShowUrlWarning] = useState(false);
-  const [actionSheetVisible, setActionSheetVisible] = useState(false);
 
-  // Set up the ellipsis action in the header
-  useEffect(() => {
-    // @ts-ignore
-    navigation.setOptions({
-      header: (props: any) => {
-        const CustomHeader = require('../components/CustomHeader').default;
-        return <CustomHeader title="Log Details" onActionMenuPress={() => setActionSheetVisible(true)} />;
-      }
-    });
-  }, [navigation]);
+  // Debug logging
+  console.log('LogDetailScreen mounted:', {
+    routeName: route.name,
+    params: route.params,
+    canGoBack: navigation.canGoBack()
+  });
 
   useEffect(() => {
     if (urls.length === 0) return;
@@ -527,4 +528,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LogDetailScreen; 
+export { LogDetailScreen }; 

@@ -15,7 +15,7 @@ import LandingScreen from './src/screens/LandingScreen';
 import LogHistoryScreen from './src/screens/LogHistoryScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import AboutScreen from './src/screens/AboutScreen';
-import LogDetailScreen from './src/screens/LogDetailScreen';
+import LogDetailScreenWrapper from './src/screens/LogDetailScreenWrapper';
 import ThreatDemoScreen from './src/screens/ThreatDemoScreen';
 import BlockedSendersScreen from './src/screens/BlockedSendersScreen';
 import { LogProvider } from './src/context/LogContext';
@@ -33,7 +33,9 @@ function DrawerNavigator() {
   return (
     <Drawer.Navigator
       screenOptions={{
-        header: () => <CustomHeader />, 
+        header: ({ navigation, route }) => (
+          <CustomHeader />
+        ),
         drawerStyle: { backgroundColor: '#1a1a1a', width: 260 },
         drawerActiveTintColor: '#4A90E2',
         drawerInactiveTintColor: '#fff',
@@ -60,11 +62,17 @@ const App = () => {
             <Stack.Screen name="Main" component={DrawerNavigator} options={{ headerShown: false }} />
             <Stack.Screen 
               name="LogDetail" 
-              component={LogDetailScreen} 
-              options={({ navigation }) => ({
-                header: () => <CustomHeader title="Log Details" onActionMenuPress={() => {
-                  // This will be handled in LogDetailScreen via navigation.setParams or a callback
-                }} />
+              component={LogDetailScreenWrapper} 
+              options={({ route }) => ({
+                header: () => (
+                  <CustomHeader 
+                    title="Log Details" 
+                    onActionMenuPress={() => {
+                      const params = route.params as { setActionSheetVisible?: (visible: boolean) => void };
+                      params?.setActionSheetVisible?.(true);
+                    }}
+                  />
+                )
               })}
             />
             <Stack.Screen name="BlockedSenders" component={BlockedSendersScreen} options={{ header: () => <CustomHeader title="Blocked Senders" /> }} />

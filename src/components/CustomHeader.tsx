@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   StyleSheet,
   TouchableOpacity,
   Text,
-  Animated,
-  Platform,
   SafeAreaView,
-  Modal,
-  Pressable,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, NavigationProp, DrawerActions } from '@react-navigation/native';
 
 const navItems = [
   { title: 'Test', icon: 'flask', screen: 'ThreatDemo' },
@@ -34,31 +30,17 @@ const CustomHeader = ({ title, onActionMenuPress }: { title?: string, onActionMe
   const navigation = useNavigation();
   const route = useRoute();
   const canGoBack = navigation.canGoBack();
-  const mainDrawerScreens = [
-    'Home',
-    'ThreatDemo',
-    'LogHistory',
-    'KnowledgeBase',
-    'Settings',
-    'About',
-  ];
-  const showMenu = mainDrawerScreens.includes(route.name as string);
-  const displayTitle = title || (route.name === 'LogDetail' ? 'Log Details' : route.name);
-  const handleNav = (screen: string) => {
-    if (route.name !== screen) {
-      // @ts-ignore
-      navigation.navigate(screen);
-    }
-  };
+  const isDrawerScreen = mainDrawerScreens.includes(route.name);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.leftContainer}>
-          {showMenu ? (
+          {isDrawerScreen ? (
             <TouchableOpacity
               style={styles.menuButton}
-              onPress={() => (navigation as any).openDrawer()}
+              onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+              activeOpacity={0.7}
               accessibilityLabel="Open navigation menu"
             >
               <Icon name="menu" size={28} color="#FFFFFF" />
@@ -68,6 +50,7 @@ const CustomHeader = ({ title, onActionMenuPress }: { title?: string, onActionMe
               <TouchableOpacity
                 style={styles.backButton}
                 onPress={() => navigation.goBack()}
+                activeOpacity={0.7}
                 accessibilityLabel="Go back"
               >
                 <Icon name="arrow-back" size={24} color="#FFFFFF" />
@@ -75,12 +58,13 @@ const CustomHeader = ({ title, onActionMenuPress }: { title?: string, onActionMe
             )
           )}
         </View>
-        <Text style={styles.headerTitle}>{displayTitle}</Text>
+        {title ? <Text style={styles.headerTitle}>{title}</Text> : null}
         <View style={styles.rightPlaceholder}>
-          {route.name === 'LogDetail' && onActionMenuPress && (
+          {onActionMenuPress && (
             <TouchableOpacity
               style={styles.settingsButton}
               onPress={onActionMenuPress}
+              activeOpacity={0.7}
               accessibilityLabel="Show actions menu"
             >
               <Icon name="ellipsis-horizontal" size={28} color="#FFFFFF" />
@@ -170,15 +154,13 @@ const styles = StyleSheet.create({
   contactUsName: { color: '#fff', fontSize: 14, marginBottom: 2 },
   contactUsEmail: { color: '#B0BEC5', fontSize: 13 },
   headerTitle: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
+    flex: 1,
     textAlign: 'center',
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 20,
     letterSpacing: 0.5,
-    zIndex: 0,
+    marginHorizontal: 44,
   },
 });
 
