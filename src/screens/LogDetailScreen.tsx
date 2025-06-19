@@ -92,7 +92,6 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
 
   // Bottom sheet ref and snap points
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['8%', '45%'], []);
   const handleSheetChange = useCallback((index: number) => {}, []);
 
   // Debug logging
@@ -393,7 +392,7 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
         <BottomSheet
           ref={bottomSheetRef}
           index={0}
-          snapPoints={snapPoints}
+          snapPoints={useMemo(() => ['8%', '45%'], [])}
           onChange={handleSheetChange}
           backgroundStyle={{ backgroundColor: 'rgba(30,30,30,0.98)' }}
           handleIndicatorStyle={{ backgroundColor: '#4A90E2' }}
