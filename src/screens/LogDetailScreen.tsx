@@ -162,7 +162,7 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
       );
     } else if (activeTab === 'security') {
       return (
-        <View style={styles.tabContent}>
+        <View style={styles.card}>
           <Text style={styles.sectionTitle}>NLP Analysis</Text>
           <Text style={styles.value}>{log.nlpAnalysis}</Text>
           <Text style={styles.sectionTitle}>Behavioral Analysis</Text>
@@ -251,7 +251,7 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
     } else if (activeTab === 'metadata') {
       const m = log.metadata || {};
       return (
-        <View style={styles.tabContent}>
+        <View style={styles.card}>
           <Text style={styles.sectionTitle}>Message Metadata</Text>
           <Text style={styles.label}>Device:</Text>
           <Text style={styles.value}>{m.device || 'Unknown'}</Text>
@@ -284,7 +284,7 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
       const threatScore = threatInfo.score ?? 'Unknown';
       const threatBreakdown = threatInfo.breakdown || [];
       return (
-        <View style={styles.tabContent}>
+        <View style={styles.card}>
           <Text style={styles.sectionTitle}>Threat Assessment</Text>
           <Text style={styles.label}>Threat Level:</Text>
           <Text style={styles.value}>{threatLevel}</Text>
@@ -398,7 +398,7 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
           handleIndicatorStyle={{ backgroundColor: '#4A90E2' }}
         >
           <View style={{ paddingHorizontal: 20, paddingTop: 0 }}>
-            <Text style={{ color: '#4A90E2', fontWeight: 'bold', fontSize: 16, marginBottom: 16 }}>Related Content</Text>
+            <Text style={{ color: '#4A90E2', fontWeight: 'bold', fontSize: 16, marginBottom: 20 }}>Related Content</Text>
             {loadingRelated ? (
               <Text style={styles.value}>Loading...</Text>
             ) : relatedError ? (
@@ -413,6 +413,8 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
                 </TouchableOpacity>
               ))
             )}
+            {/* Spacer to add bottom space */}
+            <View style={{ height: 100 }} />
           </View>
         </BottomSheet>
       </SafeAreaView>
