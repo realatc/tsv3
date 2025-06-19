@@ -397,8 +397,8 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
           backgroundStyle={{ backgroundColor: 'rgba(30,30,30,0.98)' }}
           handleIndicatorStyle={{ backgroundColor: '#4A90E2' }}
         >
-          <View style={{ paddingHorizontal: 20, paddingTop: 8 }}>
-            <Text style={{ color: '#4A90E2', fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>Related Search</Text>
+          <View style={{ paddingHorizontal: 20, paddingTop: 0 }}>
+            <Text style={{ color: '#4A90E2', fontWeight: 'bold', fontSize: 16, marginBottom: 16 }}>Related Content</Text>
             {loadingRelated ? (
               <Text style={styles.value}>Loading...</Text>
             ) : relatedError ? (
