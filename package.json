@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@gorhom/bottom-sheet": "^4.4.7",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-picker/picker": "^2.11.0",
     "@react-navigation/drawer": "^7.4.1",
@@ -21,7 +22,7 @@
     "react-native": "0.79.2",
     "react-native-contacts": "^8.0.5",
     "react-native-dropdown-picker": "^5.4.6",
-    "react-native-gesture-handler": "^2.25.0",
+    "react-native-gesture-handler": "^2.26.0",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-markdown-display": "^7.0.2",
     "react-native-reanimated": "^3.18.0",

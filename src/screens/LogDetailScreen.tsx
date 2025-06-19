@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Modal, Linking, Alert, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { calculateThreatLevel } from '../utils/threatLevel';
 import { checkUrlSafety } from '../services/threatReader/safeBrowsing';
 import { getRelatedSearchResults } from '../services/threatReader/relatedSearch';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 // Simple URL extraction utility
 function extractUrls(text: string): string[] {
@@ -88,6 +89,11 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
   const [relatedSearchResults, setRelatedSearchResults] = useState<any[]>([]);
   const [loadingRelated, setLoadingRelated] = useState(false);
   const [relatedError, setRelatedError] = useState<string | null>(null);
+
+  // Bottom sheet ref and snap points
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ['8%', '45%'], []);
+  const handleSheetChange = useCallback((index: number) => {}, []);
 
   // Debug logging
   console.log('LogDetailScreen mounted:', {
@@ -346,24 +352,6 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
           </View>
           {/* Tab Content */}
           {renderTabContent()}
-          {/* Related Search Card */}
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Related Search</Text>
-            {loadingRelated ? (
-              <Text style={styles.value}>Loading...</Text>
-            ) : relatedError ? (
-              <Text style={styles.value}>{relatedError}</Text>
-            ) : relatedSearchResults.length === 0 ? (
-              <Text style={styles.value}>No related searches found.</Text>
-            ) : (
-              relatedSearchResults.map((item, idx) => (
-                <TouchableOpacity key={idx} onPress={() => Linking.openURL(item.url)}>
-                  <Text style={[styles.value, { color: '#4A90E2', textDecorationLine: 'underline', fontWeight: 'bold' }]}>{item.title}</Text>
-                  <Text style={styles.value}>{item.snippet}</Text>
-                </TouchableOpacity>
-              ))
-            )}
-          </View>
           {/* Action Sheet Modal */}
           <Modal
             visible={actionSheetVisible}
@@ -401,6 +389,33 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
             </TouchableOpacity>
           </Modal>
         </ScrollView>
+        {/* Bottom Sheet for Related Search - moved outside ScrollView */}
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={0}
+          snapPoints={snapPoints}
+          onChange={handleSheetChange}
+          backgroundStyle={{ backgroundColor: 'rgba(30,30,30,0.98)' }}
+          handleIndicatorStyle={{ backgroundColor: '#4A90E2' }}
+        >
+          <View style={{ paddingHorizontal: 20, paddingTop: 8 }}>
+            <Text style={{ color: '#4A90E2', fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>Related Search</Text>
+            {loadingRelated ? (
+              <Text style={styles.value}>Loading...</Text>
+            ) : relatedError ? (
+              <Text style={styles.value}>{relatedError}</Text>
+            ) : relatedSearchResults.length === 0 ? (
+              <Text style={styles.value}>No related searches found.</Text>
+            ) : (
+              relatedSearchResults.map((item, idx) => (
+                <TouchableOpacity key={idx} onPress={() => Linking.openURL(item.url)}>
+                  <Text style={[styles.value, { color: '#4A90E2', textDecorationLine: 'underline', fontWeight: 'bold' }]}>{item.title}</Text>
+                  <Text style={styles.value}>{item.snippet}</Text>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+        </BottomSheet>
       </SafeAreaView>
     </LinearGradient>
   );

@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, { useRef, useMemo } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -25,6 +25,9 @@ import KnowledgeBaseThreatLevelArticle from './src/screens/KnowledgeBaseThreatLe
 import KnowledgeBaseScamsArticle from './src/screens/KnowledgeBaseScamsArticle';
 import NavigationPanel from './src/components/NavigationPanel';
 import CustomHeader from './src/components/CustomHeader';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BottomSheet from '@gorhom/bottom-sheet';
+import { Text } from 'react-native';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -55,34 +58,36 @@ function DrawerNavigator() {
 
 const App = () => {
   return (
-    <LogProvider>
-      <AccessibilityProvider>
-        <NavigationContainer>
-          <Stack.Navigator>
-            <Stack.Screen name="Main" component={DrawerNavigator} options={{ headerShown: false }} />
-            <Stack.Screen 
-              name="LogDetail" 
-              component={LogDetailScreenWrapper} 
-              options={({ route }) => ({
-                header: () => (
-                  <CustomHeader 
-                    title="Log Details" 
-                    onActionMenuPress={() => {
-                      const params = route.params as { setActionSheetVisible?: (visible: boolean) => void };
-                      params?.setActionSheetVisible?.(true);
-                    }}
-                  />
-                )
-              })}
-            />
-            <Stack.Screen name="BlockedSenders" component={BlockedSendersScreen} options={{ header: () => <CustomHeader title="Blocked Senders" /> }} />
-            <Stack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} options={{ header: () => <CustomHeader title="How Threat Levels Are Calculated" /> }} />
-            <Stack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} options={{ header: () => <CustomHeader title="Common Digital Scams" /> }} />
-            <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ header: () => <CustomHeader title="Search Results" /> }} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </AccessibilityProvider>
-    </LogProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <LogProvider>
+        <AccessibilityProvider>
+          <NavigationContainer>
+            <Stack.Navigator>
+              <Stack.Screen name="Main" component={DrawerNavigator} options={{ headerShown: false }} />
+              <Stack.Screen 
+                name="LogDetail" 
+                component={LogDetailScreenWrapper} 
+                options={({ route }) => ({
+                  header: () => (
+                    <CustomHeader 
+                      title="Log Details" 
+                      onActionMenuPress={() => {
+                        const params = route.params as { setActionSheetVisible?: (visible: boolean) => void };
+                        params?.setActionSheetVisible?.(true);
+                      }}
+                    />
+                  )
+                })}
+              />
+              <Stack.Screen name="BlockedSenders" component={BlockedSendersScreen} options={{ header: () => <CustomHeader title="Blocked Senders" /> }} />
+              <Stack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} options={{ header: () => <CustomHeader title="How Threat Levels Are Calculated" /> }} />
+              <Stack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} options={{ header: () => <CustomHeader title="Common Digital Scams" /> }} />
+              <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ header: () => <CustomHeader title="Search Results" /> }} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </AccessibilityProvider>
+      </LogProvider>
+    </GestureHandlerRootView>
   );
 };
 
