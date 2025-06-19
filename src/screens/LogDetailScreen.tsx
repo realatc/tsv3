@@ -14,24 +14,26 @@ import BottomSheet from '@gorhom/bottom-sheet';
 function extractUrls(text: string): string[] {
   if (!text) return [];
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  return text.match(urlRegex) || [];
+  const matches = text.match(urlRegex) || [];
+  // Remove trailing punctuation from each URL
+  return matches.map(url => url.replace(/[.,!?;:]+$/, ''));
 }
 
 // Mock data for demonstration
 const mockLog = {
   id: '1',
-  date: '2024-06-01',
+  date: '2024-12-15',
   category: 'Mail',
-  sender: 'scammer@example.com',
-  message: 'You have won a prize! Click here to claim. https://phishingsite.com',
-  nlpAnalysis: 'Likely phishing. Contains urgent language and suspicious link.',
-  behavioralAnalysis: 'Sender is not in contacts. Similar pattern to previous scams.',
+  sender: 'security@paypal-support.com',
+  message: 'URGENT: Your PayPal account has been suspended due to suspicious activity. To restore access immediately, please verify your identity by clicking this secure link: https://paypal-verify-account.com/secure/login. If you do not verify within 24 hours, your account will be permanently disabled.',
+  nlpAnalysis: 'High risk phishing attempt. Contains urgent language, impersonates PayPal, requests immediate action, and includes suspicious verification link.',
+  behavioralAnalysis: 'Sender domain does not match official PayPal domain. Similar to known phishing patterns. Account verification requests via email are unusual for PayPal.',
   metadata: {
     device: 'iPhone 15',
     location: 'Austin, TX',
-    receivedAt: '2024-06-01T10:15:00Z',
-    messageLength: 45,
-    senderHistory: 3,
+    receivedAt: '2024-12-15T14:30:00Z',
+    messageLength: 245,
+    senderHistory: 1,
     senderFlagged: true,
     attachments: 'None',
     links: 1,
@@ -172,19 +174,41 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
             <Pressable onPress={() => setShowUrlHelp(true)} style={styles.helpIconButton} hitSlop={8}>
               <Icon name="help-circle-outline" size={18} color="#4A90E2" />
             </Pressable>
+            {/* Show badge for the first URL's status, if present */}
+            {urls.length > 0 && urlSafety[urls[0]] && (
+              urlSafety[urls[0]] === 'loading' ? (
+                <View style={[styles.statusBadge, { backgroundColor: '#B0BEC5', marginLeft: 8 }]}> 
+                  <Text style={styles.statusBadgeText}>Checking...</Text>
+                </View>
+              ) : urlSafety[urls[0]] === 'safe' ? (
+                <View style={[styles.statusBadge, { backgroundColor: '#43A047', marginLeft: 8 }]}> 
+                  <Text style={styles.statusBadgeText}>Safe</Text>
+                </View>
+              ) : urlSafety[urls[0]] === 'malware' ? (
+                <View style={[styles.statusBadge, { backgroundColor: '#FF6B6B', marginLeft: 8 }]}> 
+                  <Text style={styles.statusBadgeText}>Malware</Text>
+                </View>
+              ) : urlSafety[urls[0]] === 'phishing' ? (
+                <View style={[styles.statusBadge, { backgroundColor: '#FFB300', marginLeft: 8 }]}> 
+                  <Text style={styles.statusBadgeText}>Phishing</Text>
+                </View>
+              ) : urlSafety[urls[0]] === 'uncommon' ? (
+                <View style={[styles.statusBadge, { backgroundColor: '#FFB300', marginLeft: 8 }]}> 
+                  <Text style={styles.statusBadgeText}>Uncommon</Text>
+                </View>
+              ) : urlSafety[urls[0]] === 'unknown' ? (
+                <View style={[styles.statusBadge, { backgroundColor: '#757575', marginLeft: 8 }]}> 
+                  <Text style={styles.statusBadgeText}>Unknown</Text>
+                </View>
+              ) : null
+            )}
           </View>
           {urls.length > 0 ? (
             urls.map((url, idx) => (
-              <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <View key={idx} style={{ marginBottom: 8 }}>
                 <TouchableOpacity onPress={() => handleUrlPress(url)}>
                   <Text style={styles.urlText}>{url}</Text>
                 </TouchableOpacity>
-                {urlSafety[url] === 'loading' && <Text style={styles.statusLoading}>Checking...</Text>}
-                {urlSafety[url] === 'safe' && <Text style={styles.statusSafe}>Safe</Text>}
-                {urlSafety[url] === 'malware' && <Text style={styles.statusDanger}>Malware</Text>}
-                {urlSafety[url] === 'phishing' && <Text style={styles.statusWarning}>Phishing</Text>}
-                {urlSafety[url] === 'uncommon' && <Text style={styles.statusWarning}>Uncommon</Text>}
-                {urlSafety[url] === 'unknown' && <Text style={styles.statusUnknown}>Unknown</Text>}
               </View>
             ))
           ) : (
@@ -506,24 +530,17 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     marginRight: 8,
   },
-  statusLoading: {
-    color: '#B0BEC5',
-    fontSize: 13,
+  statusBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    marginTop: 2,
+    marginBottom: 2,
   },
-  statusSafe: {
-    color: '#43A047',
-    fontSize: 13,
-  },
-  statusDanger: {
-    color: '#FF6B6B',
-    fontSize: 13,
-  },
-  statusWarning: {
-    color: '#FFB300',
-    fontSize: 13,
-  },
-  statusUnknown: {
-    color: '#B0BEC5',
+  statusBadgeText: {
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 13,
   },
   helpIconButton: {

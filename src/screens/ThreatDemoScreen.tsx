@@ -4,18 +4,38 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useLogs } from '../context/LogContext';
 
+const emailOptions = [
+  { label: 'Simulate PayPal Phishing Email', value: 'paypal_phishing' },
+  { label: 'Simulate Generic Phishing Email', value: 'phishing_email' },
+];
+
 const scamTextOptions = [
   { label: 'Simulate Package Scam Text', value: 'scam_text' },
   { label: 'Simulate DMV Toll Scam', value: 'dmv_scam' },
 ];
 
 const testOptions = [
-  { label: 'Simulate Phishing Email', value: 'phishing_email' },
+  { label: 'Simulate Email', value: 'email_menu' },
   { label: 'Simulate Scam Text', value: 'scam_text_menu' },
   { label: 'Simulate Robocall', value: 'robocall' },
 ];
 
 const demoLogs = {
+  paypal_phishing: {
+    date: new Date().toISOString().slice(0, 10),
+    category: 'Mail',
+    threat: 'High',
+    sender: 'security@paypal-support.com',
+    message: 'URGENT: Your PayPal account has been suspended due to suspicious activity. To restore access immediately, please verify your identity by clicking this secure link: https://paypal-verify-account.com/secure/login. If you do not verify within 24 hours, your account will be permanently disabled.',
+    nlpAnalysis: 'High risk phishing attempt. Contains urgent language, impersonates PayPal, requests immediate action, and includes suspicious verification link.',
+    behavioralAnalysis: 'Sender domain does not match official PayPal domain. Similar to known phishing patterns. Account verification requests via email are unusual for PayPal.',
+    metadata: {
+      device: 'iPhone 15',
+      location: 'Austin, TX',
+      receivedAt: new Date().toISOString(),
+      messageLength: 245,
+    },
+  },
   phishing_email: {
     date: new Date().toISOString().slice(0, 10),
     category: 'Mail',
@@ -66,7 +86,7 @@ const demoLogs = {
     category: 'Text',
     threat: 'High',
     sender: 'okdy4105727@outlook.com',
-    message: `Department of Motor Vehicles (DMV)\n\nYour toll payment for E-ZPass Lane must be settled by May 20, 2025. To avoid fines and the suspension of your driving privileges, kindly pay by the due date.\n\nPay here: https://e-zpass.com-etciby.icu/us\n\n(Please reply with \"Y,\" then exit the text message. Open it again, click the link, or copy it into your Safari browser and open it.)`,
+    message: `Department of Motor Vehicles (DMV)\n\nYour toll payment for E-ZPass Lane must be settled by May 20, 2025. To avoid fines and the suspension of your driving privileges, kindly pay by the due date.\n\nPay here: https://e-zpass.com-etciby.icu/us\n\n(Please reply with "Y," then exit the text message. Open it again, click the link, or copy it into your Safari browser and open it.)`,
     nlpAnalysis: 'Urgent payment request, suspicious link, impersonation detected.',
     behavioralAnalysis: 'Sender not in contacts. Matches known scam patterns.',
     metadata: {
@@ -81,6 +101,7 @@ const demoLogs = {
 const ThreatDemoScreen = () => {
   const navigation = useNavigation();
   const { addLog } = useLogs();
+  const [showEmailMenu, setShowEmailMenu] = useState(false);
   const [showScamTextMenu, setShowScamTextMenu] = useState(false);
 
   const runSimulation = (type: keyof typeof demoLogs) => {
@@ -91,7 +112,15 @@ const ThreatDemoScreen = () => {
     // @ts-ignore
     delete newLog.threat;
     addLog(newLog);
-    Alert.alert('Simulation Complete', `A ${scamTextOptions.find(o => o.value === type)?.label || testOptions.find(o => o.value === type)?.label} has been added to your logs.`, [
+    
+    // Find the label for the simulation type
+    const emailOption = emailOptions.find(o => o.value === type);
+    const scamTextOption = scamTextOptions.find(o => o.value === type);
+    const testOption = testOptions.find(o => o.value === type);
+    
+    const label = emailOption?.label || scamTextOption?.label || testOption?.label || 'Test simulation';
+    
+    Alert.alert('Simulation Complete', `A ${label} has been added to your logs.`, [
       {
         text: 'View Logs',
         onPress: () => (navigation as any).navigate('LogHistory'),
@@ -99,6 +128,15 @@ const ThreatDemoScreen = () => {
       { text: 'OK' },
     ]);
   };
+
+  const renderBackButton = (onPress: () => void) => (
+    <TouchableOpacity
+      style={[styles.optionButton, { backgroundColor: 'rgba(255,255,255,0.08)', borderColor: '#B0BEC5' }]}
+      onPress={onPress}
+    >
+      <Text style={[styles.optionText, { color: '#B0BEC5' }]}>Back</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
@@ -109,13 +147,15 @@ const ThreatDemoScreen = () => {
             Select a test scenario to simulate a threat event:
           </Text>
           <View style={styles.optionsContainer}>
-            {!showScamTextMenu ? (
+            {!showEmailMenu && !showScamTextMenu ? (
               testOptions.map(option => (
                 <TouchableOpacity
                   key={option.value}
                   style={styles.optionButton}
                   onPress={() => {
-                    if (option.value === 'scam_text_menu') {
+                    if (option.value === 'email_menu') {
+                      setShowEmailMenu(true);
+                    } else if (option.value === 'scam_text_menu') {
                       setShowScamTextMenu(true);
                     } else {
                       runSimulation(option.value as keyof typeof demoLogs);
@@ -125,6 +165,19 @@ const ThreatDemoScreen = () => {
                   <Text style={styles.optionText}>{option.label}</Text>
                 </TouchableOpacity>
               ))
+            ) : showEmailMenu ? (
+              <>
+                {emailOptions.map(option => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={styles.optionButton}
+                    onPress={() => runSimulation(option.value as keyof typeof demoLogs)}
+                  >
+                    <Text style={styles.optionText}>{option.label}</Text>
+                  </TouchableOpacity>
+                ))}
+                {renderBackButton(() => setShowEmailMenu(false))}
+              </>
             ) : (
               <>
                 {scamTextOptions.map(option => (
@@ -136,12 +189,7 @@ const ThreatDemoScreen = () => {
                     <Text style={styles.optionText}>{option.label}</Text>
                   </TouchableOpacity>
                 ))}
-                <TouchableOpacity
-                  style={[styles.optionButton, { backgroundColor: 'rgba(255,255,255,0.08)', borderColor: '#B0BEC5' }]}
-                  onPress={() => setShowScamTextMenu(false)}
-                >
-                  <Text style={[styles.optionText, { color: '#B0BEC5' }]}>Back</Text>
-                </TouchableOpacity>
+                {renderBackButton(() => setShowScamTextMenu(false))}
               </>
             )}
           </View>

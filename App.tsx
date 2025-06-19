@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -57,6 +57,25 @@ function DrawerNavigator() {
 }
 
 const App = () => {
+  useEffect(() => {
+    fetch('https://safebrowsing.googleapis.com/v4/threatMatches:find?key=AIzaSyDa9-UUYEyjqRXjDnD9_J77A-S_R0RZ9zg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client: { clientId: 'test', clientVersion: '1.0.0' },
+        threatInfo: {
+          threatTypes: ['MALWARE'],
+          platformTypes: ['ANY_PLATFORM'],
+          threatEntryTypes: ['URL'],
+          threatEntries: [{ url: 'http://malware.testing.google.test/testing/malware/' }]
+        }
+      })
+    })
+      .then(res => res.json())
+      .then(data => console.log('Test fetch result:', data))
+      .catch(err => console.log('Test fetch error:', err));
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <LogProvider>
