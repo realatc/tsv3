@@ -10,255 +10,84 @@ The **Threat** tab provides the most critical information about the detected thr
 ## What You'll See
 
 ### Threat Level
-**What it shows:** Overall risk assessment of the message
-**How it's calculated:** AI analysis combined with multiple detection methods
-**Values:** 
-- **High** - Immediate danger, requires immediate action
-- **Medium** - Suspicious but not immediately dangerous
-- **Low** - Minor concerns, worth monitoring
-- **Safe** - No threats detected
+**What it shows:** Overall risk assessment of the message, from Low to High.
+**How it's calculated:** A scoring system (from 0 to 9) analyzes various threat indicators. A higher score results in a higher threat level.
+- **High:** Score of 5 or more
+- **Medium:** Score between 2 and 4
+- **Low:** Score of 1 or less
+**Why it matters:** This is your primary indicator of how seriously to take the threat. The score itself is shown in parentheses.
 
-**Why it matters:** This is your primary indicator of how seriously to take the threat
+### Confidence
+**What it shows:** How certain the app's scoring model is about the assessment, shown as a percentage.
+**How it's calculated:** Based on the strength and number of detected threat indicators, derived from the threat score. A higher score means higher confidence.
+**Why it matters:** A high confidence score means the threat assessment is more reliable.
 
-### AI Analysis
-**What it shows:** Detailed explanation of why the message was flagged
-**How it's generated:** Advanced natural language processing analyzes the message content
-**Example:** "This message contains urgent language, requests for personal information, and suspicious links typical of phishing attempts."
-**Why it matters:** Helps you understand the specific red flags that triggered the detection
+### Categories
+**What it shows:** The specific types of threats detected in the message.
+**How it's identified:** The system automatically assigns categories like "Phishing" or "Scam" based on the specific indicators that were found.
+**Why it matters:** Helps you understand the nature of the attack at a glance.
 
-### Threat Categories
-**What it shows:** Specific types of threats detected
-**How it's identified:** Pattern matching and AI classification
-**Common categories:**
-- **Phishing** - Attempts to steal personal information
-- **Malware** - Harmful software or links
-- **Scam** - Fraudulent schemes or requests
-- **Social Engineering** - Psychological manipulation
-- **Spam** - Unwanted commercial messages
+### Summary
+**What it shows:** A dynamically generated sentence that explains exactly what was flagged in the message.
+**How it's generated:** The system combines all the findings from its analysis into a concise, human-readable summary.
+**Example:** "This message was flagged for urgent or threatening language, signs of impersonation or phishing, and a sender address impersonating PayPal."
+**Why it matters:** This gives you a quick, clear overview of all the red flags.
 
-**Why it matters:** Different threat types require different responses
-
-### URL Analysis
-**What it shows:** Safety assessment of links in the message
-**How it's checked:** Google Safe Browsing API and local analysis
-**Results:**
-- **Safe** - Link appears legitimate
-- **Malware** - Link contains harmful software
-- **Phishing** - Link designed to steal information
-- **Uncommon** - Suspicious but not clearly dangerous
-- **Unknown** - Unable to determine safety
-
-**Why it matters:** Links are often the most dangerous part of threats
-
-### Sender Analysis
-**What it shows:** Assessment of the sender's trustworthiness
-**How it's evaluated:** Based on sender history, domain reputation, and patterns
-**Factors considered:**
-- Previous threat reports
-- Domain age and reputation
-- Sending patterns
-- Community reports
-
-**Why it matters:** Known malicious senders are more likely to be threats
-
-### Content Analysis
-**What it shows:** Detailed breakdown of suspicious elements in the message
-**How it's analyzed:** AI examines language patterns, urgency, requests, and context
-**Common red flags:**
-- **Urgency** - "Act now" or "Limited time"
-- **Authority** - Impersonating trusted organizations
-- **Requests** - Asking for personal information
-- **Threats** - Consequences for not acting
-- **Rewards** - Promises of money or prizes
-
-**Why it matters:** Understanding the manipulation tactics helps you avoid falling for them
-
-### Confidence Score
-**What it shows:** How certain the AI is about the threat assessment
-**How it's calculated:** Based on the strength and number of detected indicators
-**Range:** 0-100%
-**Interpretation:**
-- **90-100%** - Very high confidence
-- **70-89%** - High confidence
-- **50-69%** - Moderate confidence
-- **30-49%** - Low confidence
-- **0-29%** - Very low confidence
-
-**Why it matters:** Higher confidence means the threat is more likely to be real
+### Score Breakdown
+**What it shows:** A detailed list of every threat indicator found and the points assigned to each.
+**How it's collected:** Each rule that is triggered during the analysis adds a specific number of points to the total threat score.
+**Example:**
+- NLP: urgent/suspicious/threat: +2
+- Sender: impersonates PayPal: +2
+**Why it matters:** This provides full transparency into how the threat score was calculated, showing you exactly what the system found suspicious.
 
 ## How Threat Detection Works
 
-### Multi-Layer Analysis
-ThreatSense uses multiple detection methods:
+ThreatSense uses a rules-based scoring system that analyzes multiple layers of the message:
 
-1. **Natural Language Processing (NLP)**
-   - Analyzes message content for suspicious patterns
-   - Detects emotional manipulation tactics
-   - Identifies requests for sensitive information
+1.  **NLP Analysis:** Looks for suspicious language patterns, urgency, and signs of social engineering.
+2.  **Behavioral Analysis:** Compares the message to known scam and phishing patterns.
+3.  **Sender Analysis:** Examines the sender's details for signs of impersonation or suspicious domains.
 
-2. **URL Safety Checking**
-   - Checks links against Google Safe Browsing database
-   - Analyzes domain reputation and age
-   - Detects suspicious URL patterns
-
-3. **Sender Reputation**
-   - Evaluates sender history and patterns
-   - Checks against known threat databases
-   - Analyzes domain trustworthiness
-
-4. **Pattern Recognition**
-   - Identifies common scam and phishing patterns
-   - Detects social engineering techniques
-   - Recognizes malware distribution methods
-
-### AI Learning
-The system continuously improves by:
-- **Learning from new threats** - Adapts to emerging attack patterns
-- **User feedback** - Incorporates your threat reports
-- **Community data** - Shares threat information (anonymously)
-- **Pattern updates** - Regular updates to detection algorithms
+Each time a rule is matched, it adds points to the total **Threat Score**. This score is then used to determine the **Threat Level** and **Confidence**.
 
 ## Understanding Threat Levels
 
 ### High Threat Level
 **Characteristics:**
-- Multiple strong indicators
-- Known malicious patterns
-- Dangerous links or attachments
-- High confidence score
-
+- A score of 5 or more.
+- Multiple strong indicators were found.
+- Often involves direct impersonation, known scam patterns, or urgent calls to action.
 **Recommended Actions:**
-- Do not interact with the message
-- Block the sender
-- Report to authorities if appropriate
-- Check your accounts for compromise
+- Do not interact with the message.
+- Block the sender.
+- Delete the message immediately.
 
 ### Medium Threat Level
 **Characteristics:**
-- Some suspicious elements
-- Moderate confidence
-- Mixed indicators
-
+- A score between 2 and 4.
+- Contains some suspicious elements but may not be an immediate danger.
+- Might involve unofficial sender addresses or unusual language.
 **Recommended Actions:**
-- Exercise caution
-- Verify sender identity
-- Don't click links
-- Monitor for similar threats
+- Exercise extreme caution.
+- Independently verify the sender if you know them.
+- Do not click any links or download attachments.
 
 ### Low Threat Level
 **Characteristics:**
-- Minor concerns
-- Low confidence
-- Few indicators
-
+- A score of 1 or less.
+- Only minor concerns were flagged.
+- May be legitimate but is worth being aware of.
 **Recommended Actions:**
-- Be aware but not alarmed
-- Use normal caution
-- Report if suspicious
-
-### Safe
-**Characteristics:**
-- No threats detected
-- Legitimate sender
-- Safe content
-
-**Recommended Actions:**
-- Normal interaction
-- No special precautions needed
-
-## Common Threat Patterns
-
-### Phishing Attempts
-**Signs:**
-- Urgent requests for action
-- Impersonation of trusted organizations
-- Requests for personal information
-- Suspicious links
-
-**Examples:**
-- "Your account has been suspended"
-- "Verify your identity immediately"
-- "Click here to claim your prize"
-
-### Malware Distribution
-**Signs:**
-- Unexpected attachments
-- Suspicious download links
-- Requests to install software
-- Promises of free software
-
-**Examples:**
-- "Free antivirus software"
-- "Important document attached"
-- "Update your system now"
-
-### Social Engineering
-**Signs:**
-- Emotional manipulation
-- Authority figures
-- Time pressure
-- Promises of rewards
-
-**Examples:**
-- "Your family needs help"
-- "CEO requesting urgent transfer"
-- "Limited time offer"
-
-## How to Use This Information
-
-### Immediate Actions
-1. **Check the threat level** - Determine urgency
-2. **Read the AI analysis** - Understand the specific concerns
-3. **Review URL analysis** - Check if links are dangerous
-4. **Consider sender analysis** - Evaluate sender trustworthiness
-
-### Long-term Security
-1. **Learn from patterns** - Notice common threat types
-2. **Improve awareness** - Understand manipulation tactics
-3. **Share knowledge** - Help others recognize threats
-4. **Stay updated** - Keep app updated for latest protections
-
-### Reporting Threats
-1. **Use the report feature** - Help improve detection
-2. **Provide context** - Include any additional information
-3. **Follow up** - Check if similar threats appear
-4. **Share with authorities** - Report serious threats
-
-## Privacy and Accuracy
-
-### Data Protection
-- **Local analysis** - Most processing happens on your device
-- **Minimal sharing** - Only essential data is shared for threat detection
-- **Anonymized reporting** - Threat reports don't include personal information
-- **Your control** - You decide what to report
-
-### Accuracy
-- **Continuous improvement** - AI learns from new threats
-- **Multiple sources** - Combines various detection methods
-- **Community input** - Benefits from collective threat knowledge
-- **Regular updates** - Detection patterns are updated frequently
-
-### False Positives
-- **Rare but possible** - Legitimate messages may be flagged
-- **Review carefully** - Always use your judgment
-- **Report errors** - Help improve accuracy
-- **Context matters** - Consider the full situation
-
-## Tips for Threat Assessment
-
-1. **Don't panic** - Take time to understand the threat
-2. **Read the analysis** - AI provides detailed explanations
-3. **Check multiple indicators** - Don't rely on just one factor
-4. **Consider context** - Legitimate urgency vs. manipulation
-5. **Trust your instincts** - If something feels wrong, it probably is
-6. **When in doubt** - Err on the side of caution
+- Be aware, but no immediate action is likely needed.
+- Use normal caution when interacting.
 
 ---
 
-*The Threat tab gives you the most comprehensive view of what makes a message dangerous and how to respond appropriately.*`;
+*The Threat tab gives you the most comprehensive and transparent view of what makes a message dangerous and how to respond appropriately.*`;
 
 const CREATED_DATE = '2024-12-15';
-const UPDATED_DATE = '2024-12-15';
+const UPDATED_DATE = new Date().toISOString().split('T')[0];
 
 const KnowledgeBaseLogDetailsThreat = () => {
   return (

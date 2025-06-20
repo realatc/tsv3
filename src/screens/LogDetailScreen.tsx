@@ -9,6 +9,10 @@ import { calculateThreatLevel } from '../utils/threatLevel';
 import { checkUrlSafety } from '../services/threatReader/safeBrowsing';
 import { getRelatedSearchResults } from '../services/threatReader/relatedSearch';
 import BottomSheet from '@gorhom/bottom-sheet';
+import { GeneralTab } from '../components/tabs/GeneralTab';
+import { SecurityTab } from '../components/tabs/SecurityTab';
+import { MetadataTab } from '../components/tabs/MetadataTab';
+import { ThreatTab } from '../components/tabs/ThreatTab';
 
 // Simple URL extraction utility
 function extractUrls(text: string): string[] {
@@ -71,15 +75,12 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
   const [activeTab, setActiveTab] = useState('general');
   const urls = extractUrls(log.message);
 
-  // Threat calculation (use log.threat if present, else calculate)
-  let threatInfo: any = log.threat;
-  if (!threatInfo || typeof threatInfo !== 'object' || !threatInfo.level) {
-    threatInfo = calculateThreatLevel({
-      nlpAnalysis: log.nlpAnalysis || '',
-      behavioralAnalysis: log.behavioralAnalysis || '',
-      sender: log.sender || '',
-    });
-  }
+  // Threat calculation
+  const threatInfo = calculateThreatLevel({
+    nlpAnalysis: log.nlpAnalysis || '',
+    behavioralAnalysis: log.behavioralAnalysis || '',
+    sender: log.sender || '',
+  });
 
   // URL safety check state
   const [urlSafety, setUrlSafety] = useState<{ [url: string]: string }>({});
@@ -148,201 +149,22 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
   ];
 
   const renderTabContent = () => {
-    if (activeTab === 'general') {
-      return (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Date</Text>
-          <Text style={styles.value}>{formatDate(log.date)}</Text>
-          <Text style={styles.sectionTitle}>Sender Information</Text>
-          <Text style={styles.label}>Sender:</Text>
-          <Text style={styles.value}>{log.sender}</Text>
-          <Text style={styles.label}>Category:</Text>
-          <Text style={styles.value}>{log.category}</Text>
-          <Text style={styles.sectionTitle}>Message Content</Text>
-          <Text style={styles.value}>{log.message}</Text>
-        </View>
-      );
-    } else if (activeTab === 'security') {
-      return (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>NLP Analysis</Text>
-          <Text style={styles.value}>{log.nlpAnalysis}</Text>
-          <Text style={styles.sectionTitle}>Behavioral Analysis</Text>
-          <Text style={styles.value}>{log.behavioralAnalysis}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-            <Text style={styles.sectionTitle}>URL Safety Check</Text>
-            <Pressable onPress={() => setShowUrlHelp(true)} style={styles.helpIconButton} hitSlop={8}>
-              <Icon name="help-circle-outline" size={18} color="#4A90E2" />
-            </Pressable>
-            {/* Show badge for the first URL's status, if present */}
-            {urls.length > 0 && urlSafety[urls[0]] && (
-              urlSafety[urls[0]] === 'loading' ? (
-                <View style={[styles.statusBadge, { backgroundColor: '#B0BEC5', marginLeft: 8 }]}> 
-                  <Text style={styles.statusBadgeText}>Checking...</Text>
-                </View>
-              ) : urlSafety[urls[0]] === 'safe' ? (
-                <View style={[styles.statusBadge, { backgroundColor: '#43A047', marginLeft: 8 }]}> 
-                  <Text style={styles.statusBadgeText}>Safe</Text>
-                </View>
-              ) : urlSafety[urls[0]] === 'malware' ? (
-                <View style={[styles.statusBadge, { backgroundColor: '#FF6B6B', marginLeft: 8 }]}> 
-                  <Text style={styles.statusBadgeText}>Malware</Text>
-                </View>
-              ) : urlSafety[urls[0]] === 'phishing' ? (
-                <View style={[styles.statusBadge, { backgroundColor: '#FFB300', marginLeft: 8 }]}> 
-                  <Text style={styles.statusBadgeText}>Phishing</Text>
-                </View>
-              ) : urlSafety[urls[0]] === 'uncommon' ? (
-                <View style={[styles.statusBadge, { backgroundColor: '#FFB300', marginLeft: 8 }]}> 
-                  <Text style={styles.statusBadgeText}>Uncommon</Text>
-                </View>
-              ) : urlSafety[urls[0]] === 'unknown' ? (
-                <View style={[styles.statusBadge, { backgroundColor: '#757575', marginLeft: 8 }]}> 
-                  <Text style={styles.statusBadgeText}>Unknown</Text>
-                </View>
-              ) : null
-            )}
-          </View>
-          {urls.length > 0 ? (
-            urls.map((url, idx) => (
-              <View key={idx} style={{ marginBottom: 8 }}>
-                <TouchableOpacity onPress={() => handleUrlPress(url)}>
-                  <Text style={styles.urlText}>{url}</Text>
-                </TouchableOpacity>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.value}>No URLs found in message.</Text>
-          )}
-          {/* Warning Modal for unsafe links */}
-          <Modal
-            visible={showUrlWarning}
-            animationType="fade"
-            transparent
-            onRequestClose={() => setShowUrlWarning(false)}
-          >
-            <View style={styles.helpModalOverlay}>
-              <View style={styles.helpModalContent}>
-                <Text style={styles.helpModalTitle}>Warning: Unsafe Link</Text>
-                <Text style={styles.helpModalText}>
-                  This link may be dangerous (malware, phishing, or unknown). Are you sure you want to open it?
-                </Text>
-                <Text style={styles.helpModalText}>{pendingUrl}</Text>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 18 }}>
-                  <TouchableOpacity
-                    style={[styles.helpModalButton, { backgroundColor: '#FF6B6B', marginRight: 12 }]}
-                    onPress={() => setShowUrlWarning(false)}
-                  >
-                    <Text style={styles.helpModalButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.helpModalButton}
-                    onPress={() => {
-                      if (pendingUrl) Linking.openURL(pendingUrl.startsWith('http') ? pendingUrl : `https://${pendingUrl}`);
-                      setShowUrlWarning(false);
-                    }}
-                  >
-                    <Text style={styles.helpModalButtonText}>Proceed</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </Modal>
-          {/* URL Safety Help Modal */}
-          <Modal
-            visible={showUrlHelp}
-            animationType="fade"
-            transparent
-            onRequestClose={() => setShowUrlHelp(false)}
-          >
-            <View style={styles.helpModalOverlay}>
-              <View style={styles.helpModalContent}>
-                <Text style={styles.helpModalTitle}>About URL Safety Check</Text>
-                <Text style={styles.helpModalText}>
-                  URL checks are powered by{' '}
-                  <Text style={styles.helpLink} onPress={() => Linking.openURL('https://developers.google.com/safe-browsing/v4')}>
-                    Google Safe Browsing API
-                  </Text>.
-                </Text>
-                <TouchableOpacity style={styles.helpModalButton} onPress={() => setShowUrlHelp(false)}>
-                  <Text style={styles.helpModalButtonText}>Close</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-        </View>
-      );
-    } else if (activeTab === 'metadata') {
-      const m = log.metadata || {};
-      return (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Message Metadata</Text>
-          <Text style={styles.label}>Device:</Text>
-          <Text style={styles.value}>{m.device || 'Unknown'}</Text>
-          <Text style={styles.label}>Location:</Text>
-          <Text style={styles.value}>{m.location || 'Unknown'}</Text>
-          <Text style={styles.label}>Received At:</Text>
-          <Text style={styles.value}>{m.receivedAt || 'Unknown'}</Text>
-          <Text style={styles.label}>Message Length:</Text>
-          <Text style={styles.value}>{m.messageLength ? m.messageLength + ' characters' : 'Unknown'}</Text>
-          <Text style={styles.label}>Sender History:</Text>
-          <Text style={styles.value}>{typeof m.senderHistory === 'number' ? m.senderHistory + ' previous messages' : 'Unknown'}</Text>
-          <Text style={styles.label}>Sender Flagged:</Text>
-          <Text style={styles.value}>{m.senderFlagged === true ? 'Yes' : m.senderFlagged === false ? 'No' : 'Unknown'}</Text>
-          <Text style={styles.label}>Attachments:</Text>
-          <Text style={styles.value}>{m.attachments || 'N/A'}</Text>
-          <Text style={styles.label}>Links:</Text>
-          <Text style={styles.value}>{typeof m.links === 'number' ? m.links : 'N/A'}</Text>
-          {urls.length > 0 && (
-            <>
-              <Text style={styles.label}>URLs Found:</Text>
-              {urls.map((url, idx) => (
-                <Text key={idx} style={[styles.value, styles.urlText]}>{url}</Text>
-              ))}
-            </>
-          )}
-          <Text style={styles.label}>Network:</Text>
-          <Text style={styles.value}>{m.network || 'Unknown'}</Text>
-          <Text style={styles.label}>App Version:</Text>
-          <Text style={styles.value}>{m.appVersion || 'Unknown'}</Text>
-          <Text style={styles.label}>Threat Detection:</Text>
-          <Text style={styles.value}>{m.threatDetection || 'Unknown'}</Text>
-          <Text style={styles.label}>Geolocation:</Text>
-          <Text style={styles.value}>{m.geolocation || 'Unknown'}</Text>
-        </View>
-      );
-    } else if (activeTab === 'threat') {
-      const threatLevel = threatInfo.level || 'Unknown';
-      const threatScore = threatInfo.score ?? 'Unknown';
-      const threatBreakdown = threatInfo.breakdown || [];
-      return (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Threat Assessment</Text>
-          <Text style={styles.label}>Threat Level:</Text>
-          <Text style={styles.value}>{threatLevel}</Text>
-          <Text style={styles.label}>Threat Score:</Text>
-          <Text style={styles.value}>{threatScore}</Text>
-          <Text style={styles.sectionTitle}>Threat Score Breakdown</Text>
-          {threatBreakdown.length > 0 ? (
-            threatBreakdown.map((item: any, idx: number) => (
-              <Text key={idx} style={styles.value}>• {item.label}: +{item.points}</Text>
-            ))
-          ) : (
-            <Text style={styles.value}>No threat points detected.</Text>
-          )}
-        </View>
-      );
-    } else {
-      return (
-        <View style={styles.tabContent}>
-          <Text style={styles.value}>Coming soon...</Text>
-        </View>
-      );
+    switch (activeTab) {
+      case 'general':
+        return <GeneralTab log={log} />;
+      case 'security':
+        return <SecurityTab log={log} urls={urls} urlSafety={urlSafety} />;
+      case 'metadata':
+        return <MetadataTab log={log} urls={urls} />;
+      case 'threat':
+        return <ThreatTab threatInfo={threatInfo} />;
+      default:
+        return null;
     }
   };
 
   return (
-    <LinearGradient colors={['#1a1a1a', '#2d2d2d']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
         <ScrollView style={{ padding: 16 }}>
           {/* Top Card */}
@@ -670,6 +492,22 @@ const styles = StyleSheet.create({
   helpIconInsideBadge: {
     marginLeft: 8,
     alignSelf: 'center',
+  },
+  headerScore: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+  },
+  headerScoreLabel: {
+    color: '#B0BEC5',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  headerScoreValue: {
+    color: '#4A90E2',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

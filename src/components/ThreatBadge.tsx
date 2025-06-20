@@ -56,7 +56,7 @@ export const ThreatBadge = ({ level, score }: { level: 'High' | 'Medium' | 'Low'
     <View style={styles.detailedBadge}> 
       <Icon name={threatIcons[level]} size={18} color={threatColors[level]} style={{ marginRight: 6 }} />
       <Text style={[styles.text, { color: threatColors[level] }]}> 
-        {level}{score !== undefined ? ` (${score}/9)` : ''}
+        {level}{score !== undefined && ` (${score}/9)`}
       </Text>
       {settings.colorBlindFriendly && (
         <Text style={styles.patternText}>{threatPatterns[level]}</Text>
