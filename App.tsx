@@ -89,7 +89,7 @@ const App = () => {
                 options={({ route }) => ({
                   header: () => (
                     <CustomHeader 
-                      title="Log Details" 
+                      title="Details" 
                       onActionMenuPress={() => {
                         const params = route.params as { setActionSheetVisible?: (visible: boolean) => void };
                         params?.setActionSheetVisible?.(true);
