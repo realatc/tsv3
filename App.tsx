@@ -105,8 +105,16 @@ const App = () => {
                 })}
               />
               <Stack.Screen name="BlockedSenders" component={BlockedSendersScreen} options={{ header: () => <CustomHeader title="Blocked Senders" /> }} />
-              <Stack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} options={{ header: () => <CustomHeader title="How Threat Levels Are Calculated" /> }} />
-              <Stack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} options={{ header: () => <CustomHeader title="Common Digital Scams" /> }} />
+              <Stack.Screen
+                name="KnowledgeBaseThreatLevelArticle"
+                component={KnowledgeBaseThreatLevelArticle}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="KnowledgeBaseScamsArticle"
+                component={KnowledgeBaseScamsArticle}
+                options={{ headerShown: false }}
+              />
               <Stack.Screen
                 name="KnowledgeBaseLogDetailsOverview"
                 component={KnowledgeBaseLogDetailsOverview}
