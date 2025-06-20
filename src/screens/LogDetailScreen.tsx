@@ -293,6 +293,14 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
           <Text style={styles.value}>{m.attachments || 'N/A'}</Text>
           <Text style={styles.label}>Links:</Text>
           <Text style={styles.value}>{typeof m.links === 'number' ? m.links : 'N/A'}</Text>
+          {urls.length > 0 && (
+            <>
+              <Text style={styles.label}>URLs Found:</Text>
+              {urls.map((url, idx) => (
+                <Text key={idx} style={[styles.value, styles.urlText]}>{url}</Text>
+              ))}
+            </>
+          )}
           <Text style={styles.label}>Network:</Text>
           <Text style={styles.value}>{m.network || 'Unknown'}</Text>
           <Text style={styles.label}>App Version:</Text>
