@@ -1,0 +1,252 @@
+import React from 'react';
+import { View, StyleSheet, SafeAreaView, ScrollView, Text } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import Markdown from 'react-native-markdown-display';
+
+const logDetailsSecurityMd = `# Log Details: Security Tab
+
+The **Security** tab (also called "Analysis") provides the technical analysis of the threat. This tab shows how ThreatSense's AI and security systems evaluated the message for potential risks.
+
+## What You'll See
+
+### NLP Analysis
+**What it shows:** Artificial Intelligence analysis of the message content
+**How it's collected:** AI-powered Natural Language Processing analyzes the text for suspicious patterns
+**What it looks for:**
+- **Urgent language:** "Act now," "Immediate action required," "24 hours to respond"
+- **Authority impersonation:** Claims to be from banks, government agencies, tech support
+- **Pressure tactics:** Threats of account suspension, legal action, or missed opportunities
+- **Suspicious requests:** Asking for passwords, personal information, or money
+- **Emotional manipulation:** Creating fear, excitement, or urgency
+
+**Example analysis:** *"High risk phishing attempt. Contains urgent language, impersonates PayPal, requests immediate action, and includes suspicious verification link."*
+
+### Behavioral Analysis
+**What it shows:** Analysis of sender behavior and communication patterns
+**How it's collected:** Compares the sender and message against known threat patterns and your contact history
+**What it analyzes:**
+- **Sender reputation:** Is this sender in your contacts? Have they contacted you before?
+- **Domain analysis:** Does the email domain match the claimed organization?
+- **Pattern matching:** Does this match known scam patterns?
+- **Timing analysis:** Is this communication unusual for the time or context?
+
+**Example analysis:** *"Sender domain does not match official PayPal domain. Similar to known phishing patterns. Account verification requests via email are unusual for PayPal."*
+
+### URL Safety Check
+**What it shows:** Real-time analysis of any links found in the message
+**How it's collected:** Each URL is checked against Google Safe Browsing API's database of known malicious sites
+**Safety levels:**
+- 🟢 **Safe:** URL is not flagged as dangerous
+- 🟡 **Uncommon:** URL is not widely known but not necessarily dangerous
+- 🟠 **Phishing:** URL is designed to steal personal information
+- 🔴 **Malware:** URL contains or distributes malicious software
+- ⚫ **Unknown:** URL couldn't be verified (proceed with caution)
+
+**What happens when you click a link:**
+- **Safe links:** Open normally
+- **Unsafe links:** Show a warning before opening
+- **Unknown links:** Show a warning with option to proceed or cancel
+
+## How This Analysis Works
+
+### AI-Powered Detection
+ThreatSense uses advanced AI models trained on millions of scam examples to:
+- Recognize suspicious language patterns
+- Identify impersonation attempts
+- Detect emotional manipulation tactics
+- Flag unusual requests
+
+### Real-Time Database Checks
+Every URL is instantly checked against:
+- Google's Safe Browsing database (updated continuously)
+- Known phishing site databases
+- Malware distribution networks
+- Suspicious domain registrations
+
+### Behavioral Pattern Recognition
+The system learns from:
+- Your personal contact history
+- Known scam patterns
+- Community threat reports
+- Security research databases
+
+## Understanding the Results
+
+### High-Risk Indicators
+- **Multiple red flags:** When several analysis methods flag the same threat
+- **Pattern matches:** When the message matches known scam templates
+- **Unusual behavior:** When the sender acts differently than expected
+- **Suspicious timing:** When the communication happens at unusual times
+
+### False Positives
+Sometimes legitimate messages may be flagged as suspicious because they:
+- Contain urgent language for legitimate reasons
+- Come from new or unknown senders
+- Include links to new websites
+- Use similar language to scams
+
+### What to Do Based on Analysis
+
+#### High-Risk Messages
+- **Don't click any links**
+- **Don't provide personal information**
+- **Block the sender**
+- **Report the threat**
+- **Delete the message**
+
+#### Medium-Risk Messages
+- **Verify the sender independently**
+- **Check links before clicking**
+- **Be cautious with personal information**
+- **Monitor for similar threats**
+
+#### Low-Risk Messages
+- **Still be cautious**
+- **Verify unusual requests**
+- **Report if suspicious**
+
+## Tips for Using This Tab
+
+1. **Read both analyses** - NLP and behavioral analysis together provide the full picture
+2. **Check URL safety** - Always verify links before clicking
+3. **Look for patterns** - Multiple red flags indicate higher risk
+4. **Trust your instincts** - If something feels wrong, it probably is
+5. **Report threats** - Help protect others by reporting suspicious activity
+
+---
+
+*ThreatSense continuously updates its threat detection capabilities to protect you from the latest scams and attacks.*`;
+
+const CREATED_DATE = '2024-12-15';
+const UPDATED_DATE = '2024-12-15';
+
+const KnowledgeBaseLogDetailsSecurity = () => {
+  return (
+    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Log Details: Security Tab</Text>
+            <Text style={styles.subtitle}>AI and security system analysis</Text>
+            <View style={styles.metaInfo}>
+              <Text style={styles.metaText}>Created: {CREATED_DATE}</Text>
+              <Text style={styles.metaText}>Updated: {UPDATED_DATE}</Text>
+            </View>
+          </View>
+          <View style={styles.content}>
+            <Markdown style={markdownStyles}>
+              {logDetailsSecurityMd}
+            </Markdown>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
+  );
+};
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  container: {
+    flex: 1,
+  },
+  header: {
+    padding: 20,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  title: {
+    color: '#FF9800',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  subtitle: {
+    color: '#B0BEC5',
+    fontSize: 16,
+    marginBottom: 12,
+  },
+  metaInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  metaText: {
+    color: '#90CAF9',
+    fontSize: 12,
+  },
+  content: {
+    padding: 20,
+  },
+});
+
+const markdownStyles = {
+  body: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  heading1: {
+    color: '#FF9800',
+    fontSize: 24,
+    fontWeight: 'bold' as const,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  heading2: {
+    color: '#FF9800',
+    fontSize: 20,
+    fontWeight: 'bold' as const,
+    marginTop: 18,
+    marginBottom: 8,
+  },
+  heading3: {
+    color: '#FF9800',
+    fontSize: 18,
+    fontWeight: 'bold' as const,
+    marginTop: 16,
+    marginBottom: 6,
+  },
+  paragraph: {
+    marginBottom: 12,
+  },
+  strong: {
+    color: '#4A90E2',
+    fontWeight: 'bold' as const,
+  },
+  em: {
+    fontStyle: 'italic' as const,
+    color: '#B0BEC5',
+  },
+  list_item: {
+    marginBottom: 6,
+  },
+  bullet_list: {
+    marginBottom: 12,
+  },
+  ordered_list: {
+    marginBottom: 12,
+  },
+  code_block: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 8,
+  },
+  code_inline: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    padding: 4,
+    borderRadius: 4,
+  },
+  blockquote: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF9800',
+    paddingLeft: 12,
+    marginVertical: 8,
+    fontStyle: 'italic' as const,
+  },
+};
+
+export default KnowledgeBaseLogDetailsSecurity; 

@@ -3,8 +3,22 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Tex
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types/navigation';
 
-const articles = [
+type KnowledgeBaseScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+
+type KnowledgeBaseArticle = {
+  title: string;
+  screen: keyof RootStackParamList;
+  description: string;
+  icon: string;
+  color: string;
+  created: string;
+  updated: string;
+};
+
+const articles: KnowledgeBaseArticle[] = [
   {
     title: 'How Threat Levels Are Calculated',
     screen: 'KnowledgeBaseThreatLevelArticle',
@@ -23,13 +37,58 @@ const articles = [
     created: '2024-06-01',
     updated: '2024-06-07',
   },
+  {
+    title: 'Understanding the Log Details Screen',
+    screen: 'KnowledgeBaseLogDetailsOverview',
+    description: 'Complete guide to the Log Details Screen and how all tabs work together.',
+    icon: 'document-text-outline',
+    color: '#4CAF50',
+    created: '2024-12-15',
+    updated: '2024-12-15',
+  },
+  {
+    title: 'Log Details: General Tab',
+    screen: 'KnowledgeBaseLogDetailsGeneral',
+    description: 'Learn about the basic information displayed in the General tab.',
+    icon: 'information-circle-outline',
+    color: '#2196F3',
+    created: '2024-12-15',
+    updated: '2024-12-15',
+  },
+  {
+    title: 'Log Details: Security Tab',
+    screen: 'KnowledgeBaseLogDetailsSecurity',
+    description: 'Understanding AI analysis, behavioral patterns, and URL safety checks.',
+    icon: 'shield-checkmark-outline',
+    color: '#FF9800',
+    created: '2024-12-15',
+    updated: '2024-12-15',
+  },
+  {
+    title: 'Log Details: Metadata Tab',
+    screen: 'KnowledgeBaseLogDetailsMetadata',
+    description: 'Technical details about threat detection and context information.',
+    icon: 'settings-outline',
+    color: '#9C27B0',
+    created: '2024-12-15',
+    updated: '2024-12-15',
+  },
+  {
+    title: 'Log Details: Threat Tab',
+    screen: 'KnowledgeBaseLogDetailsThreat',
+    description: 'How threat scoring works and making informed security decisions.',
+    icon: 'warning-outline',
+    color: '#F44336',
+    created: '2024-12-15',
+    updated: '2024-12-15',
+  },
   // Add more articles here as you expand the knowledge base
 ];
 
 const KnowledgeBaseScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<KnowledgeBaseScreenNavigationProp>();
   const [search, setSearch] = useState('');
-  const [preview, setPreview] = useState<null | typeof articles[0]>(null);
+  const [preview, setPreview] = useState<null | KnowledgeBaseArticle>(null);
 
   const filteredArticles = articles.filter(
     a =>
@@ -95,8 +154,10 @@ const KnowledgeBaseScreen = () => {
                       <TouchableOpacity
                         style={styles.readMoreButton}
                         onPress={() => {
-                          setPreview(null);
-                          (navigation as any).push(preview.screen);
+                          if (preview) {
+                            navigation.navigate(preview.screen as any);
+                            setPreview(null);
+                          }
                         }}
                       >
                         <Text style={styles.readMoreText}>Read More</Text>

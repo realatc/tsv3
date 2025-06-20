@@ -23,14 +23,20 @@ import { AccessibilityProvider } from './src/context/AccessibilityContext';
 import KnowledgeBaseScreen from './src/screens/KnowledgeBaseScreen';
 import KnowledgeBaseThreatLevelArticle from './src/screens/KnowledgeBaseThreatLevelArticle';
 import KnowledgeBaseScamsArticle from './src/screens/KnowledgeBaseScamsArticle';
+import KnowledgeBaseLogDetailsOverview from './src/screens/KnowledgeBaseLogDetailsOverview';
+import KnowledgeBaseLogDetailsGeneral from './src/screens/KnowledgeBaseLogDetailsGeneral';
+import KnowledgeBaseLogDetailsSecurity from './src/screens/KnowledgeBaseLogDetailsSecurity';
+import KnowledgeBaseLogDetailsMetadata from './src/screens/KnowledgeBaseLogDetailsMetadata';
+import KnowledgeBaseLogDetailsThreat from './src/screens/KnowledgeBaseLogDetailsThreat';
 import NavigationPanel from './src/components/NavigationPanel';
 import CustomHeader from './src/components/CustomHeader';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Text } from 'react-native';
+import { RootStackParamList } from './src/types/navigation';
 
 const Drawer = createDrawerNavigator();
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
 
 function DrawerNavigator() {
   return (
@@ -101,6 +107,11 @@ const App = () => {
               <Stack.Screen name="BlockedSenders" component={BlockedSendersScreen} options={{ header: () => <CustomHeader title="Blocked Senders" /> }} />
               <Stack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} options={{ header: () => <CustomHeader title="How Threat Levels Are Calculated" /> }} />
               <Stack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} options={{ header: () => <CustomHeader title="Common Digital Scams" /> }} />
+              <Stack.Screen name="KnowledgeBaseLogDetailsOverview" component={KnowledgeBaseLogDetailsOverview} options={{ header: () => <CustomHeader title="Log Details Overview" /> }} />
+              <Stack.Screen name="KnowledgeBaseLogDetailsGeneral" component={KnowledgeBaseLogDetailsGeneral} options={{ header: () => <CustomHeader title="Log Details: General" /> }} />
+              <Stack.Screen name="KnowledgeBaseLogDetailsSecurity" component={KnowledgeBaseLogDetailsSecurity} options={{ header: () => <CustomHeader title="Log Details: Security" /> }} />
+              <Stack.Screen name="KnowledgeBaseLogDetailsMetadata" component={KnowledgeBaseLogDetailsMetadata} options={{ header: () => <CustomHeader title="Log Details: Metadata" /> }} />
+              <Stack.Screen name="KnowledgeBaseLogDetailsThreat" component={KnowledgeBaseLogDetailsThreat} options={{ header: () => <CustomHeader title="Log Details: Threat" /> }} />
               <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ header: () => <CustomHeader title="Search Results" /> }} />
             </Stack.Navigator>
           </NavigationContainer>
