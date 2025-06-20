@@ -1,291 +1,227 @@
 import React from 'react';
-import { View, StyleSheet, SafeAreaView, ScrollView, Text } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import Markdown from 'react-native-markdown-display';
+import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
-const logDetailsMetadataMd = `# Log Details: Metadata Tab
-
-The **Metadata** tab provides technical details about how the threat was detected and processed. This information helps you understand the context of the threat and how ThreatSense analyzed it.
+const logDetailsMetadataMd = `
+The **Metadata** tab provides technical details about the message structure and delivery. This is where you'll find information about message headers, routing, and the technical context of how the message was sent and received.
 
 ## What You'll See
 
-### Message Metadata
+### Message Headers
+**What it shows:** Technical information about how the message was sent
+**How it's collected:** Extracted from the message's technical headers
+**Common headers:**
+- **From** - The sender's email address or contact information
+- **To** - The recipient's address
+- **Subject** - The message subject line
+- **Date** - When the message was sent
+- **Message-ID** - Unique identifier for the message
 
-#### Device
-**What it shows:** The device that detected and processed the threat
-**How it's collected:** Automatically detected from your device information
-**Example:** "iPhone 15"
-**Why it matters:** Helps identify which device was targeted and track threats across multiple devices
+**Why it matters:** Headers can reveal information about the message's origin and routing
 
-#### Location
-**What it shows:** General location where the threat was detected
-**How it's collected:** Based on your device's location settings (with your permission)
-**Example:** "Austin, TX"
-**Why it matters:** Some threats target specific geographic areas or occur during travel
+### Routing Information
+**What it shows:** How the message traveled from sender to recipient
+**How it's tracked:** Analysis of message delivery path
+**Information includes:**
+- **Sending server** - The server that sent the message
+- **Receiving server** - The server that received it
+- **Transit time** - How long the message took to arrive
+- **Route path** - The path the message took
 
-#### Received At
-**What it shows:** Exact timestamp when the threat was detected
-**How it's collected:** Automatically captured when the message is processed
-**Format:** ISO 8601 timestamp (e.g., "2024-12-15T14:30:00Z")
-**Why it matters:** Precise timing helps track threat patterns and response times
+**Why it matters:** Unusual routing can indicate spoofing or other security issues
 
-#### Message Length
-**What it shows:** Number of characters in the message
-**How it's collected:** Automatically calculated from the message content
-**Example:** "245 characters"
-**Why it matters:** Longer messages may contain more complex threats or multiple suspicious elements
+### Technical Specifications
+**What it shows:** Technical details about the message format and encoding
+**How it's analyzed:** Examination of message structure and format
+**Specifications include:**
+- **Message format** - Email, SMS, or other format
+- **Encoding** - How the text is encoded
+- **Size** - Total message size in bytes
+- **Attachments** - Number and types of attached files
 
-#### Sender History
-**What it shows:** How many previous messages you've received from this sender
-**How it's collected:** Counted from your message history
-**Example:** "1 previous messages"
-**Why it matters:** New or unknown senders are often more suspicious than familiar contacts
+**Why it matters:** Technical details can reveal manipulation or unusual characteristics
 
-#### Sender Flagged
-**What it shows:** Whether this sender has been previously flagged as suspicious
-**How it's collected:** Based on your previous threat reports and community reports
-**Values:** "Yes", "No", or "Unknown"
-**Why it matters:** Previously flagged senders are more likely to be threats
+### Link Analysis
+**What it shows:** Detailed information about any links in the message
+**How it's extracted:** Automated parsing of message content
+**Analysis includes:**
+- **URL count** - How many links were found
+- **Link types** - HTTP, HTTPS, or other protocols
+- **Domain information** - The websites the links point to
+- **Link text** - The visible text for each link
 
-#### Attachments
-**What it shows:** Whether the message contained any file attachments
-**How it's collected:** Analyzed from the message structure
-**Example:** "None" or "PDF, 2.3MB"
-**Why it matters:** Attachments can contain malware or be used in sophisticated attacks
+**Why it matters:** Links are often the most dangerous part of threats
 
-#### Links
-**What it shows:** Number of links detected in the message (historical record)
-**How it's collected:** Counted when the message was first analyzed and stored as metadata
-**Example:** "1" or "3"
-**Why it matters:** Multiple links may indicate more complex threats
+## Understanding Metadata
 
-#### URLs Found
-**What it shows:** The actual URLs extracted from the message (current analysis)
-**How it's collected:** Real-time extraction using regex patterns to find URLs in the message text
-**Example:** "https://paypal-verify-account.com/secure/login"
-**Why it matters:** Shows exactly what links were found, not just the count
+### Normal Patterns
+**What to expect from legitimate messages:**
+- **Consistent routing** - Messages follow expected paths
+- **Proper headers** - All required headers are present
+- **Reasonable timing** - Delivery times make sense
+- **Known domains** - Links point to familiar websites
 
-**Key Difference:** 
-- **Links** = Historical count stored when first analyzed
-- **URLs Found** = Current real-time extraction of actual URLs
+### Suspicious Indicators
+**Red flags in metadata:**
+- **Unusual routing** - Messages take unexpected paths
+- **Missing headers** - Important technical information is absent
+- **Spoofed addresses** - Sender address doesn't match routing
+- **Suspicious domains** - Links point to unknown or fake websites
 
-#### Network
-**What it shows:** Type of network connection when the threat was detected
-**How it's collected:** Detected from your device's network status
-**Example:** "Wi-Fi", "Cellular", "Ethernet"
-**Why it matters:** Some threats are more common on certain network types
+### Technical Anomalies
+**Unusual technical characteristics:**
+- **Very large messages** - May contain hidden content
+- **Unusual encoding** - Could hide malicious content
+- **Multiple redirects** - Links that bounce through many servers
+- **Compressed content** - May hide harmful attachments
 
-#### App Version
-**What it shows:** Version of ThreatSense that detected the threat
-**How it's collected:** From the app's version information
-**Example:** "1.2.3"
-**Why it matters:** Helps track which app versions detected which threats
+## How Metadata Analysis Works
 
-#### Threat Detection
-**What it shows:** Which detection methods were used to analyze this threat
-**How it's collected:** Recorded during the analysis process
-**Example:** "NLP, Safe Browsing"
-**Why it matters:** Shows the breadth of analysis applied to the threat
+### Header Parsing
+The system extracts and analyzes:
+- **Email headers** - For email messages
+- **SMS metadata** - For text messages
+- **Social media data** - For platform messages
+- **Network information** - For all message types
 
-#### Geolocation
-**What it shows:** More detailed location information (if available)
-**How it's collected:** Enhanced location data with your permission
-**Example:** "Austin, TX, USA"
-**Why it matters:** Provides context for location-based threats
+### Route Tracing
+Message delivery is tracked through:
+- **Server logs** - Where available
+- **Header analysis** - Using received headers
+- **Timing analysis** - Delivery time patterns
+- **Geographic data** - Server locations
 
-## Understanding Metadata vs. Runtime Analysis
+### Link Extraction
+Links are identified and analyzed:
+- **Pattern matching** - Finding URL patterns in text
+- **Domain resolution** - Checking where links actually go
+- **Protocol analysis** - HTTP, HTTPS, or other protocols
+- **Redirect tracking** - Following link redirects
 
-### Stored Metadata (Historical)
-- **Purpose:** Preserves the original analysis results
-- **When collected:** When the threat is first detected
-- **Examples:** Links count, sender history, device info
-- **Benefits:** Consistent historical record, faster loading
+### Technical Profiling
+Messages are profiled for:
+- **Size analysis** - Unusual message sizes
+- **Format checking** - Proper message structure
+- **Encoding verification** - Valid text encoding
+- **Attachment scanning** - File type and size analysis
 
-### Runtime Analysis (Current)
-- **Purpose:** Provides current, accurate information
-- **When collected:** Every time you view the details
-- **Examples:** URLs Found, current threat assessment
-- **Benefits:** Always up-to-date, reflects any changes
+## Common Metadata Issues
 
-## How This Information Helps You
+### Email Spoofing
+**What it looks like:**
+- **Fake sender addresses** - From field doesn't match routing
+- **Inconsistent headers** - Headers don't match the claimed sender
+- **Unusual routing** - Messages from unexpected servers
+- **Missing authentication** - No SPF, DKIM, or DMARC records
 
-### Threat Context
-Metadata provides important context about:
-- **When and where** the threat occurred
-- **What device** was targeted
-- **How sophisticated** the threat was
-- **What detection methods** were used
+**How to detect:**
+- Check the full email headers
+- Look for authentication failures
+- Verify sender addresses independently
+- Compare routing with expected paths
 
-### Pattern Analysis
-By reviewing metadata across multiple threats, you can identify:
-- **Geographic patterns** in threats
-- **Device-specific targeting**
-- **Network vulnerabilities**
-- **Timing patterns** in attacks
+### Link Manipulation
+**What to watch for:**
+- **Hidden redirects** - Links that go to different sites
+- **URL shortening** - Shortened links that hide destinations
+- **Domain spoofing** - URLs that look legitimate but aren't
+- **Protocol switching** - HTTP instead of HTTPS
 
-### Security Improvements
-Metadata helps you:
-- **Identify weak points** in your security
-- **Understand threat trends**
-- **Make informed security decisions**
-- **Track the effectiveness** of security measures
+**How to protect yourself:**
+- Hover over links to see real destinations
+- Use link preview tools
+- Check domain names carefully
+- Avoid clicking suspicious links
 
-## Privacy and Security
+### Message Tampering
+**Signs of manipulation:**
+- **Modified headers** - Headers that don't match content
+- **Unusual encoding** - Content that's been altered
+- **Size discrepancies** - Message size doesn't match content
+- **Timing anomalies** - Messages sent at unusual times
 
-### Data Collection
-- **Local processing:** Most analysis happens on your device
-- **Minimal sharing:** Only essential data is shared for threat detection
-- **Your control:** You can control what data is collected
-- **Transparency:** This tab shows exactly what information is stored
+**What to do:**
+- Verify message authenticity
+- Check with the sender directly
+- Look for other suspicious indicators
+- Report if manipulation is detected
 
-### Data Protection
-- **Encrypted storage:** All metadata is encrypted
-- **Secure transmission:** Data is transmitted securely
-- **Access control:** Only you can access your threat data
-- **Data retention:** You control how long data is kept
+## Using Metadata for Security
 
-## Tips for Using This Tab
+### Verification Steps
+1. **Check sender consistency** - Does the sender match the routing?
+2. **Verify link destinations** - Where do the links actually go?
+3. **Review timing** - Does the delivery time make sense?
+4. **Examine headers** - Are all headers present and correct?
 
-1. **Review all fields** - Each piece of metadata provides valuable context
-2. **Compare with other threats** - Look for patterns across multiple threats
-3. **Check the timing** - Note when threats occur most frequently
-4. **Monitor device patterns** - See if certain devices are targeted more
-5. **Track detection methods** - Understand how threats are being caught
+### Pattern Recognition
+- **Repeated threats** - Similar metadata patterns
+- **Known attackers** - Consistent technical signatures
+- **Attack methods** - Common metadata manipulation techniques
+- **Geographic patterns** - Threats from specific regions
+
+### Technical Indicators
+- **Server reputation** - Known malicious servers
+- **Domain age** - Recently registered suspicious domains
+- **Routing anomalies** - Unusual delivery paths
+- **Header inconsistencies** - Technical discrepancies
+
+## Privacy and Technical Details
+
+### What's Collected
+- **Message structure** - How the message is formatted
+- **Routing information** - How it was delivered
+- **Technical specifications** - Format and encoding details
+- **Link information** - URLs and their destinations
+
+### What's Protected
+- **Message content** - The actual text is analyzed locally
+- **Personal information** - Sender and recipient details
+- **Technical data** - Only used for security analysis
+- **Your privacy** - No personal data is shared
+
+### Data Retention
+- **Local storage** - Metadata stays on your device
+- **Temporary analysis** - Used only for threat detection
+- **Your control** - You decide what to keep
+- **Secure processing** - All analysis is encrypted
+
+## Best Practices
+
+### Regular Review
+- **Check metadata** - Review technical details regularly
+- **Monitor patterns** - Look for repeated suspicious activity
+- **Update knowledge** - Stay informed about new threats
+- **Report issues** - Help improve detection systems
+
+### Technical Awareness
+- **Learn about headers** - Understand what they mean
+- **Check routing** - Verify message paths
+- **Examine links** - Look at link destinations
+- **Trust but verify** - Don't assume everything is safe
+
+### Security Habits
+- **Verify sources** - Check message origins
+- **Examine links** - Look before you click
+- **Report threats** - Help protect others
+- **Stay updated** - Keep security knowledge current
 
 ---
 
-*Metadata helps ThreatSense provide more accurate threat detection and gives you insights into your security patterns.*`;
+*The Metadata tab provides the technical context you need to understand how messages are delivered and identify potential security issues.*`;
 
 const CREATED_DATE = '2024-12-15';
-const UPDATED_DATE = '2024-12-15';
+const UPDATED_DATE = new Date().toISOString().split('T')[0];
 
 const KnowledgeBaseLogDetailsMetadata = () => {
   return (
-    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Log Details: Metadata Tab</Text>
-            <Text style={styles.subtitle}>Technical details about threat detection</Text>
-            <View style={styles.metaInfo}>
-              <Text style={styles.metaText}>Created: {CREATED_DATE}</Text>
-              <Text style={styles.metaText}>Updated: {UPDATED_DATE}</Text>
-            </View>
-          </View>
-          <View style={styles.content}>
-            <Markdown style={markdownStyles}>
-              {logDetailsMetadataMd}
-            </Markdown>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+    <KnowledgeBaseArticle
+      title="Log Details: Metadata Tab"
+      subtitle="Technical details and message structure"
+      content={logDetailsMetadataMd}
+      createdDate={CREATED_DATE}
+      updatedDate={UPDATED_DATE}
+    />
   );
-};
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  container: {
-    flex: 1,
-  },
-  header: {
-    padding: 20,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
-  },
-  title: {
-    color: '#9C27B0',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: '#B0BEC5',
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  metaInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  metaText: {
-    color: '#90CAF9',
-    fontSize: 12,
-  },
-  content: {
-    padding: 20,
-  },
-});
-
-const markdownStyles = {
-  body: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  heading1: {
-    color: '#9C27B0',
-    fontSize: 24,
-    fontWeight: 'bold' as const,
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  heading2: {
-    color: '#9C27B0',
-    fontSize: 20,
-    fontWeight: 'bold' as const,
-    marginTop: 18,
-    marginBottom: 8,
-  },
-  heading3: {
-    color: '#9C27B0',
-    fontSize: 18,
-    fontWeight: 'bold' as const,
-    marginTop: 16,
-    marginBottom: 6,
-  },
-  paragraph: {
-    marginBottom: 12,
-  },
-  strong: {
-    color: '#4A90E2',
-    fontWeight: 'bold' as const,
-  },
-  em: {
-    fontStyle: 'italic' as const,
-    color: '#B0BEC5',
-  },
-  list_item: {
-    marginBottom: 6,
-  },
-  bullet_list: {
-    marginBottom: 12,
-  },
-  ordered_list: {
-    marginBottom: 12,
-  },
-  code_block: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    padding: 12,
-    borderRadius: 8,
-    marginVertical: 8,
-  },
-  code_inline: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    padding: 4,
-    borderRadius: 4,
-  },
-  blockquote: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#9C27B0',
-    paddingLeft: 12,
-    marginVertical: 8,
-    fontStyle: 'italic' as const,
-  },
 };
 
 export default KnowledgeBaseLogDetailsMetadata; 

@@ -1,10 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, SafeAreaView, ScrollView, Text } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import Markdown from 'react-native-markdown-display';
+import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
-const logDetailsThreatMd = `# Log Details: Threat Tab
-
+const logDetailsThreatMd = `
 The **Threat** tab provides the most critical information about the detected threat. This is where you'll find the AI analysis, threat level assessment, and specific details about what makes this message dangerous.
 
 ## What You'll See
@@ -91,131 +88,14 @@ const UPDATED_DATE = new Date().toISOString().split('T')[0];
 
 const KnowledgeBaseLogDetailsThreat = () => {
   return (
-    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Log Details: Threat Tab</Text>
-            <Text style={styles.subtitle}>AI analysis and threat assessment</Text>
-            <View style={styles.metaInfo}>
-              <Text style={styles.metaText}>Created: {CREATED_DATE}</Text>
-              <Text style={styles.metaText}>Updated: {UPDATED_DATE}</Text>
-            </View>
-          </View>
-          <View style={styles.content}>
-            <Markdown style={markdownStyles}>
-              {logDetailsThreatMd}
-            </Markdown>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+    <KnowledgeBaseArticle
+      title="Log Details: Threat Tab"
+      subtitle="AI analysis and threat assessment"
+      content={logDetailsThreatMd}
+      createdDate={CREATED_DATE}
+      updatedDate={UPDATED_DATE}
+    />
   );
-};
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  container: {
-    flex: 1,
-  },
-  header: {
-    padding: 20,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
-  },
-  title: {
-    color: '#9C27B0',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: '#B0BEC5',
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  metaInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  metaText: {
-    color: '#90CAF9',
-    fontSize: 12,
-  },
-  content: {
-    padding: 20,
-  },
-});
-
-const markdownStyles = {
-  body: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  heading1: {
-    color: '#9C27B0',
-    fontSize: 24,
-    fontWeight: 'bold' as const,
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  heading2: {
-    color: '#9C27B0',
-    fontSize: 20,
-    fontWeight: 'bold' as const,
-    marginTop: 18,
-    marginBottom: 8,
-  },
-  heading3: {
-    color: '#9C27B0',
-    fontSize: 18,
-    fontWeight: 'bold' as const,
-    marginTop: 16,
-    marginBottom: 6,
-  },
-  paragraph: {
-    marginBottom: 12,
-  },
-  strong: {
-    color: '#4A90E2',
-    fontWeight: 'bold' as const,
-  },
-  em: {
-    fontStyle: 'italic' as const,
-    color: '#B0BEC5',
-  },
-  list_item: {
-    marginBottom: 6,
-  },
-  bullet_list: {
-    marginBottom: 12,
-  },
-  ordered_list: {
-    marginBottom: 12,
-  },
-  code_block: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    padding: 12,
-    borderRadius: 8,
-    marginVertical: 8,
-  },
-  code_inline: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    padding: 4,
-    borderRadius: 4,
-  },
-  blockquote: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#9C27B0',
-    paddingLeft: 12,
-    marginVertical: 8,
-    fontStyle: 'italic' as const,
-  },
 };
 
 export default KnowledgeBaseLogDetailsThreat; 

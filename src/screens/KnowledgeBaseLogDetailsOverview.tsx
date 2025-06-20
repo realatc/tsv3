@@ -1,338 +1,163 @@
 import React from 'react';
-import { View, StyleSheet, SafeAreaView, ScrollView, Text } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import Markdown from 'react-native-markdown-display';
+import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
-const logDetailsOverviewMd = `# Understanding the Log Details Screen
+const logDetailsOverviewMd = `
+The **Log Details** screen is your comprehensive view of any message that has been analyzed by ThreatSense. This screen provides detailed information about the message's content, security status, metadata, and threat assessment.
 
-The **Log Details Screen** is your comprehensive threat analysis dashboard. When ThreatSense detects a potential threat, this screen provides you with complete information about what was detected, how it was analyzed, and what you should do about it.
+## What You'll Find Here
 
-## Overview of the Tabs
+### Four Main Tabs
+The Log Details screen is organized into four specialized tabs, each focusing on a different aspect of the message analysis:
 
-The Log Details Screen is organized into four main tabs, each providing different perspectives on the threat:
+1. **General Tab** - Basic message information and content
+2. **Security Tab** - Security analysis and safety checks
+3. **Metadata Tab** - Technical details and message structure
+4. **Threat Tab** - AI-powered threat assessment and analysis
 
-### 🔍 **General Tab** - The Basics
-**Purpose:** Essential facts about the threat
-**What you'll find:** Date, sender information, message content, and category
-**Best for:** Quick understanding of what happened and who was involved
+### Navigation
+- **Tab Navigation** - Swipe between tabs or tap tab headers
+- **Learn More** - Each tab has an info icon (ℹ️) that links to detailed documentation
+- **Back Navigation** - Use the back button to return to the previous screen
 
-### 🛡️ **Security Tab** - Technical Analysis  
-**Purpose:** AI and security system analysis
-**What you'll find:** NLP analysis, behavioral analysis, and URL safety checks
-**Best for:** Understanding why the message was flagged as suspicious
+## How to Use This Screen
 
-### 📊 **Metadata Tab** - Technical Details
-**Purpose:** Context and detection information
-**What you'll find:** Device info, location, timing, and detection methods
-**Best for:** Understanding the technical context of the threat
+### Getting Started
+1. **Select a message** from your log history
+2. **Review the overview** - Check the threat level indicator at the top
+3. **Explore each tab** - Tap through the tabs to understand different aspects
+4. **Read the details** - Each section provides specific information about the message
 
-### ⚠️ **Threat Tab** - Risk Assessment
-**Purpose:** Overall threat evaluation and scoring
-**What you'll find:** Threat level, risk score, and detailed breakdown
-**Best for:** Making informed decisions about how to respond
+### Understanding the Information
+- **Green indicators** usually mean safe or normal
+- **Yellow indicators** suggest caution or minor concerns
+- **Red indicators** indicate potential threats or serious issues
+- **Blue indicators** provide neutral information or context
 
-## How the Analysis Works
+### Taking Action
+Based on what you find:
+- **Safe messages** - No action needed
+- **Suspicious messages** - Exercise caution, don't click links
+- **Threatening messages** - Block sender, delete message, report if necessary
 
-### Multi-Layer Detection
-ThreatSense uses multiple analysis methods to evaluate threats:
+## Key Features
 
-1. **Content Analysis (NLP)**
-   - AI-powered text analysis
-   - Identifies suspicious language patterns
-   - Detects impersonation attempts
-   - Flags emotional manipulation tactics
+### Real-time Analysis
+All information is generated in real-time using:
+- **AI analysis** of message content
+- **Security checks** against known threats
+- **Pattern recognition** for common scams
+- **URL safety verification** using Google Safe Browsing
 
-2. **Behavioral Analysis**
-   - Compares sender against your contact history
-   - Analyzes communication patterns
-   - Matches against known threat templates
-   - Evaluates timing and context
+### Comprehensive Coverage
+The analysis covers:
+- **Message content** - What the message says
+- **Sender information** - Who sent it
+- **Technical details** - How it was sent
+- **Security status** - Whether it's safe
+- **Threat assessment** - Risk level and specific concerns
 
-3. **Technical Analysis**
-   - URL safety checks via Google Safe Browsing
-   - Domain reputation analysis
-   - Attachment and link analysis
-   - Network and device context
+### User-friendly Interface
+- **Clear organization** - Information is logically grouped
+- **Visual indicators** - Color-coded status indicators
+- **Easy navigation** - Intuitive tab-based interface
+- **Detailed explanations** - Each section includes helpful context
 
-4. **Risk Scoring**
-   - Combines all analysis results
-   - Assigns numerical risk scores
-   - Provides actionable recommendations
-   - Tracks threat patterns over time
+## Understanding the Tabs
 
-### Real-Time vs. Historical Data
-The screen shows both current and historical information:
+### General Tab
+**Purpose:** Basic message information and content overview
+**What you'll see:**
+- Message subject and sender
+- Content preview
+- Timestamp and message size
+- Basic categorization
 
-**Real-Time Analysis:**
-- Current URL extraction and safety checks
-- Live threat assessment
-- Up-to-date sender information
-- Current message analysis
+### Security Tab
+**Purpose:** Security analysis and safety assessment
+**What you'll see:**
+- URL safety status
+- Attachment analysis
+- Sender reputation
+- Security recommendations
 
-**Historical Data:**
-- Original detection metadata
-- Stored analysis results
-- Historical sender patterns
-- Detection method records
+### Metadata Tab
+**Purpose:** Technical details about the message
+**What you'll see:**
+- Message headers
+- Routing information
+- Technical specifications
+- Link analysis
 
-## How to Use the Log Details Screen
+### Threat Tab
+**Purpose:** AI-powered threat assessment
+**What you'll see:**
+- Threat level and confidence score
+- Detailed threat analysis
+- Specific risk factors
+- Recommended actions
 
-### Step 1: Start with the General Tab
-Begin by understanding the basic facts:
-- **When** did this happen?
-- **Who** sent the message?
-- **What** type of communication?
-- **What** did they say?
+## Best Practices
 
-### Step 2: Check the Security Tab
-Review the technical analysis:
-- **Why** was this flagged as suspicious?
-- **What** specific patterns were detected?
-- **Are** any links dangerous?
-- **How** sophisticated is the threat?
+### Regular Review
+- **Check new messages** - Review details for suspicious messages
+- **Monitor patterns** - Look for repeated threats or scams
+- **Stay informed** - Use the knowledge base to learn about threats
 
-### Step 3: Review the Metadata Tab
-Understand the context:
-- **Where** was this detected?
-- **What** device was targeted?
-- **How** was it detected?
-- **What** detection methods were used?
+### Taking Action
+- **Don't panic** - Take time to understand the threat
+- **Verify information** - Check multiple indicators
+- **Use caution** - When in doubt, err on the side of safety
+- **Report threats** - Help improve the system by reporting issues
 
-### Step 4: Evaluate the Threat Tab
-Make your decision:
-- **What** is the overall risk level?
-- **How** was the score calculated?
-- **What** should you do next?
-- **How** should you respond?
-
-## Making Informed Decisions
-
-### High-Risk Threats (Red)
-**Characteristics:** Multiple red flags, clear scam indicators, dangerous content
-**Actions:**
-- ✅ Block the sender immediately
-- ✅ Do not click any links
-- ✅ Do not provide personal information
-- ✅ Report the threat
-- ✅ Delete the message
-- ✅ Warn others about similar threats
-
-### Medium-Risk Threats (Yellow)
-**Characteristics:** Some suspicious elements, unknown sender, mixed signals
-**Actions:**
-- ⚠️ Verify the sender independently
-- ⚠️ Be cautious with any links
-- ⚠️ Don't provide sensitive information
-- ⚠️ Monitor for similar threats
-- ⚠️ Consider blocking if suspicious
-
-### Low-Risk Threats (Green)
-**Characteristics:** Minimal indicators, known sender, clean analysis
-**Actions:**
-- ✅ Still exercise caution
-- ✅ Verify unusual requests
-- ✅ Report if something feels wrong
-- ✅ Monitor for changes in behavior
-
-## Understanding False Positives
-
-### What Are False Positives?
-False positives occur when legitimate messages are incorrectly flagged as threats. This can happen when:
-- **Urgent language** is used for legitimate reasons
-- **New senders** contact you for valid purposes
-- **Links** point to new but legitimate websites
-- **Language patterns** resemble scams but are legitimate
-
-### How to Handle False Positives
-1. **Check the breakdown** - See which factors triggered the alert
-2. **Verify independently** - Contact the sender through known channels
-3. **Consider context** - Is the urgent language justified?
-4. **Trust your instincts** - If something feels wrong, investigate
-5. **Report if needed** - Help improve the system
+### Learning and Improvement
+- **Read the analysis** - Understand why messages are flagged
+- **Use the knowledge base** - Learn about different threat types
+- **Share knowledge** - Help others understand threats
+- **Stay updated** - Keep the app updated for latest protections
 
 ## Privacy and Security
 
-### Your Data Protection
+### Your Data
 - **Local processing** - Most analysis happens on your device
 - **Minimal sharing** - Only essential data is shared for threat detection
-- **Your control** - You control what data is collected and stored
-- **Transparency** - You can see exactly what information is stored
+- **Your control** - You decide what to report and share
+- **Secure storage** - Your data is protected and encrypted
 
-### Data Collection
-The system collects only the information necessary for threat detection:
-- **Message content** - For analysis
-- **Sender information** - For reputation checking
-- **Device context** - For threat patterns
-- **Timing information** - For behavioral analysis
-
-## Tips for Effective Use
-
-### Regular Review
-- **Check new threats** as they're detected
-- **Review patterns** across multiple threats
-- **Update your security** based on trends
-- **Report issues** to help improve detection
-
-### Pattern Recognition
-- **Note common tactics** used against you
-- **Identify vulnerable times** or contexts
-- **Track sender patterns** and behaviors
-- **Monitor threat evolution** over time
-
-### Continuous Learning
-- **Stay informed** about new threat types
-- **Learn from each threat** you encounter
-- **Share knowledge** with others
-- **Contribute to improvement** through feedback
+### Threat Detection
+- **Continuous monitoring** - The system constantly improves
+- **Community protection** - Benefits from collective threat knowledge
+- **Regular updates** - Detection patterns are updated frequently
+- **Accuracy focus** - Designed to minimize false positives
 
 ## Getting Help
 
-### When to Seek Additional Help
-- **Complex threats** that you're unsure about
-- **Repeated attacks** from the same source
-- **Sophisticated scams** that seem legitimate
-- **Financial threats** or identity theft attempts
+### Built-in Resources
+- **Knowledge base** - Comprehensive documentation for each feature
+- **Contextual help** - Info icons provide specific guidance
+- **Clear explanations** - Each section includes helpful descriptions
 
-### Available Resources
-- **Knowledge Base** - Detailed information about threats
-- **Community Reports** - Shared threat intelligence
-- **Security Updates** - Latest threat information
-- **Support Team** - Expert assistance when needed
+### Additional Support
+- **App settings** - Customize your experience
+- **User guides** - Step-by-step instructions
+- **Community resources** - Learn from other users
 
 ---
 
-*The Log Details Screen is designed to give you complete visibility into threats while providing actionable guidance for your response. Use all four tabs together for the most comprehensive understanding of each threat.*`;
+*The Log Details screen provides you with everything you need to understand and respond to any message that ThreatSense analyzes.*`;
 
 const CREATED_DATE = '2024-12-15';
-const UPDATED_DATE = '2024-12-15';
+const UPDATED_DATE = new Date().toISOString().split('T')[0];
 
 const KnowledgeBaseLogDetailsOverview = () => {
   return (
-    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Understanding the Log Details Screen</Text>
-            <Text style={styles.subtitle}>Complete guide to threat analysis</Text>
-            <View style={styles.metaInfo}>
-              <Text style={styles.metaText}>Created: {CREATED_DATE}</Text>
-              <Text style={styles.metaText}>Updated: {UPDATED_DATE}</Text>
-            </View>
-          </View>
-          <View style={styles.content}>
-            <Markdown style={markdownStyles}>
-              {logDetailsOverviewMd}
-            </Markdown>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+    <KnowledgeBaseArticle
+      title="Log Details: Overview"
+      subtitle="Comprehensive message analysis and details"
+      content={logDetailsOverviewMd}
+      createdDate={CREATED_DATE}
+      updatedDate={UPDATED_DATE}
+    />
   );
-};
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  container: {
-    flex: 1,
-  },
-  header: {
-    padding: 20,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
-  },
-  title: {
-    color: '#4CAF50',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: '#B0BEC5',
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  metaInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  metaText: {
-    color: '#90CAF9',
-    fontSize: 12,
-  },
-  content: {
-    padding: 20,
-  },
-});
-
-const markdownStyles = {
-  body: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  heading1: {
-    color: '#4CAF50',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  heading2: {
-    color: '#4CAF50',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 18,
-    marginBottom: 8,
-  },
-  heading3: {
-    color: '#4CAF50',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 6,
-  },
-  paragraph: {
-    marginBottom: 12,
-  },
-  strong: {
-    color: '#4A90E2',
-    fontWeight: 'bold',
-  },
-  em: {
-    fontStyle: 'italic',
-    color: '#B0BEC5',
-  },
-  list_item: {
-    marginBottom: 6,
-  },
-  bullet_list: {
-    marginBottom: 12,
-  },
-  ordered_list: {
-    marginBottom: 12,
-  },
-  code_block: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    padding: 12,
-    borderRadius: 8,
-    marginVertical: 8,
-  },
-  code_inline: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    padding: 4,
-    borderRadius: 4,
-  },
-  blockquote: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
-    paddingLeft: 12,
-    marginVertical: 8,
-    fontStyle: 'italic',
-  },
 };
 
 export default KnowledgeBaseLogDetailsOverview; 

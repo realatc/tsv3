@@ -107,11 +107,31 @@ const App = () => {
               <Stack.Screen name="BlockedSenders" component={BlockedSendersScreen} options={{ header: () => <CustomHeader title="Blocked Senders" /> }} />
               <Stack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} options={{ header: () => <CustomHeader title="How Threat Levels Are Calculated" /> }} />
               <Stack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} options={{ header: () => <CustomHeader title="Common Digital Scams" /> }} />
-              <Stack.Screen name="KnowledgeBaseLogDetailsOverview" component={KnowledgeBaseLogDetailsOverview} options={{ header: () => <CustomHeader title="Log Details Overview" /> }} />
-              <Stack.Screen name="KnowledgeBaseLogDetailsGeneral" component={KnowledgeBaseLogDetailsGeneral} options={{ header: () => <CustomHeader title="Log Details: General" /> }} />
-              <Stack.Screen name="KnowledgeBaseLogDetailsSecurity" component={KnowledgeBaseLogDetailsSecurity} options={{ header: () => <CustomHeader title="Log Details: Security" /> }} />
-              <Stack.Screen name="KnowledgeBaseLogDetailsMetadata" component={KnowledgeBaseLogDetailsMetadata} options={{ header: () => <CustomHeader title="Log Details: Metadata" /> }} />
-              <Stack.Screen name="KnowledgeBaseLogDetailsThreat" component={KnowledgeBaseLogDetailsThreat} options={{ header: () => <CustomHeader title="Log Details: Threat" /> }} />
+              <Stack.Screen
+                name="KnowledgeBaseLogDetailsOverview"
+                component={KnowledgeBaseLogDetailsOverview}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="KnowledgeBaseLogDetailsGeneral"
+                component={KnowledgeBaseLogDetailsGeneral}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="KnowledgeBaseLogDetailsSecurity"
+                component={KnowledgeBaseLogDetailsSecurity}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="KnowledgeBaseLogDetailsMetadata"
+                component={KnowledgeBaseLogDetailsMetadata}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="KnowledgeBaseLogDetailsThreat"
+                component={KnowledgeBaseLogDetailsThreat}
+                options={{ headerShown: false }}
+              />
               <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ header: () => <CustomHeader title="Search Results" /> }} />
             </Stack.Navigator>
           </NavigationContainer>
