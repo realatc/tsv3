@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types/navigation';
-import { CategoryBadge } from '../CategoryBadge';
+import { ThreatCategoryBadge } from '../ThreatCategoryBadge';
 import { ThreatBadge } from '../ThreatBadge';
 
 type ThreatTabNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -41,7 +41,7 @@ export const ThreatTab = ({ threatInfo }: ThreatTabProps) => {
         <Text style={styles.label}>Categories</Text>
         <View style={styles.categoryContainer}>
           {(threatInfo.categories || []).map((cat: string, idx: number) => (
-            <CategoryBadge key={idx} category={cat} />
+            <ThreatCategoryBadge key={idx} category={cat} />
           ))}
         </View>
         <Text style={styles.label}>Summary</Text>

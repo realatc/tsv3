@@ -22,12 +22,13 @@ export function calculateThreatLevel({
     score += 2;
     breakdown.push({ label: 'NLP: urgent/suspicious/threat', points: 2 });
     findings.push('urgent or threatening language');
-    if (!categories.includes('Social Engineering')) categories.push('Social Engineering');
+    if (!categories.includes('Urgent')) categories.push('Urgent');
   }
   if (nlp.includes('impersonation') || nlp.includes('phishing') || nlp.includes('scam')) {
     score += 3;
     breakdown.push({ label: 'NLP: impersonation/phishing/scam', points: 3 });
     findings.push('signs of impersonation or phishing');
+    if (!categories.includes('Impersonation')) categories.push('Impersonation');
     if (!categories.includes('Phishing')) categories.push('Phishing');
     if (!categories.includes('Scam')) categories.push('Scam');
   }
@@ -37,12 +38,20 @@ export function calculateThreatLevel({
     score += 1;
     breakdown.push({ label: 'Behavior: unusual for sender', points: 1 });
     findings.push('behavior unusual for the sender');
+    if (!categories.includes('Suspicious')) categories.push('Suspicious');
   }
   if (behavior.includes('matches scam') || behavior.includes('matches phishing')) {
     score += 3;
     breakdown.push({ label: 'Behavior: matches scam/phishing pattern', points: 3 });
     findings.push('behavior matching known scam patterns');
     if (!categories.includes('Scam')) categories.push('Scam');
+    if (!categories.includes('Phishing')) categories.push('Phishing');
+  }
+  if (behavior.includes('unsolicited')) {
+    score += 1;
+    breakdown.push({ label: 'Behavior: unsolicited communication', points: 1 });
+    findings.push('it appears to be an unsolicited message');
+    if (!categories.includes('Unsolicited')) categories.push('Unsolicited');
   }
 
   // Sender Analysis
@@ -50,6 +59,7 @@ export function calculateThreatLevel({
     score += 1;
     breakdown.push({ label: 'Sender: unofficial support email', points: 1 });
     findings.push('an unofficial support email address');
+    if (!categories.includes('Unofficial')) categories.push('Unofficial');
   }
   if (senderLower.match(/paypal.*support|support.*paypal/)) {
      score += 2;
@@ -58,9 +68,8 @@ export function calculateThreatLevel({
      if (!categories.includes('Impersonation')) categories.push('Impersonation');
   }
 
-
-  // Max possible score is 9
-  const confidence = Math.min(Math.round((score / 9) * 100) + 10, 100);
+  // Max possible score is now 13
+  const confidence = Math.min(Math.round((score / 13) * 100) + 10, 100);
 
   let level: 'High' | 'Medium' | 'Low';
   if (score >= 5) level = 'High';
@@ -72,4 +81,4 @@ export function calculateThreatLevel({
   }
 
   return { level, confidence, score, breakdown, categories, summary };
-} 
+}

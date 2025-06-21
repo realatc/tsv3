@@ -1,58 +1,42 @@
-# Log Details: Threat Tab
+The **Threat** tab provides a comprehensive risk assessment of the analyzed message. It shows you exactly why ThreatSense flagged the content and helps you understand the specific risks involved.
 
-The **Threat** tab provides a comprehensive risk assessment of the detected threat. This tab shows how ThreatSense calculated the threat level and what factors contributed to the risk score.
+## Threat Assessment
 
-## What You'll See
+This card gives you a high-level overview of the threat.
 
-### Threat Assessment
+- **Threat Level**: An overall classification of the risk (`High`, `Medium`, or `Low`).
+- **Confidence**: An estimate of how certain the system is about its assessment.
 
-#### Threat Level
-**What it shows:** Overall risk classification of the threat
-**How it's calculated:** Based on a scoring system that evaluates multiple risk factors
-**Levels:**
-- 🔴 **High:** Significant risk - immediate action recommended
-- 🟡 **Medium:** Moderate risk - proceed with caution
-- 🟢 **Low:** Minimal risk - but still worth monitoring
+---
 
-**Scoring thresholds:**
-- **High:** Score of 4 or higher (out of 9 possible points)
-- **Medium:** Score of 2-3 points
-- **Low:** Score of 0-1 points
+### Threat Categories
 
-#### Threat Score
-**What it shows:** Numerical risk score (0-9) with percentage
-**How it's calculated:** Points are awarded based on various risk factors
-**Example:** "6 points (67%)"
-**Why it matters:** Higher scores indicate more dangerous threats
+This section uses icons to show the specific types of risks found in the message. Press and hold an icon to see its name.
 
-### Threat Score Breakdown
-**What it shows:** Detailed breakdown of what contributed to the threat score
-**How it's calculated:** Each risk factor is evaluated independently and points are awarded
-**Format:** List of factors with points awarded (e.g., "NLP: urgent/suspicious/threat +2")
+- ![Urgent](threat://Urgent) **Urgent**: Contains urgent or time-sensitive language designed to make you act without thinking.
+- ![Impersonation](threat://Impersonation) **Impersonation**: Appears to be from a person or company it's not, like a fake "PayPal Support" email.
+- ![Phishing](threat://Phishing) **Phishing**: Tries to trick you into revealing sensitive information, often with links to fake websites.
+- ![Scam](threat://Scam) **Scam**: Exhibits patterns of known financial or information scams.
+- ![Unsolicited](threat://Unsolicited) **Unsolicited**: The message appears to be spam or something you didn't sign up for.
+- ![Unofficial](threat://Unofficial) **Unofficial**: The sender's address or domain seems unofficial (e.g., `paypal.support@gmail.com`).
+- ![Suspicious](threat://Suspicious) **Suspicious**: The message has characteristics that are unusual or don't feel right.
 
-## How the Scoring System Works
+---
 
-### Risk Factors and Points
+## Score Breakdown
 
-#### NLP Analysis Factors (+2 points each)
-- **Urgent/Suspicious Language:** "Act now," "Immediate action required," "24 hours to respond"
-- **Impersonation/Phishing:** Claims to be from banks, government agencies, tech support
-- **Scam Indicators:** "You've won," "Account suspended," "Verify immediately"
+This card shows a line-by-line breakdown of every factor that contributed to the total threat score. Each entry shows the source of the finding (e.g., `NLP`, `Sender`) and the points it added to the score.
 
-#### Behavioral Analysis Factors (+1-2 points each)
-- **Unknown Sender:** Sender not in your contacts (+1 point)
-- **Scam Pattern Match:** Matches known scam templates (+2 points)
-- **Robocall Pattern:** Matches known robocall patterns (+2 points)
+### Scoring System
 
-#### Sender Analysis Factors (+2 points each)
-- **Suspicious Domains:** Fake bank domains, IRS impersonation
-- **Random SMS:** Unknown phone numbers with suspicious patterns
-- **Known Scam Sources:** Previously identified threat sources
+- **How it works**: Points are awarded for various risk factors. The total score determines the final threat level.
+- **Maximum Score**: 13 points.
+- **Thresholds**:
+    - **High**: 5 or more points.
+    - **Medium**: 2-4 points.
+    - **Low**: 0-1 points.
 
-### Maximum Score
-- **Total possible points:** 9
-- **Percentage calculation:** (Score ÷ 9) × 100
-- **Example:** 6 points = 67% risk
+By reviewing the breakdown, you can see the exact reasons behind the assessment, helping you learn to spot similar threats in the future.
 
 ## Understanding the Results
 

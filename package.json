@@ -28,6 +28,7 @@
     "react-native-reanimated": "^3.18.0",
     "react-native-safe-area-context": "^5.4.1",
     "react-native-screens": "^4.11.1",
+    "react-native-walkthrough-tooltip": "^1.6.0",
     "sentiment": "^5.0.2"
   },
   "devDependencies": {
