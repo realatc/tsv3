@@ -19,6 +19,12 @@ const BrowseScreen = () => {
     { title: 'Safe Messages', filter: 'Low', icon: 'shield-checkmark-outline', color: '#06D6A0' },
   ];
   
+  const messageTypes = [
+    { title: 'Text Messages', category: 'Text', icon: 'chatbubble-outline', color: '#4A90E2' },
+    { title: 'Email Messages', category: 'Mail', icon: 'mail-outline', color: '#50E3C2' },
+    { title: 'Phone Calls', category: 'Phone Call', icon: 'call-outline', color: '#A070F2' },
+  ];
+  
   const knowledgeBaseItems = [
     { title: 'Common Scams', screen: 'KnowledgeBaseScamsArticle', icon: 'document-text-outline', color: '#4A90E2' },
     { title: 'Threat Levels Explained', screen: 'KnowledgeBaseThreatLevelArticle', icon: 'analytics-outline', color: '#A070F2' },
@@ -73,6 +79,28 @@ const BrowseScreen = () => {
             horizontal
             data={logViews}
             renderItem={renderLogViewCard}
+            keyExtractor={(item) => item.title}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
+            style={{ marginHorizontal: -20 }}
+          />
+        </View>
+        
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Message Types</Text>
+          <Text style={styles.sectionSubtitle}>Quick access to different message types.</Text>
+          <FlatList
+            horizontal
+            data={messageTypes}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.messageTypeCard}
+                onPress={() => navigation.navigate('LogHistory', { categoryFilter: item.category })}
+              >
+                <Icon name={item.icon} size={28} color={item.color} />
+                <Text style={styles.messageTypeCardTitle}>{item.title}</Text>
+              </TouchableOpacity>
+            )}
             keyExtractor={(item) => item.title}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
@@ -172,6 +200,20 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#fff',
     fontSize: 16,
+  },
+  messageTypeCard: {
+    width: 140,
+    height: 120,
+    backgroundColor: '#1C1C1E',
+    borderRadius: 15,
+    padding: 15,
+    justifyContent: 'space-between',
+    marginRight: 15,
+  },
+  messageTypeCardTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

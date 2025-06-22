@@ -26,8 +26,14 @@ const LogHistoryScreen = () => {
   useEffect(() => {
     // @ts-ignore
     const initialThreatFilter = route.params?.threatFilter;
+    // @ts-ignore
+    const initialCategoryFilter = route.params?.categoryFilter;
+    
     if (initialThreatFilter) {
       setThreatFilter(initialThreatFilter);
+    }
+    if (initialCategoryFilter) {
+      setCategoryFilter(initialCategoryFilter);
     }
   }, [route.params]);
 

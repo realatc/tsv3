@@ -7,13 +7,13 @@ export type HomeStackParamList = {
   LatestScams: undefined;
   ScamDetail: { scam: ScamAlert };
   LogDetail: { log: LogEntry };
-  LogHistory: { threatFilter?: string };
+  LogHistory: { threatFilter?: string; categoryFilter?: string };
   BlockedSenders: undefined;
 };
 
 export type BrowseStackParamList = {
   Browse: undefined;
-  LogHistory: { threatFilter?: string };
+  LogHistory: { threatFilter?: string; categoryFilter?: string };
   KnowledgeBaseScamsArticle: undefined;
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseLogDetailsOverview: { log?: any };
