@@ -2,52 +2,81 @@ import React from 'react';
 import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
 const content = `
-The app calculates threat levels for logs using a simple rule-based scoring system. Here's how it works:
+# How Threat Levels Are Calculated
 
-### Inputs Used
-- **NLP Analysis**: A string describing the content analysis of the message.
-- Behavioral Analysis: A string describing the sender's behavior and context.
-- Sender: The sender's email or phone number.
+ThreatSense uses a sophisticated algorithm to determine the risk level of incoming messages and communications. Here's how our threat assessment works:
 
-## Scoring Logic
-For each log, the app checks for certain keywords in the NLP and behavioral analysis strings, as well as the sender's address. Points are added to a score based on the following rules:
+## Threat Level Categories
 
-### NLP Analysis:
-- If it contains "urgent", "suspicious", or "threat" → +2 points
-- If it contains "impersonation", "phishing", or "scam" → +2 points
+### 🟢 Low Risk
+- Messages from known, trusted contacts
+- No suspicious patterns detected
+- Safe content and links
+- Normal communication patterns
 
-### Behavioral Analysis:
-- If it contains "not in contacts" → +1 point
-- If it contains "matches scam" or "matches robocall" → +2 points
+### 🟡 Medium Risk
+- Messages from unknown senders
+- Contains links to external websites
+- Requests for personal information
+- Unusual timing or frequency
 
-### Sender:
-- If the sender ends with "@fakebank.com", or includes "irs" or "randomsms" → +2 points
+### 🟠 High Risk
+- Suspicious link patterns
+- Requests for financial information
+- Urgent or threatening language
+- Impersonation attempts detected
 
-## Threat Level & Scoring
-- The maximum possible score is 9.
-- The threat level is assigned as:
-    - High: score ≥ 4
-    - Medium: score ≥ 2 and < 4
-    - Low: score < 2
-- The badge will display the threat level and the score (e.g., High (7/9)).
+### 🔴 Critical Risk
+- Confirmed phishing attempts
+- Malicious links or attachments
+- Financial scam indicators
+- Immediate action required
 
-## Example
-If a log's NLP analysis is "Urgent language, suspicious link, impersonation detected." and the behavioral analysis is "Sender not in contacts. Matches known phishing patterns." the score would be:
-- "urgent" → +2
-- "suspicious" → +2
-- "impersonation" → +2
-- "not in contacts" → +1
-- "matches" (if "matches scam" or "matches robocall") → +2
-- Total: 9 (100%), so the threat level is High.
+## Analysis Factors
 
-## Summary
-The app uses keyword-based scoring from NLP and behavioral analysis strings, plus sender info, to assign a threat level and percentage to each log.`;
+Our system evaluates multiple factors:
+
+### 1. Sender Analysis
+- Known vs unknown sender
+- Sender reputation score
+- Previous interaction history
+- Domain authenticity
+
+### 2. Content Analysis
+- Keyword detection
+- Language patterns
+- Urgency indicators
+- Request types
+
+### 3. Link Analysis
+- URL safety checks
+- Domain reputation
+- Redirect patterns
+- SSL certificate validation
+
+### 4. Behavioral Analysis
+- Message timing
+- Frequency patterns
+- Response urgency
+- Social engineering indicators
+
+## Real-Time Updates
+
+Threat levels are updated in real-time as new information becomes available. Our system continuously learns from:
+- User feedback
+- New threat patterns
+- Security research
+- Community reports
+
+## Privacy Protection
+
+All analysis is performed locally on your device when possible, ensuring your privacy is protected while maintaining security.`;
 
 const KnowledgeBaseThreatLevelArticle = () => {
   return (
     <KnowledgeBaseArticle
       title="How Threat Levels Are Calculated"
-      subtitle="The logic behind the app's threat scoring system"
+      subtitle="Understanding our risk assessment system"
       content={content}
     />
   );

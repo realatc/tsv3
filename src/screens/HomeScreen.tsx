@@ -20,7 +20,6 @@ const HomeScreen = () => {
   const { logs, getBlockedSendersCount } = useLogs();
   const { settingsSheetRef } = useApp();
   const navigation = useNavigation<HomeScreenNavigationProp>();
-  const [securityScoreHelpVisible, setSecurityScoreHelpVisible] = useState(false);
   const [recentModalVisible, setRecentModalVisible] = useState(false);
   const [recentMeta, setRecentMeta] = useState<{ [logId: string]: { read: boolean; dismissed: boolean } }>({});
 
@@ -78,7 +77,7 @@ const HomeScreen = () => {
   const CARD_MIN_WIDTH = 110;
   const CARD_MAX_WIDTH = 150;
 
-  const renderStatCard = (title: string, value: string | number, icon: string, color: string, onPress?: () => void, showHelp?: boolean, helpContent?: string) => (
+  const renderStatCard = (title: string, value: string | number, icon: string, color: string, onPress?: () => void) => (
     <TouchableOpacity 
       style={[
         styles.statCard, 
@@ -110,22 +109,16 @@ const HomeScreen = () => {
         >
           {title}
         </AccessibleText>
-        {showHelp && (
-          <TouchableOpacity
-            onPress={() => setSecurityScoreHelpVisible(true)}
-            accessible={true}
-            accessibilityLabel={`Help for ${title}`}
-            accessibilityHint="Tap to learn more about this metric"
-          >
-            <Icon name="help-circle-outline" size={settings.largeTextMode ? 20 : 16} color="#4A90E2" style={styles.helpIcon} />
-          </TouchableOpacity>
-        )}
       </View>
       <AccessibleText variant="title" style={[styles.statValue, { color, textAlign: 'center' }]}>{value}</AccessibleText>
     </TouchableOpacity>
   );
 
   const handleViewThreats = () => {
+    navigation.navigate('LatestScams');
+  };
+
+  const handleViewLatestScams = () => {
     navigation.navigate('LatestScams');
   };
 
@@ -206,7 +199,7 @@ const HomeScreen = () => {
               {renderStatCard('Threats Detected', stats.threatsDetected, 'warning', '#FF6B6B', handleViewThreats)}
               {renderStatCard('Safe Messages', stats.safeMessages, 'shield-checkmark', '#43A047', handleViewSafeMessages)}
               {renderStatCard('Blocked Senders', stats.blockedSenders, 'ban', '#FFB300', handleViewBlockedSenders)}
-              {renderStatCard('Security Score', `${stats.securityScore}%`, 'trending-up', '#4A90E2', undefined, true, 'This score is based on the ratio of safe to high-threat messages.')}
+              {renderStatCard('Latest Scams', 'View', 'flame', '#A070F2', handleViewLatestScams)}
             </View>
           </View>
 
@@ -276,36 +269,6 @@ const HomeScreen = () => {
               </View>
             </View>
           )}
-
-          {/* Security Score Help Modal */}
-          <Modal
-            visible={securityScoreHelpVisible}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={() => setSecurityScoreHelpVisible(false)}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContent}>
-                <AccessibleText variant="title" style={styles.modalTitle}>
-                  Security Score Explained
-                </AccessibleText>
-                <AccessibleText variant="body" style={styles.modalText}>
-                  Your security score is calculated based on the ratio of safe messages to high-threat messages in your analysis history.
-                </AccessibleText>
-                <AccessibleText variant="body" style={styles.modalText}>
-                  A higher score indicates better overall security, while a lower score suggests you may need to be more cautious about the messages you receive.
-                </AccessibleText>
-                <TouchableOpacity
-                  style={styles.modalButton}
-                  onPress={() => setSecurityScoreHelpVisible(false)}
-                >
-                  <AccessibleText variant="button" style={styles.modalButtonText}>
-                    Got it
-                  </AccessibleText>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -383,9 +346,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
   },
-  helpIcon: {
-    marginLeft: 4,
-  },
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -454,44 +414,6 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 11,
     marginLeft: 40,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: '#1E1E1E',
-    borderRadius: 12,
-    padding: 20,
-    margin: 20,
-    maxWidth: 300,
-  },
-  modalTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  modalText: {
-    color: '#B0B0B0',
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 10,
-  },
-  modalButton: {
-    backgroundColor: '#A070F2',
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-    marginTop: 15,
-  },
-  modalButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 

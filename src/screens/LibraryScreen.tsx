@@ -9,7 +9,6 @@ import { useApp } from '../context/AppContext';
 
 type LibraryScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Library'>;
 type NavigableLibraryScreen =
-  | 'LatestScams'
   | 'KnowledgeBaseThreatLevelArticle'
   | 'KnowledgeBaseScamsArticle'
   | 'KnowledgeBaseLogDetailsOverview'
@@ -23,12 +22,6 @@ const LibraryScreen = () => {
   const { settingsSheetRef } = useApp();
 
   const menuItems = [
-    {
-      title: 'Latest Scams',
-      subtitle: 'Stay updated on the newest threats',
-      icon: 'trending-up',
-      screen: 'LatestScams',
-    },
     {
       title: 'How Threat Levels Work',
       subtitle: 'Understand our rating system',

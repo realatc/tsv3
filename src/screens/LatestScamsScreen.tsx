@@ -12,6 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
 import { ScamAlertCard } from '../components/ScamAlertCard';
 import { getLatestScams, ScamAlert } from '../services/perplexity/perplexityService';
 import { RootStackParamList } from '../types/navigation';
@@ -53,28 +54,6 @@ const LatestScamsScreen: React.FC = () => {
   const handleScamPress = (scam: ScamAlert) => {
     navigation.navigate('ScamDetail', { scam });
   };
-
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Icon name="arrow-back" size={24} color="#fff" />
-      </TouchableOpacity>
-      <View style={styles.headerTitleContainer}>
-        <Text style={styles.headerTitle}>Latest Scams</Text>
-        <Text style={styles.headerSubtitle}>Powered by Perplexity AI</Text>
-        {lastUpdated && (
-          <Text style={styles.lastUpdatedText}>
-            Updated {formatLastUpdated(lastUpdated)}
-          </Text>
-        )}
-      </View>
-      <View style={styles.headerActions}>
-        <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
-          <Icon name="refresh" size={20} color="#fff" />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
 
   const formatLastUpdated = (date: Date) => {
     const now = new Date();
@@ -121,7 +100,7 @@ const LatestScamsScreen: React.FC = () => {
     if (loading) {
       return (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size="large" color="#A070F2" />
           <Text style={styles.loadingText}>Loading latest threats...</Text>
         </View>
       );
@@ -154,11 +133,11 @@ const LatestScamsScreen: React.FC = () => {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#007AFF" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#A070F2" />
         }
       >
         <View style={styles.infoContainer}>
-          <Icon name="information-circle" size={20} color="#007AFF" />
+          <Icon name="information-circle" size={20} color="#A070F2" />
           <Text style={styles.infoText}>
             These alerts are updated regularly to keep you informed about the latest digital threats.
             {lastUpdated && (
@@ -190,48 +169,68 @@ const LatestScamsScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {renderHeader()}
-      {renderContent()}
-    </SafeAreaView>
+    <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Icon name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <View style={styles.headerTitleContainer}>
+            <Text style={styles.pageTitle}>Latest Scams</Text>
+            <Text style={styles.headerSubtitle}>Powered by Perplexity AI</Text>
+            {lastUpdated && (
+              <Text style={styles.lastUpdatedText}>
+                Updated {formatLastUpdated(lastUpdated)}
+              </Text>
+            )}
+          </View>
+        </View>
+        {renderContent()}
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1C1C1E',
   },
-  header: {
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  headerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 8,
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 20,
   },
   headerTitleContainer: {
     flex: 1,
+    marginLeft: 12,
   },
-  headerTitle: {
-    fontSize: 20,
+  pageTitle: {
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#E5E5E7',
+    color: '#fff',
+    marginBottom: 4,
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontSize: 16,
+    color: '#aaa',
+    marginBottom: 4,
+  },
+  lastUpdatedText: {
+    fontSize: 14,
     color: '#888',
-    marginTop: 2,
   },
-  headerActions: {
-    flexDirection: 'row',
-  },
-  refreshButton: {
-    padding: 8,
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   centerContainer: {
     flex: 1,
@@ -253,7 +252,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   retryButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#A070F2',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -281,20 +280,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: 20,
   },
   infoContainer: {
     flexDirection: 'row',
-    backgroundColor: '#2A2A2A',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
+    backgroundColor: '#2C2C2E',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
   },
   infoText: {
     flex: 1,
     fontSize: 14,
     color: '#B0B0B0',
-    marginLeft: 8,
+    marginLeft: 12,
     lineHeight: 20,
   },
   footer: {
@@ -302,20 +301,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: '#2C2C2E',
+    marginTop: 20,
   },
   footerText: {
     color: '#8A8A8E',
     fontSize: 12,
   },
-  lastUpdatedText: {
-    fontSize: 12,
-    color: '#888',
-    marginTop: 2,
-  },
   freshIndicator: {
     fontSize: 12,
     color: '#888',
-    marginTop: 2,
   },
   liveIndicator: {
     color: '#34C759',
