@@ -8,12 +8,12 @@ import { useLogs } from '../context/LogContext';
 import { useApp } from '../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types/navigation';
+import { HomeStackParamList } from '../types/navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RECENT_ACTIVITY_KEY = '@threatsense/recent_activity_meta';
 
-type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'MainTabs'>;
+type HomeScreenNavigationProp = StackNavigationProp<HomeStackParamList, 'Home'>;
 
 const HomeScreen = () => {
   const { settings } = useAccessibility();

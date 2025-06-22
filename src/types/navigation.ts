@@ -43,6 +43,16 @@ export type RootStackParamList = {
   AccessibilitySettings: undefined;
   HelpAndSupport: undefined;
   SearchResults: { query: string }; // Assuming search results might be global
+  Browse: undefined;
+  Library: undefined;
+  ScamDetail: { scam: ScamAlert };
+  KnowledgeBaseThreatLevelArticle: undefined;
+  KnowledgeBaseScamsArticle: undefined;
+  KnowledgeBaseLogDetailsOverview: { log?: any };
+  KnowledgeBaseLogDetailsGeneral: { log?: any };
+  KnowledgeBaseLogDetailsSecurity: { log?: any };
+  KnowledgeBaseLogDetailsMetadata: { log?: any };
+  KnowledgeBaseLogDetailsThreat: { log?: any };
 };
 
 export type DrawerParamList = {

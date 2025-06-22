@@ -36,7 +36,13 @@ export const SecurityTab = ({ log, urls, urlSafety }: SecurityTabProps) => {
       <View style={styles.titleContainer}>
         <Text style={styles.sectionTitle}>Analysis</Text>
         <TouchableOpacity
-          onPress={() => navigation.navigate('KnowledgeBaseLogDetailsSecurity')}
+          onPress={() => navigation.navigate('MainTabs', { 
+            screen: 'Library',
+            params: { 
+              screen: 'KnowledgeBaseLogDetailsSecurity',
+              params: { log }
+            }
+          })}
           style={styles.helpButton}
         >
           <Icon name="information-circle-outline" size={22} color="#4A90E2" />

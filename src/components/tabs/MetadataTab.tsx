@@ -28,7 +28,13 @@ export const MetadataTab = ({ log, urls }: MetadataTabProps) => {
       <View style={styles.titleContainer}>
         <Text style={styles.sectionTitle}>Message Metadata</Text>
         <TouchableOpacity
-          onPress={() => navigation.navigate('KnowledgeBaseLogDetailsMetadata')}
+          onPress={() => navigation.navigate('MainTabs', { 
+            screen: 'Library',
+            params: { 
+              screen: 'KnowledgeBaseLogDetailsMetadata',
+              params: { log }
+            }
+          })}
           style={styles.helpButton}
         >
           <Icon name="information-circle-outline" size={22} color="#4A90E2" />

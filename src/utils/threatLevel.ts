@@ -69,7 +69,7 @@ export function calculateThreatLevel({
   }
 
   // Max possible score is now 13
-  const confidence = Math.min(Math.round((score / 13) * 100) + 10, 100);
+  const percentage = Math.min(Math.round((score / 13) * 100) + 10, 100);
 
   let level: 'High' | 'Medium' | 'Low';
   if (score >= 5) level = 'High';
@@ -80,7 +80,7 @@ export function calculateThreatLevel({
     summary = `This message was flagged for ${findings.join(', ')}.`;
   }
 
-  return { level, confidence, score, breakdown, categories, summary };
+  return { level, percentage, score, breakdown, categories, summary };
 }
 
 export const getThreatColor = (level: string) => {

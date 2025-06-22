@@ -23,7 +23,7 @@ const SearchResultsScreen = () => {
     });
   }, [query, logs]);
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() => (navigation as any).navigate('LogDetail', { log: item })}

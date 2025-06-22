@@ -22,7 +22,13 @@ export const ThreatTab = ({ threatInfo }: ThreatTabProps) => {
         <View style={styles.titleContainer}>
           <Text style={styles.sectionTitle}>Threat Assessment</Text>
           <TouchableOpacity
-            onPress={() => navigation.navigate('KnowledgeBaseLogDetailsThreat')}
+            onPress={() => navigation.navigate('MainTabs', { 
+              screen: 'Library',
+              params: { 
+                screen: 'KnowledgeBaseLogDetailsThreat',
+                params: { log: threatInfo }
+              }
+            })}
             style={styles.helpButton}
           >
             <Icon name="information-circle-outline" size={22} color="#4A90E2" />

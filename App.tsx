@@ -12,6 +12,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet from '@gorhom/bottom-sheet';
+import { BottomTabBar } from '@react-navigation/bottom-tabs';
 
 // Screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -107,6 +108,7 @@ function TabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        unmountOnBlur: true,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
@@ -130,10 +132,40 @@ function TabNavigator() {
         tabBarInactiveTintColor: 'gray',
       })}
     >
-      <Tab.Screen name="Home" component={HomeStackNavigator} />
-      <Tab.Screen name="Browse" component={BrowseStackNavigator} />
-      <Tab.Screen name="Library" component={LibraryStackNavigator} />
-      <Tab.Screen name="Search" component={SearchStackNavigator} />
+      <Tab.Screen
+        name="Home"
+        component={HomeStackNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: e => {
+            e.preventDefault();
+            navigation.navigate('Home', { screen: 'Home' });
+          },
+        })}
+      />
+      <Tab.Screen
+        name="Browse"
+        component={BrowseStackNavigator}
+      />
+      <Tab.Screen
+        name="Library"
+        component={LibraryStackNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: e => {
+            e.preventDefault();
+            navigation.navigate('Library', { screen: 'Library' });
+          },
+        })}
+      />
+      <Tab.Screen
+        name="Search"
+        component={SearchStackNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: e => {
+            e.preventDefault();
+            navigation.navigate('Search', { screen: 'Search' });
+          },
+        })}
+      />
     </Tab.Navigator>
   );
 }

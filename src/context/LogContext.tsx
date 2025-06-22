@@ -169,7 +169,12 @@ export const LogProvider = ({ children }: { children: ReactNode }) => {
         ]);
         
         if (storedLogs) {
-          setLogs(JSON.parse(storedLogs));
+          const parsedLogs = JSON.parse(storedLogs);
+          if (parsedLogs.length > 0) {
+            setLogs(parsedLogs);
+          } else {
+            setLogs(initialLogs.map(withThreat));
+          }
         } else {
           setLogs(initialLogs.map(withThreat));
         }

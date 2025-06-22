@@ -25,7 +25,13 @@ export const GeneralTab = ({ log }: GeneralTabProps) => {
       <View style={styles.titleContainer}>
         <Text style={styles.sectionTitle}>Details</Text>
         <TouchableOpacity
-          onPress={() => navigation.navigate('KnowledgeBaseLogDetailsGeneral')}
+          onPress={() => navigation.navigate('MainTabs', { 
+            screen: 'Library',
+            params: { 
+              screen: 'KnowledgeBaseLogDetailsGeneral',
+              params: { log }
+            }
+          })}
           style={styles.helpButton}
         >
           <Icon name="information-circle-outline" size={22} color="#4A90E2" />
