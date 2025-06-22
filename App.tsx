@@ -15,24 +15,26 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
 
 // Screens
-import HomeScreen from './src/screens/HomeScreen';
-import LatestScamsScreen from './src/screens/LatestScamsScreen';
-import KnowledgeBaseScreen from './src/screens/KnowledgeBaseScreen';
-import ThreatAnalysisScreen from './src/screens/ThreatAnalysisScreen';
+import AboutScreen from './src/screens/AboutScreen';
 import AccessibilitySettingsScreen from './src/screens/AccessibilitySettingsScreen';
-import ScamDetailScreen from './src/screens/ScamDetailScreen';
-import LogDetailScreenWrapper from './src/screens/LogDetailScreenWrapper';
+import BlockedSendersScreen from './src/screens/BlockedSendersScreen';
 import BrowseScreen from './src/screens/BrowseScreen';
-import LibraryScreen from './src/screens/LibraryScreen';
-import LogHistoryScreen from './src/screens/LogHistoryScreen';
 import HelpAndSupportScreen from './src/screens/HelpAndSupportScreen';
-import KnowledgeBaseThreatLevelArticle from './src/screens/KnowledgeBaseThreatLevelArticle';
-import KnowledgeBaseScamsArticle from './src/screens/KnowledgeBaseScamsArticle';
-import KnowledgeBaseLogDetailsOverview from './src/screens/KnowledgeBaseLogDetailsOverview';
+import HomeScreen from './src/screens/HomeScreen';
 import KnowledgeBaseLogDetailsGeneral from './src/screens/KnowledgeBaseLogDetailsGeneral';
-import KnowledgeBaseLogDetailsSecurity from './src/screens/KnowledgeBaseLogDetailsSecurity';
 import KnowledgeBaseLogDetailsMetadata from './src/screens/KnowledgeBaseLogDetailsMetadata';
+import KnowledgeBaseLogDetailsOverview from './src/screens/KnowledgeBaseLogDetailsOverview';
+import KnowledgeBaseLogDetailsSecurity from './src/screens/KnowledgeBaseLogDetailsSecurity';
 import KnowledgeBaseLogDetailsThreat from './src/screens/KnowledgeBaseLogDetailsThreat';
+import KnowledgeBaseScamsArticle from './src/screens/KnowledgeBaseScamsArticle';
+import KnowledgeBaseScreen from './src/screens/KnowledgeBaseScreen';
+import KnowledgeBaseThreatLevelArticle from './src/screens/KnowledgeBaseThreatLevelArticle';
+import LatestScamsScreen from './src/screens/LatestScamsScreen';
+import LibraryScreen from './src/screens/LibraryScreen';
+import LogDetailScreenWrapper from './src/screens/LogDetailScreenWrapper';
+import LogHistoryScreen from './src/screens/LogHistoryScreen';
+import ScamDetailScreen from './src/screens/ScamDetailScreen';
+import SearchResultsScreen from './src/screens/SearchResultsScreen';
 
 // Components
 import SettingsSheet from './src/components/SettingsSheet';
@@ -64,6 +66,7 @@ function HomeStackNavigator() {
       <HomeStack.Screen name="ScamDetail" component={ScamDetailScreen} />
       <HomeStack.Screen name="LogDetail" component={LogDetailScreenWrapper} />
       <HomeStack.Screen name="LogHistory" component={LogHistoryScreen} />
+      <HomeStack.Screen name="BlockedSenders" component={BlockedSendersScreen} />
     </HomeStack.Navigator>
   );
 }
@@ -98,7 +101,7 @@ const SearchStack = createStackNavigator<SearchStackParamList>();
 function SearchStackNavigator() {
   return (
     <SearchStack.Navigator screenOptions={{ headerShown: false }}>
-      <SearchStack.Screen name="Search" component={ThreatAnalysisScreen} />
+      <SearchStack.Screen name="Search" component={SearchResultsScreen} />
     </SearchStack.Navigator>
   );
 }

@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, SafeAreaView, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, SafeAreaView, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import BottomSheet from '@gorhom/bottom-sheet';
+
 import { useLogs } from '../context/LogContext';
 import { CategoryBadge } from '../components/CategoryBadge';
 import { ThreatBadgeCompact } from '../components/ThreatBadge';
 import { AccessibleText } from '../components/AccessibleText';
 import { useAccessibility } from '../context/AccessibilityContext';
-import DropDownPicker from 'react-native-dropdown-picker';
+import { useApp } from '../context/AppContext';
 import type { LogEntry } from '../context/LogContext';
 
 const LogHistoryScreen = () => {
@@ -15,13 +17,12 @@ const LogHistoryScreen = () => {
   const route = useRoute();
   const { logs } = useLogs();
   const { settings } = useAccessibility();
+  const { settingsSheetRef } = useApp();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [threatFilter, setThreatFilter] = useState('All');
-  const [categoryOpen, setCategoryOpen] = useState(false);
-  const [threatOpen, setThreatOpen] = useState(false);
-  
-  // Get initial filter from navigation params
+  const filterSheetRef = useRef<BottomSheet>(null);
+
   useEffect(() => {
     // @ts-ignore
     const initialThreatFilter = route.params?.threatFilter;
@@ -30,18 +31,8 @@ const LogHistoryScreen = () => {
     }
   }, [route.params]);
 
-  const [categoryItems] = useState([
-    { label: 'All', value: 'All' },
-    { label: 'Mail', value: 'Mail' },
-    { label: 'Text', value: 'Text' },
-    { label: 'Phone Call', value: 'Phone Call' },
-  ]);
-  const [threatItems] = useState([
-    { label: 'All', value: 'All' },
-    { label: 'High', value: 'High' },
-    { label: 'Medium', value: 'Medium' },
-    { label: 'Low', value: 'Low' },
-  ]);
+  const categoryItems = ['All', 'Mail', 'Text', 'Phone Call'];
+  const threatItems = ['All', 'High', 'Medium', 'Low'];
 
   const filteredLogs = logs.filter((log: LogEntry) => {
     const matchesSearch =
@@ -52,7 +43,6 @@ const LogHistoryScreen = () => {
     if (typeof log.threat === 'object' && log.threat.level) {
       threatLevel = log.threat.level;
     } else if (typeof log.threat === 'string') {
-      // fallback for legacy logs: treat as Low if empty
       threatLevel = log.threat || 'Low';
     } else {
       threatLevel = 'Low';
@@ -61,16 +51,14 @@ const LogHistoryScreen = () => {
     return matchesSearch && matchesCategory && matchesThreat;
   });
 
-  // Get title based on active filters
   const getTitle = () => {
     if (threatFilter === 'High') return 'High Threat Logs';
     if (threatFilter === 'Low') return 'Safe Messages';
     if (threatFilter === 'Medium') return 'Medium Threat Logs';
     if (categoryFilter !== 'All') return `${categoryFilter} Logs`;
-    return 'Logs';
+    return 'Log History';
   };
 
-  // Get subtitle based on active filters
   const getSubtitle = () => {
     const activeFilters = [];
     if (threatFilter !== 'All') activeFilters.push(`${threatFilter} Threat`);
@@ -80,7 +68,7 @@ const LogHistoryScreen = () => {
     if (activeFilters.length > 0) {
       return `Filtered by: ${activeFilters.join(', ')}`;
     }
-    return `${filteredLogs.length} total logs`;
+    return `${filteredLogs.length} total logs found`;
   };
 
   const renderItem = ({ item }: { item: LogEntry }) => {
@@ -96,7 +84,7 @@ const LogHistoryScreen = () => {
     
     return (
       <TouchableOpacity
-        style={[styles.card, { backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.07)' }]}
+        style={styles.card}
         onPress={() => (navigation as any).navigate('LogDetail', { log: item })}
         activeOpacity={0.85}
         accessible={true}
@@ -119,117 +107,170 @@ const LogHistoryScreen = () => {
     );
   };
 
-  return (
-    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.headerContainer}>
-          <AccessibleText variant="title" style={styles.title}>{getTitle()}</AccessibleText>
-          {(threatFilter !== 'All' || categoryFilter !== 'All' || search) && (
-            <View style={styles.filterIndicator}>
-              <AccessibleText variant="caption" style={styles.subtitle}>{getSubtitle()}</AccessibleText>
-              <TouchableOpacity
-                style={styles.clearFiltersButton}
-                onPress={() => {
-                  setThreatFilter('All');
-                  setCategoryFilter('All');
-                  setSearch('');
-                }}
-                accessible={true}
-                accessibilityLabel="Clear all filters"
-                accessibilityHint="Tap to remove all active filters"
-              >
-                <AccessibleText variant="caption" style={styles.clearFiltersText}>Clear Filters</AccessibleText>
-              </TouchableOpacity>
-            </View>
-          )}
-          <View style={styles.searchBarRow}>
-            <TextInput
-              style={[styles.searchInput, { 
-                backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
-                color: settings.highContrastMode ? '#000000' : '#fff'
-              }]}
-              placeholder="Search sender or message..."
-              placeholderTextColor={settings.highContrastMode ? '#666666' : "#B0BEC5"}
-              value={search}
-              onChangeText={setSearch}
-              accessible={true}
-              accessibilityLabel="Search logs"
-              accessibilityHint="Type to search through your security logs"
-            />
-          </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 18 }}>
-            <View style={{ flex: 1, marginRight: 8, zIndex: categoryOpen ? 100 : 1 }}>
-              <DropDownPicker
-                open={categoryOpen}
-                value={categoryFilter}
-                items={categoryItems}
-                setOpen={setCategoryOpen}
-                setValue={setCategoryFilter}
-                setItems={() => {}}
-                placeholder="Category"
-                style={{ backgroundColor: '#263159', borderColor: '#4A90E2' }}
-                dropDownContainerStyle={{ backgroundColor: '#263159', borderColor: '#4A90E2', elevation: 5 }}
-                textStyle={{ color: '#fff' }}
-                listItemLabelStyle={{ color: '#fff' }}
-                placeholderStyle={{ color: '#B0BEC5' }}
-                zIndex={categoryOpen ? 100 : 1}
-                maxHeight={220}
-              />
-            </View>
-            <View style={{ flex: 1, zIndex: threatOpen ? 99 : 0 }}>
-              <DropDownPicker
-                open={threatOpen}
-                value={threatFilter}
-                items={threatItems}
-                setOpen={setThreatOpen}
-                setValue={setThreatFilter}
-                setItems={() => {}}
-                placeholder="Threat Level"
-                style={{ backgroundColor: '#263159', borderColor: '#FF6B6B' }}
-                dropDownContainerStyle={{ backgroundColor: '#263159', borderColor: '#FF6B6B', elevation: 5 }}
-                textStyle={{ color: '#fff' }}
-                listItemLabelStyle={{ color: '#fff' }}
-                placeholderStyle={{ color: '#B0BEC5' }}
-                zIndex={threatOpen ? 99 : 0}
-                maxHeight={220}
-              />
-            </View>
-          </View>
+  const renderFilterSheet = () => (
+    <BottomSheet
+      ref={filterSheetRef}
+      index={-1}
+      snapPoints={['50%']}
+      enablePanDownToClose
+      backgroundStyle={{ backgroundColor: '#1E1E1E' }}
+      handleIndicatorStyle={{ backgroundColor: '#444' }}
+    >
+      <View style={styles.filterSheetContainer}>
+        <Text style={styles.filterSheetTitle}>Filter Logs</Text>
+
+        <Text style={styles.filterSectionTitle}>Category</Text>
+        <View style={styles.filterOptionGroup}>
+          {categoryItems.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={[styles.filterChip, categoryFilter === category && styles.activeFilterChip]}
+              onPress={() => setCategoryFilter(category)}
+            >
+              <Text style={[styles.filterChipText, categoryFilter === category && styles.activeFilterChipText]}>{category}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
-        <FlatList
-          data={filteredLogs}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-          contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 18 }}
-          showsVerticalScrollIndicator={false}
-          style={{ marginTop: 8 }}
-          accessible={true}
-          accessibilityLabel="Security logs list"
-          accessibilityHint="Scroll to view all security logs"
-        />
-      </SafeAreaView>
-    </LinearGradient>
+
+        <Text style={styles.filterSectionTitle}>Threat Level</Text>
+        <View style={styles.filterOptionGroup}>
+          {threatItems.map((threat) => (
+            <TouchableOpacity
+              key={threat}
+              style={[
+                styles.filterChip,
+                threatFilter === threat && styles.activeFilterChip,
+                threatFilter === threat && threat === 'High' && styles.highThreat,
+                threatFilter === threat && threat === 'Medium' && styles.mediumThreat,
+                threatFilter === threat && threat === 'Low' && styles.lowThreat,
+              ]}
+              onPress={() => setThreatFilter(threat)}
+            >
+              <Text style={[styles.filterChipText, threatFilter === threat && styles.activeFilterChipText]}>{threat}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TouchableOpacity style={styles.applyButton} onPress={() => filterSheetRef.current?.close()}>
+          <Text style={styles.applyButtonText}>Apply Filters</Text>
+        </TouchableOpacity>
+      </View>
+    </BottomSheet>
+  );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.headerBar}>
+        <AccessibleText variant="title" style={styles.title}>{getTitle()}</AccessibleText>
+        <TouchableOpacity onPress={() => settingsSheetRef.current?.expand()} style={styles.profileIcon}>
+          <Icon name="person-circle-outline" size={32} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.headerContainer}>
+        {(threatFilter !== 'All' || categoryFilter !== 'All' || search) && (
+          <View style={styles.filterIndicator}>
+            <AccessibleText variant="caption" style={styles.subtitle}>{getSubtitle()}</AccessibleText>
+            <TouchableOpacity
+              style={styles.clearFiltersButton}
+              onPress={() => {
+                setThreatFilter('All');
+                setCategoryFilter('All');
+                setSearch('');
+              }}
+              accessible={true}
+              accessibilityLabel="Clear all filters"
+              accessibilityHint="Tap to remove all active filters"
+            >
+              <AccessibleText variant="caption" style={styles.clearFiltersText}>Clear</AccessibleText>
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={styles.searchAndFilterRow}>
+          <TextInput
+            style={[styles.searchInput, { 
+              backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
+              color: settings.highContrastMode ? '#000000' : '#fff'
+            }]}
+            placeholder="Search logs..."
+            placeholderTextColor={settings.highContrastMode ? '#666666' : "#B0BEC5"}
+            value={search}
+            onChangeText={setSearch}
+            accessible={true}
+            accessibilityLabel="Search logs"
+            accessibilityHint="Type to search through your security logs"
+          />
+          <TouchableOpacity style={styles.filterIcon} onPress={() => filterSheetRef.current?.expand()}>
+            <Icon name="options-outline" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+      <FlatList
+        data={filteredLogs}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 18 }}
+        showsVerticalScrollIndicator={false}
+        style={{ marginTop: 8 }}
+        accessible={true}
+        accessibilityLabel="Security logs list"
+        accessibilityHint="Scroll to view all security logs"
+      />
+      {renderFilterSheet()}
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: '#000',
   },
-  container: {
-    padding: 18,
-    paddingBottom: 40,
+  headerBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
   title: {
     color: '#FFFFFF',
     fontSize: 28,
     fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 12,
-    textAlign: 'center',
   },
-  searchBarRow: {
+  profileIcon: {
+    padding: 5,
+  },
+  headerContainer: {
+    paddingHorizontal: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+    paddingBottom: 10,
+  },
+  subtitle: {
+    color: '#A0A0A0',
+    fontSize: 14,
+  },
+  filterIndicator: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+    marginTop: 4,
+  },
+  clearFiltersButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+  },
+  clearFiltersText: {
+    color: '#FF6B6B',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  searchAndFilterRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
@@ -239,112 +280,120 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 10,
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 12,
     color: '#fff',
     fontSize: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.13)',
   },
-  dropdownRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  pickerWrapper: {
-    flex: 1,
-    marginRight: 8,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+  filterIcon: {
+    marginLeft: 10,
+    padding: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.13)',
-    overflow: 'hidden',
-  },
-  picker: {
-    color: '#fff',
-    height: 40,
-    width: '100%',
   },
   card: {
     backgroundColor: 'rgba(255,255,255,0.07)',
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 16,
-    marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.10,
-    shadowRadius: 6,
-    elevation: 2,
+    marginBottom: 12,
   },
   cardHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
   },
   cardLeft: {
     flex: 1,
-    marginRight: 12,
-  },
-  cardDate: {
-    color: '#B0BEC5',
-    fontSize: 13,
-    marginBottom: 2,
-  },
-  cardSender: {
-    color: '#4A90E2',
-    fontWeight: 'bold',
-    fontSize: 16,
   },
   cardRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+  },
+  cardDate: {
+    color: '#A0A0A0',
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  cardSender: {
+    color: '#4A90E2',
+    fontSize: 16,
+    fontWeight: '600',
   },
   cardMessagePreview: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    marginTop: 2,
-    marginBottom: 2,
+    color: '#E0E0E0',
+    fontSize: 14,
   },
-  simBadge: {
-    backgroundColor: '#4A90E2',
-    borderRadius: 8,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    alignSelf: 'center',
-    marginLeft: 8,
+  filterSheetContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#1E1E1E'
   },
-  simBadgeText: {
+  filterSheetTitle: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 22,
     fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  headerContainer: { paddingTop: 18, paddingBottom: 8, backgroundColor: 'transparent' },
-  subtitle: {
-    color: '#B0BEC5',
-    fontSize: 13,
-    marginBottom: 10,
+  filterSectionTitle: {
+    color: '#A0A0A0',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    marginTop: 10,
   },
-  filterIndicator: {
+  filterOptionGroup: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    marginBottom: 15,
+  },
+  filterChip: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginRight: 10,
     marginBottom: 10,
-    paddingHorizontal: 4,
-  },
-  clearFiltersButton: {
-    backgroundColor: 'rgba(255, 107, 107, 0.2)',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
     borderWidth: 1,
-    borderColor: '#FF6B6B',
+    borderColor: 'transparent',
   },
-  clearFiltersText: {
-    color: '#FF6B6B',
-    fontSize: 12,
-    fontWeight: 'bold',
+  activeFilterChip: {
+    backgroundColor: '#4A90E2',
+    borderColor: '#4A90E2',
   },
+  highThreat: {
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+    borderColor: '#FF6B6B'
+  },
+  mediumThreat: {
+    backgroundColor: 'rgba(255, 204, 102, 0.2)',
+    borderColor: '#FFCC66'
+  },
+  lowThreat: {
+    backgroundColor: 'rgba(102, 204, 153, 0.2)',
+    borderColor: '#66CC99'
+  },
+  filterChipText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  activeFilterChipText: {
+    color: '#FFFFFF',
+  },
+  applyButton: {
+    backgroundColor: '#4A90E2',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 'auto',
+  },
+  applyButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold'
+  }
 });
 
 export default LogHistoryScreen; 

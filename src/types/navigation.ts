@@ -7,6 +7,7 @@ export type HomeStackParamList = {
   ScamDetail: { scam: ScamAlert };
   LogDetail: { logId: string };
   LogHistory: { threatFilter?: string };
+  BlockedSenders: undefined;
 };
 
 export type BrowseStackParamList = {

@@ -115,7 +115,7 @@ const HomeScreen = () => {
   );
 
   const handleViewThreats = () => {
-    navigation.navigate('LatestScams');
+    navigation.navigate('LogHistory', { threatFilter: 'High' });
   };
 
   const handleViewLatestScams = () => {
@@ -123,8 +123,7 @@ const HomeScreen = () => {
   };
 
   const handleViewSafeMessages = () => {
-    // This screen is not in the new nav structure yet.
-    Alert.alert("Navigation update needed", "This screen will be implemented in a future step.");
+    navigation.navigate('LogHistory', { threatFilter: 'Low' });
   };
 
   const handleOpenSettings = () => {
@@ -134,8 +133,7 @@ const HomeScreen = () => {
   };
 
   const handleViewBlockedSenders = () => {
-    // This screen is not in the new nav structure yet.
-    Alert.alert("Navigation update needed", "This screen will be implemented in a future step.");
+    navigation.navigate('BlockedSenders');
   };
 
   // Get recent activity from logs (up to 5, not dismissed)
