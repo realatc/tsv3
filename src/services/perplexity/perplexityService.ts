@@ -1,6 +1,8 @@
 // Perplexity AI API service for threat intelligence
 // You'll need to get an API key from https://www.perplexity.ai/settings/api
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const PERPLEXITY_API_KEY = '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'; // Replace 'YOUR_API_KEY_HERE' with your actual API key from Perplexity
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
@@ -26,10 +28,28 @@ export interface ScamAlert {
   sources?: string[];
 }
 
+const LATEST_SCAMS_CACHE_KEY = '@latestScams';
+const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 hours
+
 export async function getLatestScams(): Promise<ScamAlert[]> {
   if (!PERPLEXITY_API_KEY) {
     console.warn('[PerplexityService] No API key provided, returning mock data for latest scams.');
     return getMockScamData();
+  }
+
+  try {
+    // Check cache first
+    const cachedData = await AsyncStorage.getItem(LATEST_SCAMS_CACHE_KEY);
+    if (cachedData) {
+      const { scams, timestamp } = JSON.parse(cachedData);
+      if (Date.now() - timestamp < CACHE_DURATION_MS) {
+        console.log('[getLatestScams] Returning fresh data from cache.');
+        return scams;
+      }
+      console.log('[getLatestScams] Cached data is stale.');
+    }
+  } catch (e) {
+    console.error('[getLatestScams] Error reading from cache:', e);
   }
 
   try {
@@ -83,6 +103,16 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
     }
       
     console.log('[getLatestScams] Successfully fetched and parsed scam briefings.');
+    
+    // Cache the new data
+    try {
+      const dataToCache = JSON.stringify({ scams, timestamp: Date.now() });
+      await AsyncStorage.setItem(LATEST_SCAMS_CACHE_KEY, dataToCache);
+      console.log('[getLatestScams] New data cached successfully.');
+    } catch (e) {
+      console.error('[getLatestScams] Error writing to cache:', e);
+    }
+    
     return scams;
 
   } catch (error) {
