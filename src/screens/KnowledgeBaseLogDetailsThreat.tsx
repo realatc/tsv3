@@ -1,7 +1,11 @@
 import React from 'react';
 import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
-const content = `# Log Details: Threat Tab
+const content = `
+This tab provides a detailed breakdown of the detected threats.
+
+### Key Information
+- **Threat Score**: The calculated risk score.
 
 ## Overview
 

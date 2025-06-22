@@ -1,7 +1,13 @@
 import React from 'react';
 import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
-const content = `# Log Details: Metadata Tab
+const content = `
+This tab shows the technical details and context of the log.
+
+### Key Information
+- **Sender Details**: Information about the sender's email or phone number.
+
+# Log Details: Metadata Tab
 
 The **Metadata** tab provides technical details about how the threat was detected and processed. This information helps you understand the context of the threat and how ThreatSense analyzed it.
 

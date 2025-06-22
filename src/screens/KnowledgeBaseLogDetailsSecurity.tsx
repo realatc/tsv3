@@ -1,9 +1,11 @@
 import React from 'react';
 import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
-const content = `# Log Details: Security Tab
+const content = `
+This tab provides a detailed breakdown of the security analysis.
 
-The **Security** tab (also called "Analysis") provides the technical analysis of the threat. This tab shows how ThreatSense's AI and security systems evaluated the message for potential risks.
+### Key Information
+- **URL Safety Check**: Results from checking URLs against safe browsing databases.
 
 ## What You'll See
 

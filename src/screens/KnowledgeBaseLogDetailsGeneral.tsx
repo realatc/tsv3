@@ -1,9 +1,11 @@
 import React from 'react';
 import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
-const content = `# Log Details: General Tab
+const content = `
+This tab provides a summary of the log entry's content and context.
 
-The **General** tab (also called "Details") provides the foundational information about a security log entry. This tab shows the basic facts about when, who, and what was involved in the potential threat.
+### Key Information
+- **Date & Time**: When the log was recorded.
 
 ## What You'll See
 

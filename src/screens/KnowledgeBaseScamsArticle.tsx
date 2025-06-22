@@ -1,11 +1,10 @@
 import React from 'react';
 import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
-const content = `# Common Digital Scams
-
+const content = `
 Staying safe online means knowing what to watch out for! Here are some of the most common digital scams:
 
-## 1. Phishing Emails
+### 1. Phishing Emails
 - Fake emails that look like they're from your bank, a delivery service, or even your boss.
 - They ask you to click a link or provide personal info.
 - **Tip:** Never click suspicious links or provide sensitive info via email.

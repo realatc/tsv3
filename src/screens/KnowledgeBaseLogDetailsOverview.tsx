@@ -1,7 +1,13 @@
 import React from 'react';
 import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
-const content = `# Understanding the Log Details Screen
+const content = `
+This tab provides a high-level summary of the threat analysis.
+
+### Key Information
+- **Threat Level**: The overall risk assessment.
+
+# Understanding the Log Details Screen
 
 The **Log Details Screen** is your comprehensive threat analysis dashboard. When ThreatSense detects a potential threat, this screen provides you with complete information about what was detected, how it was analyzed, and what you should do about it.
 

@@ -1,12 +1,11 @@
 import React from 'react';
 import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
-const content = `# How Threat Levels Are Calculated
-
+const content = `
 The app calculates threat levels for logs using a simple rule-based scoring system. Here's how it works:
 
-## Inputs Used
-- NLP Analysis: A string describing the content analysis of the message.
+### Inputs Used
+- **NLP Analysis**: A string describing the content analysis of the message.
 - Behavioral Analysis: A string describing the sender's behavior and context.
 - Sender: The sender's email or phone number.
 
