@@ -1,11 +1,12 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
 import { ScamAlert } from '../services/perplexity/perplexityService';
+import type { LogEntry } from '../context/LogContext';
 
 export type HomeStackParamList = {
   Home: undefined;
   LatestScams: undefined;
   ScamDetail: { scam: ScamAlert };
-  LogDetail: { logId: string };
+  LogDetail: { log: LogEntry };
   LogHistory: { threatFilter?: string };
   BlockedSenders: undefined;
 };
@@ -16,6 +17,7 @@ export type BrowseStackParamList = {
   KnowledgeBaseScamsArticle: undefined;
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseLogDetailsOverview: { log?: any };
+  LogDetail: { log: LogEntry };
 };
 
 export type LibraryStackParamList = {

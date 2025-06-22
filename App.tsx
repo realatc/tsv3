@@ -80,6 +80,7 @@ function BrowseStackNavigator() {
       <BrowseStack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} />
       <BrowseStack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} />
       <BrowseStack.Screen name="KnowledgeBaseLogDetailsOverview" component={KnowledgeBaseLogDetailsOverview} />
+      <BrowseStack.Screen name="LogDetail" component={LogDetailScreenWrapper} />
     </BrowseStack.Navigator>
   );
 }
