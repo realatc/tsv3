@@ -42,10 +42,65 @@ import { AccessibilityProvider } from './src/context/AccessibilityContext';
 import { AppProvider, useApp } from './src/context/AppContext';
 import { navigationRef } from './src/services/navigationService';
 
-import { RootStackParamList } from './src/types/navigation';
+import { 
+  RootStackParamList, 
+  TabParamList,
+  HomeStackParamList,
+  BrowseStackParamList,
+  LibraryStackParamList,
+  SearchStackParamList
+} from './src/types/navigation';
 
 const Stack = createStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<TabParamList>();
+
+const HomeStack = createStackNavigator<HomeStackParamList>();
+function HomeStackNavigator() {
+  return (
+    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStack.Screen name="Home" component={HomeScreen} />
+      <HomeStack.Screen name="LatestScams" component={LatestScamsScreen} />
+      <HomeStack.Screen name="ScamDetail" component={ScamDetailScreen} />
+      <HomeStack.Screen name="LogDetail" component={LogDetailScreenWrapper} />
+      <HomeStack.Screen name="LogHistory" component={LogHistoryScreen} />
+    </HomeStack.Navigator>
+  );
+}
+
+const BrowseStack = createStackNavigator<BrowseStackParamList>();
+function BrowseStackNavigator() {
+  return (
+    <BrowseStack.Navigator screenOptions={{ headerShown: false }}>
+      <BrowseStack.Screen name="Browse" component={BrowseScreen} />
+    </BrowseStack.Navigator>
+  );
+}
+
+const LibraryStack = createStackNavigator<LibraryStackParamList>();
+function LibraryStackNavigator() {
+  return (
+    <LibraryStack.Navigator screenOptions={{ headerShown: false }}>
+      <LibraryStack.Screen name="Library" component={LibraryScreen} />
+      <LibraryStack.Screen name="KnowledgeBase" component={KnowledgeBaseScreen} />
+      <LibraryStack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} />
+      <LibraryStack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} />
+      <LibraryStack.Screen name="KnowledgeBaseLogDetailsOverview" component={KnowledgeBaseLogDetailsOverview} />
+      <LibraryStack.Screen name="KnowledgeBaseLogDetailsGeneral" component={KnowledgeBaseLogDetailsGeneral} />
+      <LibraryStack.Screen name="KnowledgeBaseLogDetailsSecurity" component={KnowledgeBaseLogDetailsSecurity} />
+      <LibraryStack.Screen name="KnowledgeBaseLogDetailsMetadata" component={KnowledgeBaseLogDetailsMetadata} />
+      <LibraryStack.Screen name="KnowledgeBaseLogDetailsThreat" component={KnowledgeBaseLogDetailsThreat} />
+    </LibraryStack.Navigator>
+  );
+}
+
+const SearchStack = createStackNavigator<SearchStackParamList>();
+function SearchStackNavigator() {
+  return (
+    <SearchStack.Navigator screenOptions={{ headerShown: false }}>
+      <SearchStack.Screen name="Search" component={ThreatAnalysisScreen} />
+    </SearchStack.Navigator>
+  );
+}
 
 function TabNavigator() {
   return (
@@ -75,10 +130,10 @@ function TabNavigator() {
         tabBarInactiveTintColor: 'gray',
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Browse" component={BrowseScreen} />
-      <Tab.Screen name="Library" component={LibraryScreen} />
-      <Tab.Screen name="Search" component={ThreatAnalysisScreen} />
+      <Tab.Screen name="Home" component={HomeStackNavigator} />
+      <Tab.Screen name="Browse" component={BrowseStackNavigator} />
+      <Tab.Screen name="Library" component={LibraryStackNavigator} />
+      <Tab.Screen name="Search" component={SearchStackNavigator} />
     </Tab.Navigator>
   );
 }
@@ -126,18 +181,6 @@ const AppContent = () => {
           <Stack.Screen name="MainTabs" component={TabNavigator} />
           {/* Add screens that should appear over the tabs here */}
           <Stack.Screen name="AccessibilitySettings" component={AccessibilitySettingsScreen} />
-          <Stack.Screen name="ScamDetail" component={ScamDetailScreen} />
-          <Stack.Screen name="LogDetail" component={LogDetailScreenWrapper} />
-          <Stack.Screen name="LatestScams" component={LatestScamsScreen} />
-          <Stack.Screen name="LogHistory" component={LogHistoryScreen} />
-          <Stack.Screen name="KnowledgeBase" component={KnowledgeBaseScreen} />
-          <Stack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} />
-          <Stack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} />
-          <Stack.Screen name="KnowledgeBaseLogDetailsOverview" component={KnowledgeBaseLogDetailsOverview} />
-          <Stack.Screen name="KnowledgeBaseLogDetailsGeneral" component={KnowledgeBaseLogDetailsGeneral} />
-          <Stack.Screen name="KnowledgeBaseLogDetailsSecurity" component={KnowledgeBaseLogDetailsSecurity} />
-          <Stack.Screen name="KnowledgeBaseLogDetailsMetadata" component={KnowledgeBaseLogDetailsMetadata} />
-          <Stack.Screen name="KnowledgeBaseLogDetailsThreat" component={KnowledgeBaseLogDetailsThreat} />
           <Stack.Screen name="HelpAndSupport" component={HelpAndSupportScreen} />
         </Stack.Navigator>
       </NavigationContainer>

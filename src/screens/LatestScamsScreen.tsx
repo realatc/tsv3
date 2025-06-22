@@ -15,11 +15,13 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import { ScamAlertCard } from '../components/ScamAlertCard';
 import { getLatestScams, ScamAlert } from '../services/perplexity/perplexityService';
-import { RootStackParamList } from '../types/navigation';
+import { HomeStackParamList } from '../types/navigation';
+import { useApp } from '../context/AppContext';
 
-type LatestScamsNavigationProp = StackNavigationProp<RootStackParamList, 'LatestScams'>;
+type LatestScamsNavigationProp = StackNavigationProp<HomeStackParamList, 'LatestScams'>;
 
 const LatestScamsScreen: React.FC = () => {
+  const { settingsSheetRef } = useApp();
   const navigation = useNavigation<LatestScamsNavigationProp>();
   const [scams, setScams] = useState<ScamAlert[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,6 +98,12 @@ const LatestScamsScreen: React.FC = () => {
     return 'alert';
   };
 
+  const handleOpenSettings = () => {
+    if (settingsSheetRef.current) {
+      settingsSheetRef.current.snapToIndex(2);
+    }
+  };
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -169,22 +177,27 @@ const LatestScamsScreen: React.FC = () => {
   };
 
   return (
-    <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
+    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Icon name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.headerTitleContainer}>
-            <Text style={styles.pageTitle}>Latest Scams</Text>
-            <Text style={styles.headerSubtitle}>Powered by Perplexity AI</Text>
-            {lastUpdated && (
-              <Text style={styles.lastUpdatedText}>
-                Updated {formatLastUpdated(lastUpdated)}
-              </Text>
-            )}
+          <View style={styles.logoContainer}>
+            <Icon name="flame" size={28} color="#A070F2" />
+            <Text style={styles.headerTitle}>Latest Scams</Text>
           </View>
+          <TouchableOpacity
+            onPress={handleOpenSettings}
+            style={styles.profileButton}
+            accessibilityLabel="Open Settings"
+          >
+            <Icon name="person-circle-outline" size={34} color="#fff" style={styles.profileImage} />
+          </TouchableOpacity>
         </View>
+        <Text style={styles.headerSubtitle}>Powered by Perplexity AI</Text>
+        {lastUpdated && (
+          <Text style={styles.lastUpdatedText}>
+            Updated {formatLastUpdated(lastUpdated)}
+          </Text>
+        )}
         {renderContent()}
       </SafeAreaView>
     </LinearGradient>
@@ -201,36 +214,44 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
     paddingTop: 10,
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
-  headerTitleContainer: {
-    flex: 1,
-    marginLeft: 12,
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  pageTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
+  headerTitle: {
     color: '#fff',
-    marginBottom: 4,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginLeft: 10,
   },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#aaa',
-    marginBottom: 4,
-  },
-  lastUpdatedText: {
-    fontSize: 14,
-    color: '#888',
-  },
-  backButton: {
+  profileButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  profileImage: {
+    width: 34,
+    height: 34,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: '#aaa',
+    marginLeft: 15,
+    marginBottom: 4,
+  },
+  lastUpdatedText: {
+    fontSize: 13,
+    color: '#A070F2',
+    marginLeft: 15,
+    marginBottom: 10,
   },
   centerContainer: {
     flex: 1,

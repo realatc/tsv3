@@ -1,29 +1,21 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
 import { ScamAlert } from '../services/perplexity/perplexityService';
 
-// Defines the parameters for the screens within the bottom tab navigator
-export type TabParamList = {
-  Home: { openSettings?: boolean } | undefined;
-  Browse: undefined;
-  Library: undefined;
-  Search: undefined;
-};
-
-// Defines the parameters for the screens in the main stack navigator
-export type RootStackParamList = {
-  MainTabs: NavigatorScreenParams<TabParamList>; // The nested tab navigator
+export type HomeStackParamList = {
   Home: undefined;
-  Browse: undefined;
-  Library: undefined;
-  Search: undefined;
-  LogHistory: { threatFilter?: string };
-  KnowledgeBase: undefined;
-  LogDetail: { logId: string };
-  SearchResults: { query: string };
   LatestScams: undefined;
   ScamDetail: { scam: ScamAlert };
+  LogDetail: { logId: string };
+  LogHistory: { threatFilter?: string };
+};
 
-  // Knowledge Base Articles
+export type BrowseStackParamList = {
+  Browse: undefined;
+};
+
+export type LibraryStackParamList = {
+  Library: undefined;
+  KnowledgeBase: undefined;
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseScamsArticle: undefined;
   KnowledgeBaseLogDetailsOverview: { log?: any };
@@ -31,9 +23,26 @@ export type RootStackParamList = {
   KnowledgeBaseLogDetailsSecurity: { log?: any };
   KnowledgeBaseLogDetailsMetadata: { log?: any };
   KnowledgeBaseLogDetailsThreat: { log?: any };
-  ThreatAnalysis: undefined;
+};
+
+export type SearchStackParamList = {
+  Search: undefined;
+};
+
+// Defines the parameters for the screens within the bottom tab navigator
+export type TabParamList = {
+  Home: NavigatorScreenParams<HomeStackParamList>;
+  Browse: NavigatorScreenParams<BrowseStackParamList>;
+  Library: NavigatorScreenParams<LibraryStackParamList>;
+  Search: NavigatorScreenParams<SearchStackParamList>;
+};
+
+// Defines the parameters for the screens in the main stack navigator
+export type RootStackParamList = {
+  MainTabs: NavigatorScreenParams<TabParamList>; // The nested tab navigator
   AccessibilitySettings: undefined;
   HelpAndSupport: undefined;
+  SearchResults: { query: string }; // Assuming search results might be global
 };
 
 export type DrawerParamList = {
