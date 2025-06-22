@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, SafeAreaView } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAccessibility } from '../context/AccessibilityContext';
@@ -34,14 +34,15 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
   return (
     <BottomSheet
       ref={ref}
-      index={0}
-      snapPoints={['40%', '75%', '95%']}
+      index={-1}
+      snapPoints={['40%', '75%', '100%']}
       enablePanDownToClose={true}
       backgroundStyle={{ backgroundColor: '#1E1E1E' }}
       handleIndicatorStyle={{ backgroundColor: '#666' }}
       detached={true}
       bottomInset={-400}
     >
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.sheetContainer}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Settings</Text>
@@ -129,11 +130,16 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
             </View>
           </ScrollView>
         </View>
+      </SafeAreaView>
     </BottomSheet>
   );
 });
 
 const styles = StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: '#1E1E1E',
+    },
     sheetContainer: {
       flex: 1,
       backgroundColor: '#1E1E1E',

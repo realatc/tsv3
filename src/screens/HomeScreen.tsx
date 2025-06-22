@@ -136,7 +136,7 @@ const HomeScreen = () => {
 
   const handleOpenSettings = () => {
     if (settingsSheetRef.current) {
-      settingsSheetRef.current.snapToIndex(1);
+      settingsSheetRef.current.snapToIndex(2);
     }
   };
 
