@@ -1,206 +1,119 @@
 import React from 'react';
 import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
 
-const logDetailsSecurityMd = `
-The **Security** tab provides detailed technical analysis of the message's safety. This is where you'll find information about URL safety, sender reputation, and specific security concerns that were detected.
+const content = `# Log Details: Security Tab
+
+The **Security** tab (also called "Analysis") provides the technical analysis of the threat. This tab shows how ThreatSense's AI and security systems evaluated the message for potential risks.
 
 ## What You'll See
 
-### URL Analysis
-**What it shows:** Safety assessment of any links found in the message
-**How it's checked:** Google Safe Browsing API and local analysis
-**Results:**
-- **Safe** - Link appears legitimate and secure
-- **Malware** - Link contains harmful software
-- **Phishing** - Link designed to steal information
-- **Uncommon** - Suspicious but not clearly dangerous
-- **Unknown** - Unable to determine safety
+### NLP Analysis
+**What it shows:** Artificial Intelligence analysis of the message content
+**How it's collected:** AI-powered Natural Language Processing analyzes the text for suspicious patterns
+**What it looks for:**
+- **Urgent language:** "Act now," "Immediate action required," "24 hours to respond"
+- **Authority impersonation:** Claims to be from banks, government agencies, tech support
+- **Pressure tactics:** Threats of account suspension, legal action, or missed opportunities
+- **Suspicious requests:** Asking for passwords, personal information, or money
+- **Emotional manipulation:** Creating fear, excitement, or urgency
 
-**Why it matters:** Links are often the most dangerous part of threats, leading to malicious websites
+**Example analysis:** *"High risk phishing attempt. Contains urgent language, impersonates PayPal, requests immediate action, and includes suspicious verification link."*
 
-### Sender Analysis
-**What it shows:** Assessment of the sender's trustworthiness and reputation
-**How it's evaluated:** Based on sender history, domain reputation, and patterns
-**Factors considered:**
-- **Domain age** - How long the sending domain has existed
-- **Reputation score** - Known history of the sender
-- **Sending patterns** - How often and when they contact you
-- **Community reports** - Reports from other users
+### Behavioral Analysis
+**What it shows:** Analysis of sender behavior and communication patterns
+**How it's collected:** Compares the sender and message against known threat patterns and your contact history
+**What it analyzes:**
+- **Sender reputation:** Is this sender in your contacts? Have they contacted you before?
+- **Domain analysis:** Does the email domain match the claimed organization?
+- **Pattern matching:** Does this match known scam patterns?
+- **Timing analysis:** Is this communication unusual for the time or context?
 
-**Why it matters:** Known malicious senders are more likely to be threats
+**Example analysis:** *"Sender domain does not match official PayPal domain. Similar to known phishing patterns. Account verification requests via email are unusual for PayPal."*
 
-### Content Security
-**What it shows:** Analysis of the message content for security concerns
-**How it's analyzed:** AI examines language patterns, urgency, and suspicious elements
-**Common red flags:**
-- **Urgency** - "Act now" or "Limited time" language
-- **Authority** - Impersonating trusted organizations
-- **Requests** - Asking for personal information
-- **Threats** - Consequences for not acting
-- **Rewards** - Promises of money or prizes
+### URL Safety Check
+**What it shows:** Real-time analysis of any links found in the message
+**How it's collected:** Each URL is checked against Google Safe Browsing API's database of known malicious sites
+**Safety levels:**
+- 🟢 **Safe:** URL is not flagged as dangerous
+- 🟡 **Uncommon:** URL is not widely known but not necessarily dangerous
+- 🟠 **Phishing:** URL is designed to steal personal information
+- 🔴 **Malware:** URL contains or distributes malicious software
+- ⚫ **Unknown:** URL couldn't be verified (proceed with caution)
 
-**Why it matters:** Understanding manipulation tactics helps you avoid falling for them
+**What happens when you click a link:**
+- **Safe links:** Open normally
+- **Unsafe links:** Show a warning before opening
+- **Unknown links:** Show a warning with option to proceed or cancel
 
-### Attachment Analysis
-**What it shows:** Safety assessment of any file attachments
-**How it's checked:** File type analysis and security scanning
-**Concerns:**
-- **Executable files** - Programs that could harm your device
-- **Suspicious formats** - Unusual file types
-- **Large files** - Potentially harmful downloads
-- **Unknown sources** - Files from untrusted senders
+## How This Analysis Works
 
-**Why it matters:** Attachments can contain malware or other harmful content
+### AI-Powered Detection
+ThreatSense uses advanced AI models trained on millions of scam examples to:
+- Recognize suspicious language patterns
+- Identify impersonation attempts
+- Detect emotional manipulation tactics
+- Flag unusual requests
 
-## Understanding Security Results
+### Real-Time Database Checks
+Every URL is instantly checked against:
+- Google's Safe Browsing database (updated continuously)
+- Known phishing site databases
+- Malware distribution networks
+- Suspicious domain registrations
 
-### Safe Indicators
-**Green flags that suggest security:**
-- **Known domains** - Legitimate business websites
-- **HTTPS links** - Secure, encrypted connections
-- **Verified senders** - People you know and trust
-- **Expected content** - Normal communication patterns
+### Behavioral Pattern Recognition
+The system learns from:
+- Your personal contact history
+- Known scam patterns
+- Community threat reports
+- Security research databases
 
-### Warning Signs
-**Red flags that suggest security risks:**
-- **Unknown domains** - Websites you don't recognize
-- **HTTP links** - Unencrypted, potentially unsafe connections
-- **Suspicious URLs** - Misspelled or fake domain names
-- **Unexpected attachments** - Files you weren't expecting
+## Understanding the Results
 
-### Risk Levels
-**How to interpret security assessments:**
-- **Low risk** - Minor concerns, proceed with caution
-- **Medium risk** - Some suspicious elements, be careful
-- **High risk** - Multiple security concerns, avoid interaction
-- **Critical risk** - Clear security threats, do not engage
+### High-Risk Indicators
+- **Multiple red flags:** When several analysis methods flag the same threat
+- **Pattern matches:** When the message matches known scam templates
+- **Unusual behavior:** When the sender acts differently than expected
+- **Suspicious timing:** When the communication happens at unusual times
 
-## How Security Analysis Works
+### False Positives
+Sometimes legitimate messages may be flagged as suspicious because they:
+- Contain urgent language for legitimate reasons
+- Come from new or unknown senders
+- Include links to new websites
+- Use similar language to scams
 
-### Multi-Layer Protection
-ThreatSense uses multiple security methods:
+### What to Do Based on Analysis
 
-1. **URL Safety Checking**
-   - Google Safe Browsing database
-   - Domain reputation analysis
-   - Suspicious URL pattern detection
-   - Real-time threat intelligence
+#### High-Risk Messages
+- **Don't click any links**
+- **Don't provide personal information**
+- **Block the sender**
+- **Report the threat**
+- **Delete the message**
 
-2. **Sender Reputation**
-   - Historical threat reports
-   - Domain age and legitimacy
-   - Sending behavior patterns
-   - Community feedback
+#### Medium-Risk Messages
+- **Verify the sender independently**
+- **Check links before clicking**
+- **Be cautious with personal information**
+- **Monitor for similar threats**
 
-3. **Content Analysis**
-   - AI-powered text analysis
-   - Social engineering detection
-   - Impersonation pattern recognition
-   - Threat language identification
+#### Low-Risk Messages
+- **Still be cautious**
+- **Verify unusual requests**
+- **Report if suspicious**
 
-4. **Technical Analysis**
-   - File attachment scanning
-   - Network security checks
-   - Encryption verification
-   - Malware pattern detection
+## Tips for Using This Tab
 
-### Real-Time Updates
-Security information is updated continuously:
-- **New threats** are added to databases
-- **Domain reputations** are updated
-- **Pattern recognition** improves over time
-- **Community reports** enhance protection
-
-## Common Security Threats
-
-### Phishing Attempts
-**What they look like:**
-- **Fake login pages** - Impersonating legitimate services
-- **Account verification** - Asking for personal information
-- **Security alerts** - False warnings about your accounts
-- **Prize notifications** - Promises of rewards or money
-
-**How to spot them:**
-- Check the URL carefully
-- Look for spelling errors
-- Verify the sender independently
-- Don't click suspicious links
-
-### Malware Distribution
-**What they contain:**
-- **Harmful attachments** - Files that can damage your device
-- **Infected links** - Websites that download malware
-- **Fake software** - Programs that seem helpful but are harmful
-- **System updates** - False security patches
-
-**How to protect yourself:**
-- Don't download unexpected files
-- Use antivirus software
-- Keep your system updated
-- Be cautious with unknown sources
-
-### Social Engineering
-**How they work:**
-- **Authority figures** - Impersonating trusted people
-- **Urgency tactics** - Creating pressure to act quickly
-- **Emotional manipulation** - Playing on your feelings
-- **Information gathering** - Collecting data for later attacks
-
-**How to resist:**
-- Verify requests independently
-- Don't rush into decisions
-- Trust your instincts
-- Ask questions
-
-## Best Security Practices
-
-### Link Safety
-- **Hover before clicking** - Check where links actually go
-- **Look for HTTPS** - Secure connections are safer
-- **Check domain names** - Watch for misspellings
-- **Use bookmarks** - Access important sites directly
-
-### Sender Verification
-- **Check contact details** - Verify sender information
-- **Use known channels** - Contact through trusted methods
-- **Ask questions** - Confirm unusual requests
-- **Trust your contacts** - But verify unexpected messages
-
-### Content Awareness
-- **Read carefully** - Look for suspicious language
-- **Check grammar** - Poor writing can indicate scams
-- **Verify claims** - Don't trust unbelievable offers
-- **Report threats** - Help protect others
-
-### System Security
-- **Keep software updated** - Install security patches
-- **Use antivirus software** - Protect against malware
-- **Backup important data** - Protect against data loss
-- **Use strong passwords** - Secure your accounts
-
-## Privacy and Data Protection
-
-### Your Information
-- **Message content** - What you've received
-- **Sender details** - Who contacted you
-- **Security analysis** - What was detected
-- **Threat reports** - What you've reported
-
-### How Data is Protected
-- **Local processing** - Most analysis happens on your device
-- **Encrypted transmission** - Secure data transfer
-- **Minimal collection** - Only essential information
-- **Your control** - You decide what to share
-
-### Community Protection
-- **Anonymous reporting** - Share threats without personal info
-- **Collective intelligence** - Benefit from community knowledge
-- **Pattern recognition** - Learn from others' experiences
-- **Continuous improvement** - System gets better over time
+1. **Read both analyses** - NLP and behavioral analysis together provide the full picture
+2. **Check URL safety** - Always verify links before clicking
+3. **Look for patterns** - Multiple red flags indicate higher risk
+4. **Trust your instincts** - If something feels wrong, it probably is
+5. **Report threats** - Help protect others by reporting suspicious activity
 
 ---
 
-*The Security tab provides the technical analysis you need to understand the safety of any message and protect yourself from digital threats.*`;
+*ThreatSense continuously updates its threat detection capabilities to protect you from the latest scams and attacks.*`;
 
 const CREATED_DATE = '2024-12-15';
 const UPDATED_DATE = new Date().toISOString().split('T')[0];
@@ -209,10 +122,8 @@ const KnowledgeBaseLogDetailsSecurity = () => {
   return (
     <KnowledgeBaseArticle
       title="Log Details: Security Tab"
-      subtitle="Technical security analysis and safety checks"
-      content={logDetailsSecurityMd}
-      createdDate={CREATED_DATE}
-      updatedDate={UPDATED_DATE}
+      subtitle="AI-powered security analysis and safety checks"
+      content={content}
     />
   );
 };

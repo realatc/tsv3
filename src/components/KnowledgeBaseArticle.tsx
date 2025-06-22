@@ -1,475 +1,501 @@
-import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
   Text,
+  ScrollView,
+  StyleSheet,
   TouchableOpacity,
-  Modal,
-  FlatList,
-  Dimensions,
-  Animated,
-  Easing,
   TextInput,
-  findNodeHandle,
-  TextStyle,
-  ViewStyle,
+  Modal,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import Markdown, {
-  ASTNode,
-  RenderRules,
-  MarkdownIt,
-  tokensToAST,
-  stringToTokens,
-} from 'react-native-markdown-display';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
-import { ThreatCategoryBadge } from './ThreatCategoryBadge';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { threatCategoryDetails } from '../utils/threatCategories';
 
-// Interfaces
 interface KnowledgeBaseArticleProps {
   title: string;
   subtitle: string;
   content: string;
-  createdDate: string;
-  updatedDate: string;
 }
 
-interface TocItem {
-  key: string;
-  title: string;
-  level: number;
-}
-
-// Dimensions
-const { width } = Dimensions.get('window');
-
-const KnowledgeBaseArticle: React.FC<KnowledgeBaseArticleProps> = ({
-  title,
-  subtitle,
-  content,
-  createdDate,
-  updatedDate,
-}) => {
+const KnowledgeBaseArticle: React.FC<KnowledgeBaseArticleProps> = ({ title, subtitle, content }) => {
   const navigation = useNavigation();
-  const [isTocVisible, setTocVisible] = useState(false);
-  const [isSearchVisible, setSearchVisible] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentResultIndex, setCurrentResultIndex] = useState(0);
-  const [tocItems, setTocItems] = useState<TocItem[]>([]);
-  const [headingLayouts, setHeadingLayouts] = useState<{ [key: string]: number }>({});
-
-  const slideAnim = useRef(new Animated.Value(-width * 0.75)).current;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<number[]>([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showTOC, setShowTOC] = useState(false);
+  const [tocItems, setTocItems] = useState<{ title: string; level: number; index: number }[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
-  
-  const headingRefs = useRef<{ [key: string]: View | null }>({}).current;
-  const searchResultRefs = useRef<(Text | null)[]>([]);
+  const lineLayouts = useRef<{ [key: number]: number }>({}).current;
 
-  // --- Theme and Styles ---
-  const isDark = true; // Forcing dark theme
-  const styles = useMemo(() => createStyles(isDark), [isDark]);
-  const markdownStyles = useMemo(() => createMarkdownStyles(isDark), [isDark]);
-  
-  // --- AST Parsing and TOC Extraction ---
-  const markdownItInstance = useMemo(() => MarkdownIt({ typographer: true }), []);
-  const ast = useMemo(() => tokensToAST(stringToTokens(content, markdownItInstance)), [content, markdownItInstance]);
+  // Approximate line height for calculations
+  const LINE_HEIGHT = 24;
+  const HEADER_HEIGHT = 80;
 
   useEffect(() => {
-    const extractedTocItems: TocItem[] = [];
-    const extractTextContent = (node: ASTNode): string => {
-      if (Array.isArray(node.children) && node.children.length > 0) {
-        return node.children.map(extractTextContent).join('');
+    const lines = content.split('\n');
+    const items: { title: string; level: number; index: number }[] = [];
+    lines.forEach((line, index) => {
+      if (line.startsWith('#')) {
+        const level = line.match(/^#+/)?.[0].length || 1;
+        const heading = line.replace(/^#+\s*/, '').trim();
+        if (heading) {
+          items.push({ title: heading, level, index });
+        }
       }
-      if (typeof node.content === 'string') {
-        return node.content;
-      }
-      return '';
-    };
-    
-    function traverse(nodes: ASTNode[]) {
-      nodes.forEach(node => {
-        if (node.type.startsWith('heading')) {
-          const title = extractTextContent(node);
-          const level = parseInt(node.type.replace('heading', ''), 10);
-          if (title && !isNaN(level)) {
-            extractedTocItems.push({
-              key: node.key,
-              title: title,
-              level: level,
-            });
-          }
-        }
-        if (node.children) {
-          traverse(node.children);
-        }
-      });
-    }
-    traverse(ast);
-    setTocItems(extractedTocItems);
-  }, [ast]);
-  
-  // --- Search Logic ---
-  const searchResultsCount = useMemo(() => {
-    if (!searchTerm.trim()) return 0;
-    searchResultRefs.current = [];
-    let count = 0;
-    const regex = new RegExp(`(${searchTerm.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
-    function countMatches(nodes: ASTNode[]) {
-      nodes.forEach(node => {
-        if (node.type === 'text' && node.content) {
-          const matches = node.content.match(regex);
-          if (matches) {
-            count += matches.length;
-          }
-        }
-        if (node.children) {
-          countMatches(node.children);
-        }
-      });
-    }
-    countMatches(ast);
-    return count;
-  }, [ast, searchTerm]);
-  
-  useEffect(() => {
-    setCurrentResultIndex(0);
-  }, [searchTerm]);
+    });
+    setTocItems(items);
+  }, [content]);
 
-  useEffect(() => {
-    if (!isSearchVisible || searchResultsCount === 0 || !searchResultRefs.current[currentResultIndex]) return;
-
-    const node = searchResultRefs.current[currentResultIndex];
-    const scrollViewNode = findNodeHandle(scrollViewRef.current);
-
-    if (node && scrollViewNode) {
-      const timer = setTimeout(() => {
-        node.measureLayout(
-          scrollViewNode,
-          (x, y) => scrollViewRef.current?.scrollTo({ y: y - 100, animated: true }),
-          () => {}
-        );
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-  }, [currentResultIndex, isSearchVisible, searchResultsCount]);
-
-  // --- Handlers ---
-  const showToc = () => {
-    setTocVisible(true);
-    Animated.timing(slideAnim, { toValue: 0, duration: 300, useNativeDriver: true, easing: Easing.out(Easing.ease) }).start();
-  };
-
-  const hideToc = () => {
-    Animated.timing(slideAnim, { toValue: -width * 0.75, duration: 300, useNativeDriver: true, easing: Easing.in(Easing.ease) }).start(() => setTocVisible(false));
-  };
-
-  const onTocPress = (key: string) => {
-    console.log(`[TOC Press] Touched item with key: ${key}`);
-    const y = headingLayouts[key];
-
-    if (y !== undefined) {
-      console.log(`[TOC Press] Scrolling to y=${y} for key: ${key}`);
-      scrollViewRef.current?.scrollTo({ y, animated: true });
-      hideToc();
+  const performSearch = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setCurrentSearchIndex(0);
       return;
     }
-    
-    console.warn(`[TOC Press] Layout for key ${key} not found. Trying measureLayout fallback.`);
-    const node = headingRefs[key];
-    const scrollViewNode = findNodeHandle(scrollViewRef.current);
-
-    if (node && scrollViewNode) {
-      node.measureLayout(
-        scrollViewNode,
-        (x, y) => {
-          console.log(`[TOC Press] Measured layout for ${key}: x=${x}, y=${y}. Scrolling...`);
-          scrollViewRef.current?.scrollTo({ y, animated: true });
-        },
-        () => {
-          console.error(`[TOC Press] Failed to measure layout for TOC key: ${key}`);
-        }
-      );
-    } else {
-      console.warn(`[TOC Press] Could not find node or scrollView for key: ${key}`);
+    const lines = content.split('\n');
+    const results = lines
+      .map((line, index) => (line.toLowerCase().includes(query.toLowerCase()) ? index : -1))
+      .filter(index => index !== -1);
+    setSearchResults(results);
+    setCurrentSearchIndex(0);
+    if (results.length > 0) {
+      scrollToLine(results[0]);
     }
-    hideToc();
   };
 
-  const handleSearchNav = (direction: 'next' | 'prev') => {
-    if (searchResultsCount === 0) return;
-    setCurrentResultIndex(prevIndex => {
-      const newIndex = direction === 'next' ? prevIndex + 1 : prevIndex - 1;
-      return (newIndex + searchResultsCount) % searchResultsCount;
+  const navigateToSearchResult = (direction: 'next' | 'prev') => {
+    if (searchResults.length === 0) return;
+    let newIndex = currentSearchIndex;
+    if (direction === 'next') {
+      newIndex = (currentSearchIndex + 1) % searchResults.length;
+    } else {
+      newIndex = currentSearchIndex === 0 ? searchResults.length - 1 : currentSearchIndex - 1;
+    }
+    setCurrentSearchIndex(newIndex);
+    scrollToLine(searchResults[newIndex]);
+  };
+
+  const scrollToLine = (lineIndex: number) => {
+    if (scrollViewRef.current && lineLayouts[lineIndex] !== undefined) {
+      const yPosition = lineLayouts[lineIndex];
+      scrollViewRef.current.scrollTo({ y: Math.max(0, yPosition - HEADER_HEIGHT), animated: true });
+    }
+  };
+
+  const scrollToTOCItem = (index: number) => {
+    scrollToLine(index);
+    setShowTOC(false);
+  };
+
+  const renderStyledText = (text: string, style: any) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g); // Split by **bolded** text
+    return (
+      <Text style={style}>
+        {parts.map((part, index) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return (
+              <Text key={index} style={{ fontWeight: 'bold' }}>
+                {part.slice(2, -2)}
+              </Text>
+            );
+          }
+          return part;
+        })}
+      </Text>
+    );
+  };
+
+  const ThreatCategoriesSection = () => (
+    <View style={{ marginTop: 10 }}>
+      {Object.entries(threatCategoryDetails).map(([name, details]) => {
+        if (name === 'Default') return null;
+        return (
+          <View key={name} style={{ marginBottom: 20 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <MaterialCommunityIcons name={details.icon} size={24} color={details.color} />
+              <Text style={[styles.h3, { marginLeft: 10, marginTop: 0, marginBottom: 0 }]}>{name}</Text>
+            </View>
+            <Text style={[styles.contentLine, { marginLeft: 34 }]}>{details.description}</Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+
+  const renderContent = () => {
+    const lines = content.split('\n');
+    return lines.map((line, index) => {
+      const isSearchResult = searchResults.includes(index);
+      const isCurrentSearchResult = searchResults[currentSearchIndex] === index;
+      const style: any[] = [styles.contentLine];
+      if (isSearchResult) style.push(styles.searchResult);
+      if (isCurrentSearchResult) style.push(styles.currentSearchResult);
+
+      const getLineContent = () => {
+        if (line.trim() === '::threat_categories::') {
+          return <ThreatCategoriesSection />;
+        }
+        if (line.startsWith('# '))
+          return renderStyledText(line.replace('# ', ''), [...style, styles.h1]);
+        if (line.startsWith('## '))
+          return renderStyledText(line.replace('## ', ''), [...style, styles.h2]);
+        if (line.startsWith('### '))
+          return renderStyledText(line.replace('### ', ''), [...style, styles.h3]);
+        if (line.startsWith('- '))
+          return (
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={[...style, styles.bulletPoint]}>• </Text>
+              {renderStyledText(line.replace('- ', ''), style)}
+            </View>
+          );
+        if (line.trim() === '') return <View style={styles.emptyLine} />;
+        return renderStyledText(line, style);
+      };
+
+      return (
+        <View 
+          key={index}
+          onLayout={(event) => {
+            const { y } = event.nativeEvent.layout;
+            lineLayouts[index] = y;
+          }}
+        >
+          {getLineContent()}
+        </View>
+      );
     });
   };
-  
-  // --- Render Rules ---
-  const rules = useMemo<RenderRules>(() => {
-    let currentMatchIndex = -1;
-    
-    return {
-      heading1: (node, children) => (
-        <View 
-          key={node.key}
-          ref={ref => {headingRefs[node.key] = ref}}
-          onLayout={(event) => {
-            const layout = event.nativeEvent.layout;
-            setHeadingLayouts(prev => ({ ...prev, [node.key]: layout.y }));
-          }}
-        >
-          <Text style={markdownStyles.heading1}>{children}</Text>
-        </View>
-      ),
-      heading2: (node, children) => (
-        <View 
-          key={node.key} 
-          ref={ref => {headingRefs[node.key] = ref}}
-          onLayout={(event) => {
-            const layout = event.nativeEvent.layout;
-            setHeadingLayouts(prev => ({ ...prev, [node.key]: layout.y }));
-          }}
-        >
-          <Text style={markdownStyles.heading2}>{children}</Text>
-        </View>
-      ),
-      heading3: (node, children) => (
-        <View
-          key={node.key}
-          ref={ref => {headingRefs[node.key] = ref}}
-          onLayout={event => {
-            const layout = event.nativeEvent.layout;
-            setHeadingLayouts(prev => ({...prev, [node.key]: layout.y}));
-          }}>
-          <Text style={markdownStyles.heading3}>{children}</Text>
-        </View>
-      ),
-      heading4: (node, children) => (
-        <View
-          key={node.key}
-          ref={ref => {headingRefs[node.key] = ref}}
-          onLayout={event => {
-            const layout = event.nativeEvent.layout;
-            setHeadingLayouts(prev => ({...prev, [node.key]: layout.y}));
-          }}>
-          <Text style={markdownStyles.heading4}>{children}</Text>
-        </View>
-      ),
-      heading5: (node, children) => (
-        <View
-          key={node.key}
-          ref={ref => {headingRefs[node.key] = ref}}
-          onLayout={event => {
-            const layout = event.nativeEvent.layout;
-            setHeadingLayouts(prev => ({...prev, [node.key]: layout.y}));
-          }}>
-          <Text style={markdownStyles.heading5}>{children}</Text>
-        </View>
-      ),
-      heading6: (node, children) => (
-        <View
-          key={node.key}
-          ref={ref => {headingRefs[node.key] = ref}}
-          onLayout={event => {
-            const layout = event.nativeEvent.layout;
-            setHeadingLayouts(prev => ({...prev, [node.key]: layout.y}));
-          }}>
-          <Text style={markdownStyles.heading6}>{children}</Text>
-        </View>
-      ),
-      text: (node) => {
-        if (!searchTerm.trim()) {
-          return <Text key={node.key} style={markdownStyles.body}>{node.content}</Text>;
-        }
-        const regex = new RegExp(`(${searchTerm.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
-        const parts = node.content.split(regex);
-        
-        return (
-          <Text key={node.key} style={markdownStyles.body}>
-            {parts.map((part, index) => {
-              if (part.toLowerCase() === searchTerm.toLowerCase()) {
-                currentMatchIndex++;
-                const isCurrent = currentMatchIndex === currentResultIndex;
-                const refIndex = currentMatchIndex;
-                return (
-                  <Text
-                    key={`${node.key}-${index}`}
-                    ref={ref => {searchResultRefs.current[refIndex] = ref}}
-                    style={isCurrent ? markdownStyles.searchHighlightCurrent : markdownStyles.searchHighlight}
-                  >
-                    {part}
-                  </Text>
-                );
-              }
-              return <Text key={`${node.key}-${index}`}>{part}</Text>;
-            })}
-          </Text>
-        );
-      },
-      image: (node) => {
-        const { src } = node.attributes;
-        if (src?.startsWith('threat://')) {
-          return <View key={node.key} style={{ width: 42, marginRight: 8, marginTop: 4 }}><ThreatCategoryBadge category={src.replace('threat://', '')} /></View>;
-        }
-        return null;
-      },
-      code_inline: (node) => <Text key={node.key} style={markdownStyles.code_inline}>{node.content}</Text>,
-      fence: (node) => <View key={node.key} style={markdownStyles.fence}><Text style={markdownStyles.code_inline}>{node.content}</Text></View>,
-    };
-  }, [searchTerm, currentResultIndex, markdownStyles]);
 
   return (
-    <LinearGradient colors={isDark ? ['#1a1a1a', '#0a0a0a'] : ['#F5F5F5', '#EAEAEA']} style={{ flex: 1 }}>
-      <SafeAreaView style={styles.safeArea}>
-        {/* Header */}
-        <View style={styles.header}>
-           <View style={styles.headerTopRow}>
-             <TouchableOpacity style={styles.backButton} onPress={() => isSearchVisible ? setSearchVisible(false) : navigation.goBack()}>
-              <Icon name="arrow-back" size={24} color={styles.headerIcon.color} />
-            </TouchableOpacity>
-            <View style={styles.headerButtons}>
-              <TouchableOpacity style={styles.headerButton} onPress={() => setSearchVisible(!isSearchVisible)}>
-                <Icon name={isSearchVisible ? 'close' : 'search'} size={24} color={styles.headerIcon.color} />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.subtitle}>{subtitle}</Text>
+        </View>
+        <View style={styles.headerActions}>
+          <TouchableOpacity onPress={() => setShowSearch(true)} style={styles.headerButton}>
+            <Ionicons name="search" size={24} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowTOC(true)} style={styles.headerButton}>
+            <Ionicons name="list" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {showSearch && (
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputContainer}>
+            <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search content..."
+              placeholderTextColor="#888"
+              value={searchQuery}
+              onChangeText={text => {
+                setSearchQuery(text);
+                performSearch(text);
+              }}
+              autoFocus
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); setCurrentSearchIndex(0); }}>
+                <Ionicons name="close-circle" size={20} color="#666" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.headerButton} onPress={showToc}>
-                <Icon name="list" size={24} color={styles.headerIcon.color} />
-              </TouchableOpacity>
-            </View>
+            )}
           </View>
-          {isSearchVisible && (
-            <View style={styles.searchContainer}>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search article..."
-                placeholderTextColor={(styles.searchInput as TextStyle).color}
-                value={searchTerm}
-                onChangeText={setSearchTerm}
-                autoFocus
-              />
-              {searchTerm.trim() && (
-                <View style={styles.searchNavContainer}>
-                  <Text style={styles.searchNavText}>
-                    {searchResultsCount > 0 ? `${(currentResultIndex % searchResultsCount) + 1} of ${searchResultsCount}` : 'No results'}
-                  </Text>
-                   <TouchableOpacity onPress={() => handleSearchNav('prev')} disabled={searchResultsCount === 0}>
-                    <Icon name="keyboard-arrow-up" size={24} color={searchResultsCount > 0 ? styles.searchNavText.color : '#555'} />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleSearchNav('next')} disabled={searchResultsCount === 0}>
-                    <Icon name="keyboard-arrow-down" size={24} color={searchResultsCount > 0 ? styles.searchNavText.color : '#555'} />
-                  </TouchableOpacity>
-                </View>
-              )}
+          {searchQuery.length > 0 && (
+            <View style={styles.searchResults}>
+              <Text style={styles.searchCount}>
+                {searchResults.length > 0 ? `${currentSearchIndex + 1} of ${searchResults.length}` : 'No results'}
+              </Text>
+              <View style={styles.searchNav}>
+                <TouchableOpacity onPress={() => navigateToSearchResult('prev')} disabled={searchResults.length === 0} style={styles.searchButton}>
+                  <Ionicons name="arrow-up" size={22} color={searchResults.length > 0 ? '#fff' : '#555'} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigateToSearchResult('next')} disabled={searchResults.length === 0} style={styles.searchButton}>
+                  <Ionicons name="arrow-down" size={22} color={searchResults.length > 0 ? '#fff' : '#555'} />
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         </View>
+      )}
 
-        {/* Scrollable Content */}
-        <ScrollView ref={scrollViewRef} style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
-          <View style={styles.metaContainer}>
-            <Text style={styles.metaText}>Created: {createdDate}</Text>
-            <Text style={styles.metaText}>Updated: {updatedDate}</Text>
+      <ScrollView ref={scrollViewRef} style={styles.contentScrollView}>
+        {renderContent()}
+      </ScrollView>
+
+      {/* Search Modal - Small overlay at top */}
+      <Modal visible={false} transparent animationType="fade">
+        <View style={styles.searchModalOverlay}>
+          <View style={styles.searchModal}>
+            <View style={styles.searchModalHeader}>
+              <Text style={styles.searchModalTitle}>Search</Text>
+              <TouchableOpacity onPress={() => setShowSearch(false)}>
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.searchInputContainer}>
+              <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search content..."
+                placeholderTextColor="#888"
+                value={searchQuery}
+                onChangeText={text => {
+                  setSearchQuery(text);
+                  performSearch(text);
+                }}
+                autoFocus
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); setCurrentSearchIndex(0); }}>
+                  <Ionicons name="close" size={20} color="#666" />
+                </TouchableOpacity>
+              )}
+            </View>
+            {searchQuery.length > 0 && (
+              <View style={styles.searchResults}>
+                <View style={styles.searchNav}>
+                  <TouchableOpacity onPress={() => navigateToSearchResult('prev')} disabled={searchResults.length === 0} style={styles.searchButton}>
+                    <Ionicons name="arrow-up" size={22} color={searchResults.length > 0 ? '#fff' : '#555'} />
+                  </TouchableOpacity>
+                  <Text style={styles.searchCount}>
+                    {searchResults.length > 0 ? `${currentSearchIndex + 1} of ${searchResults.length}` : 'No results'}
+                  </Text>
+                  <TouchableOpacity onPress={() => navigateToSearchResult('next')} disabled={searchResults.length === 0} style={styles.searchButton}>
+                    <Ionicons name="arrow-down" size={22} color={searchResults.length > 0 ? '#fff' : '#555'} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
-          <Markdown style={markdownStyles} rules={rules}>
-            {ast as any}
-          </Markdown>
-        </ScrollView>
-        
-        {/* TOC Modal */}
-        {isTocVisible && (
-            <Modal transparent visible={isTocVisible} onRequestClose={hideToc} animationType="none">
-                 <TouchableOpacity style={StyleSheet.absoluteFill} onPress={hideToc} activeOpacity={1}>
-                    <Animated.View style={[styles.tocContainer, { transform: [{ translateX: slideAnim }] }]}>
-                        <Text style={styles.tocTitle}>Table of Contents</Text>
-                        <FlatList
-                            data={tocItems}
-                            keyExtractor={(item) => item.key}
-                            renderItem={({ item }) => (
-                            <TouchableOpacity onPress={() => onTocPress(item.key)} style={[styles.tocItem, { marginLeft: (item.level - 1) * 15 }]}>
-                                <Text style={styles.tocText}>{item.title}</Text>
-                            </TouchableOpacity>
-                            )}
-                        />
-                    </Animated.View>
-                 </TouchableOpacity>
-            </Modal>
-        )}
-      </SafeAreaView>
-    </LinearGradient>
+        </View>
+      </Modal>
+
+      {/* TOC Modal */}
+      <Modal visible={showTOC} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.tocModal}>
+            <View style={styles.tocModalHeader}>
+              <Text style={styles.tocModalTitle}>Table of Contents</Text>
+              <TouchableOpacity onPress={() => setShowTOC(false)}>
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.tocList}>
+              {tocItems.map(item => (
+                <TouchableOpacity 
+                  key={item.index} 
+                  style={[styles.tocItem, { paddingLeft: (item.level - 1) * 20 + 10 }]} 
+                  onPress={() => scrollToTOCItem(item.index)}
+                >
+                  <Text style={styles.tocItemText}>{item.title}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 };
 
-// --- Styles ---
-
-const getColors = (isDark: boolean) => ({
-    background: isDark ? '#000000' : '#FFFFFF',
-    text: isDark ? '#E0E0E0' : '#121212',
-    subtleText: isDark ? '#B0B0B0' : '#555555',
-    primary: '#9C27B0',
-    card: isDark ? '#1a1a1a' : '#F5F5F5',
-    border: isDark ? '#2a2a2a' : '#EAEAEA',
-    highlight: '#FFD700',
-    highlightText: '#000000',
+const styles = StyleSheet.create({
+  container: { 
+    flex: 1, 
+    backgroundColor: '#121212' 
+  },
+  header: { 
+    padding: 15, 
+    paddingTop: 10, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#333', 
+    flexDirection: 'row', 
+    alignItems: 'center' 
+  },
+  backButton: { 
+    marginRight: 15 
+  },
+  headerTitleContainer: { 
+    flex: 1 
+  },
+  title: { 
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    color: '#fff' 
+  },
+  subtitle: { 
+    fontSize: 14, 
+    color: '#aaa', 
+    marginTop: 2 
+  },
+  headerActions: {
+    flexDirection: 'row',
+  },
+  headerButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  contentScrollView: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  contentLine: { 
+    fontSize: 16, 
+    color: '#ddd', 
+    lineHeight: 24 
+  },
+  h1: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#E5E5E7',
+    marginBottom: 15,
+    lineHeight: 34,
+  },
+  h2: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#E5E5E7',
+    marginTop: 20,
+    marginBottom: 10,
+    lineHeight: 28,
+  },
+  h3: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#E5E5E7',
+    marginTop: 15,
+    marginBottom: 5,
+    lineHeight: 24,
+  },
+  bulletPoint: { 
+    marginLeft: 10, 
+    lineHeight: 24, 
+    color: '#ddd' 
+  },
+  emptyLine: { 
+    height: 10 
+  },
+  searchResult: { 
+    backgroundColor: 'rgba(255, 255, 0, 0.3)', 
+    borderRadius: 3 
+  },
+  currentSearchResult: { 
+    backgroundColor: 'rgba(255, 255, 0, 0.6)' 
+  },
+  searchModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'flex-start',
+    paddingTop: 100,
+  },
+  searchModal: {
+    backgroundColor: '#1E1E1E',
+    borderRadius: 10,
+    marginHorizontal: 15,
+    padding: 15,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 5,
+  },
+  searchModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  searchModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  searchContainer: {
+    backgroundColor: '#1C1C1E',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2C2C2E',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: '#fff',
+    height: 40,
+  },
+  searchResults: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  searchNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  searchCount: {
+    color: '#A0A0A0',
+    fontSize: 14,
+  },
+  searchButton: {
+    padding: 5,
+    marginLeft: 15,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  tocModal: {
+    backgroundColor: '#1E1E1E',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '60%',
+  },
+  tocModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#444',
+  },
+  tocModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  tocList: {
+    maxHeight: 400,
+  },
+  tocItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  tocItemText: {
+    fontSize: 16,
+    color: '#fff',
+  },
 });
 
-const createMarkdownStyles = (isDark: boolean) => {
-    const colors = getColors(isDark);
-    return {
-        heading1: { fontSize: 32, fontWeight: 'bold', color: colors.primary, marginTop: 24, marginBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.primary, paddingBottom: 8 } as TextStyle,
-        heading2: { fontSize: 24, fontWeight: 'bold', color: colors.text, marginTop: 20, marginBottom: 10 } as TextStyle,
-        heading3: { fontSize: 18, fontWeight: 'bold', color: colors.text, marginTop: 16, marginBottom: 8 } as TextStyle,
-        heading4: { fontSize: 16, fontWeight: 'bold', color: colors.text, marginTop: 12, marginBottom: 6 } as TextStyle,
-        heading5: { fontSize: 14, fontWeight: 'bold', color: colors.text, marginTop: 8, marginBottom: 4 } as TextStyle,
-        heading6: { fontSize: 12, fontWeight: 'bold', color: colors.text, marginTop: 4, marginBottom: 2 } as TextStyle,
-        code_inline: { backgroundColor: colors.border, color: colors.subtleText, fontFamily: 'monospace', paddingVertical: 2, paddingHorizontal: 4, borderRadius: 4, overflow: 'hidden' } as TextStyle,
-        fence: { backgroundColor: colors.border, padding: 15, borderRadius: 4, marginVertical: 10 } as ViewStyle,
-        searchHighlight: { backgroundColor: colors.primary, color: colors.highlightText } as TextStyle,
-        searchHighlightCurrent: { backgroundColor: colors.highlight, color: colors.highlightText, borderRadius: 3, overflow: 'hidden' } as TextStyle,
-        
-        body: { color: colors.text, fontSize: 16, lineHeight: 26 } as TextStyle,
-        bullet_list: { marginBottom: 16 } as ViewStyle,
-        ordered_list: { marginBottom: 16 } as ViewStyle,
-        list_item: { flexDirection: 'row' as 'row', alignItems: 'flex-start' as 'flex-start', marginBottom: 8 } as ViewStyle,
-        bullet_list_icon: { color: colors.primary, marginRight: 8, fontSize: 16, lineHeight: 24 } as TextStyle,
-        list_item_text: { color: colors.text, fontSize: 16, lineHeight: 24, flex: 1 } as TextStyle,
-        strong: { fontWeight: 'bold' as 'bold', color: colors.text } as TextStyle,
-        em: { fontStyle: 'italic' as 'italic' } as TextStyle,
-        link: { color: colors.primary, textDecorationLine: 'underline' as 'underline' } as TextStyle,
-        hr: { backgroundColor: colors.border, height: 1, marginVertical: 16 } as ViewStyle,
-        blockquote: { backgroundColor: colors.card, padding: 10, marginVertical: 10, borderLeftColor: colors.primary, borderLeftWidth: 3 } as ViewStyle,
-    };
-}
-
-
-const createStyles = (isDark: boolean) => {
-    const colors = getColors(isDark);
-
-    return StyleSheet.create({
-        safeArea: { flex: 1, backgroundColor: 'transparent' },
-        header: { padding: 15, backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.border },
-        headerTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-        backButton: { padding: 5 },
-        headerIcon: { color: colors.primary },
-        headerButtons: { flexDirection: 'row' },
-        headerButton: { paddingHorizontal: 10 },
-        searchContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 10, borderRadius: 8, backgroundColor: colors.border },
-        searchInput: { flex: 1, height: 40, paddingHorizontal: 10, color: colors.text },
-        searchNavContainer: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 },
-        searchNavText: { color: colors.text, marginHorizontal: 10 },
-        scrollView: { flex: 1 },
-        contentContainer: { padding: 20 },
-        title: { fontSize: 28, fontWeight: 'bold', color: colors.text, marginBottom: 5 },
-        subtitle: { fontSize: 18, color: colors.subtleText, marginBottom: 15 },
-        metaContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 10 },
-        metaText: { fontSize: 12, color: colors.subtleText },
-        
-        tocContainer: { position: 'absolute', top: 0, bottom: 0, left: 0, width: width * 0.75, backgroundColor: colors.card, padding: 20, paddingTop: 60, borderRightWidth: 1, borderRightColor: colors.border },
-        tocTitle: { fontSize: 22, fontWeight: 'bold', color: colors.text, marginBottom: 20 },
-        tocItem: { paddingVertical: 10 },
-        tocText: { fontSize: 16, color: colors.text },
-    });
-};
-
-export default KnowledgeBaseArticle;
+export default KnowledgeBaseArticle; 
