@@ -76,6 +76,10 @@ function BrowseStackNavigator() {
   return (
     <BrowseStack.Navigator screenOptions={{ headerShown: false }}>
       <BrowseStack.Screen name="Browse" component={BrowseScreen} />
+      <BrowseStack.Screen name="LogHistory" component={LogHistoryScreen} />
+      <BrowseStack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} />
+      <BrowseStack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} />
+      <BrowseStack.Screen name="KnowledgeBaseLogDetailsOverview" component={KnowledgeBaseLogDetailsOverview} />
     </BrowseStack.Navigator>
   );
 }

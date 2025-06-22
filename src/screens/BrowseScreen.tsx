@@ -1,157 +1,177 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types/navigation';
+import { BrowseStackParamList } from '../types/navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
-import LinearGradient from 'react-native-linear-gradient';
 import { useApp } from '../context/AppContext';
 
-type BrowseScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Browse'>;
+type BrowseScreenNavigationProp = StackNavigationProp<BrowseStackParamList, 'Browse'>;
 
 const BrowseScreen = () => {
   const navigation = useNavigation<BrowseScreenNavigationProp>();
   const { settingsSheetRef } = useApp();
 
-  const menuItems = [
-    {
-      title: 'Threat Log',
-      subtitle: 'Review your past analyses',
-      icon: 'shield-checkmark-outline',
-      screen: 'LogHistory',
-    },
+  const logViews = [
+    { title: 'All Logs', filter: 'All', icon: 'archive-outline' },
+    { title: 'High Threats', filter: 'High', icon: 'alert-circle-outline', color: '#FF6B6B' },
+    { title: 'Medium Threats', filter: 'Medium', icon: 'alert-outline', color: '#FFD166' },
+    { title: 'Safe Messages', filter: 'Low', icon: 'shield-checkmark-outline', color: '#06D6A0' },
+  ];
+  
+  const knowledgeBaseItems = [
+    { title: 'Common Scams', screen: 'KnowledgeBaseScamsArticle', icon: 'document-text-outline', color: '#4A90E2' },
+    { title: 'Threat Levels Explained', screen: 'KnowledgeBaseThreatLevelArticle', icon: 'analytics-outline', color: '#A070F2' },
+    { title: 'Understanding Log Details', screen: 'KnowledgeBaseLogDetailsOverview', icon: 'book-outline', color: '#50E3C2' }
   ];
 
   const handleOpenSettings = () => {
-    if (settingsSheetRef.current) {
-      settingsSheetRef.current.snapToIndex(2);
-    }
+    settingsSheetRef.current?.expand();
   };
 
-  return (
-    <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.headerRow}>
-            <Text style={styles.pageTitle}>Browse</Text>
-            <TouchableOpacity
-              onPress={handleOpenSettings}
-              style={styles.profileButton}
-              accessibilityLabel="Open Settings"
-            >
-              <Icon name="person-circle-outline" size={34} color="#fff" style={styles.profileImage} />
-            </TouchableOpacity>
-          </View>
+  const renderLogViewCard = ({ item }: { item: typeof logViews[0] }) => (
+    <TouchableOpacity 
+      style={styles.logCard}
+      onPress={() => navigation.navigate('LogHistory', { threatFilter: item.filter !== 'All' ? item.filter : undefined })}
+    >
+      <Icon name={item.icon} size={28} color={item.color || '#fff'} />
+      <Text style={styles.logCardTitle}>{item.title}</Text>
+    </TouchableOpacity>
+  );
+  
+  const renderKnowledgeBaseItem = ({ item }: { item: typeof knowledgeBaseItems[0] }) => (
+    <TouchableOpacity
+      style={styles.kbItem}
+      onPress={() => navigation.navigate(item.screen as any)}
+    >
+      <View style={[styles.kbIconContainer, { backgroundColor: `${item.color}20` }]}>
+        <Icon name={item.icon} size={24} color={item.color} />
+      </View>
+      <Text style={styles.kbItemTitle}>{item.title}</Text>
+      <Icon name="chevron-forward-outline" size={22} color="#555" />
+    </TouchableOpacity>
+  );
 
-          <Text style={styles.headerSubtitle}>
-            Explore your personal threat data and analysis history.
-          </Text>
-          
-          <View style={styles.menuContainer}>
-            {menuItems.map((item, index) => (
-              <TouchableOpacity 
-                key={index} 
-                style={styles.menuItem} 
-                onPress={() => navigation.navigate(item.screen as any)}
-              >
-                <View style={styles.iconContainer}>
-                  <Icon name={item.icon} size={28} color="#A070F2" />
-                </View>
-                <View style={styles.textContainer}>
-                  <Text style={styles.itemTitle}>{item.title}</Text>
-                  <Text style={styles.itemSubtitle}>{item.subtitle}</Text>
-                </View>
-                <Icon name="chevron-forward-outline" size={22} color="#555" />
-              </TouchableOpacity>
-            ))}
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.headerRow}>
+          <Text style={styles.pageTitle}>Browse</Text>
+          <TouchableOpacity
+            onPress={handleOpenSettings}
+            style={styles.profileButton}
+            accessibilityLabel="Open Settings"
+          >
+            <Icon name="person-circle-outline" size={34} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Log History</Text>
+          <Text style={styles.sectionSubtitle}>Quick access to filtered log views.</Text>
+          <FlatList
+            horizontal
+            data={logViews}
+            renderItem={renderLogViewCard}
+            keyExtractor={(item) => item.title}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
+            style={{ marginHorizontal: -20 }}
+          />
+        </View>
+        
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Knowledge Base</Text>
+          <Text style={styles.sectionSubtitle}>Learn more about digital threats.</Text>
+          <View style={styles.kbContainer}>
+            {knowledgeBaseItems.map((item) => renderKnowledgeBaseItem({ item }))}
           </View>
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: '#000',
   },
-  scrollContent: {
-    padding: 20,
+  container: {
     paddingBottom: 40,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 20,
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginLeft: 10,
-  },
-  profileButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileImage: {
-    width: 34,
-    height: 34,
+    paddingBottom: 10,
   },
   pageTitle: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 8,
   },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#aaa',
-    marginBottom: 30,
+  profileButton: {
+    padding: 5
   },
-  menuContainer: {
+  section: {
     marginTop: 20,
   },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#2C2C2E',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 4,
+    paddingHorizontal: 20,
   },
-  iconContainer: {
-    backgroundColor: 'rgba(160, 112, 242, 0.15)',
-    borderRadius: 10,
-    padding: 10,
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#aaa',
+    marginBottom: 15,
+    paddingHorizontal: 20,
+  },
+  logCard: {
+    width: 140,
+    height: 120,
+    backgroundColor: '#1C1C1E',
+    borderRadius: 15,
+    padding: 15,
+    justifyContent: 'space-between',
     marginRight: 15,
   },
-  textContainer: {
-    flex: 1,
-  },
-  itemTitle: {
-    fontSize: 17,
-    fontWeight: '600',
+  logCardTitle: {
     color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
-  itemSubtitle: {
-    fontSize: 14,
-    color: '#999',
-    marginTop: 2,
+  kbContainer: {
+    backgroundColor: '#1C1C1E',
+    borderRadius: 15,
+    marginHorizontal: 20,
+    overflow: 'hidden',
+  },
+  kbItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  kbIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  kbItemTitle: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 16,
   },
 });
 

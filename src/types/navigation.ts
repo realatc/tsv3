@@ -12,6 +12,10 @@ export type HomeStackParamList = {
 
 export type BrowseStackParamList = {
   Browse: undefined;
+  LogHistory: { threatFilter?: string };
+  KnowledgeBaseScamsArticle: undefined;
+  KnowledgeBaseThreatLevelArticle: undefined;
+  KnowledgeBaseLogDetailsOverview: { log?: any };
 };
 
 export type LibraryStackParamList = {
