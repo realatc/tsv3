@@ -1,19 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Alert, Modal, Text } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Alert, Modal, Text, Image } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { AccessibleText } from '../components/AccessibleText';
 import { useAccessibility, getAccessibleSpacing, getAccessiblePadding, getAccessibleBorderRadius } from '../context/AccessibilityContext';
 import { useLogs } from '../context/LogContext';
+import { useApp } from '../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types/navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RECENT_ACTIVITY_KEY = '@threatsense/recent_activity_meta';
 
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'MainTabs'>;
+
 const HomeScreen = () => {
   const { settings } = useAccessibility();
   const { logs, getBlockedSendersCount } = useLogs();
-  const navigation = useNavigation();
+  const { settingsSheetRef } = useApp();
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const [securityScoreHelpVisible, setSecurityScoreHelpVisible] = useState(false);
   const [recentModalVisible, setRecentModalVisible] = useState(false);
   const [recentMeta, setRecentMeta] = useState<{ [logId: string]: { read: boolean; dismissed: boolean } }>({});
@@ -119,65 +125,24 @@ const HomeScreen = () => {
     </TouchableOpacity>
   );
 
-  const renderQuickAction = (title: string, icon: string, onPress: () => void) => (
-    <TouchableOpacity 
-      style={[
-        styles.quickAction, 
-        { 
-          backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
-          padding: padding,
-          borderRadius: borderRadius,
-        }
-      ]}
-      onPress={onPress}
-      accessible={true}
-      accessibilityLabel={`Quick action: ${title}`}
-      accessibilityHint={`Tap to ${title.toLowerCase()}`}
-    >
-      <Icon name={icon} size={settings.largeTextMode ? 32 : 28} color="#4A90E2" />
-      <AccessibleText variant="button" style={styles.quickActionText}>{title}</AccessibleText>
-    </TouchableOpacity>
-  );
-
   const handleViewThreats = () => {
-    // Navigate to logs with high threat filter
-    (navigation as any).navigate('LogHistory', { threatFilter: 'High' });
+    navigation.navigate('LatestScams');
   };
 
   const handleViewSafeMessages = () => {
-    // Navigate to logs with low threat filter
-    (navigation as any).navigate('LogHistory', { threatFilter: 'Low' });
-  };
-
-  const handleScanMessages = () => {
-    // Navigate to threat demo or scan functionality
-    (navigation as any).navigate('ThreatDemo');
-  };
-
-  const handleViewLogs = () => {
-    (navigation as any).navigate('LogHistory');
+    // This screen is not in the new nav structure yet.
+    Alert.alert("Navigation update needed", "This screen will be implemented in a future step.");
   };
 
   const handleOpenSettings = () => {
-    (navigation as any).navigate('Settings');
-  };
-
-  const handleOpenHelp = () => {
-    (navigation as any).navigate('KnowledgeBase');
+    if (settingsSheetRef.current) {
+      settingsSheetRef.current.snapToIndex(1);
+    }
   };
 
   const handleViewBlockedSenders = () => {
-    // Navigate to blocked senders management screen
-    (navigation as any).navigate('BlockedSenders');
-  };
-
-  const handleAnalyzeText = () => {
-    (navigation as any).navigate('ThreatAnalysis');
-  };
-
-  const handleViewLatestScams = () => {
-    // Navigate to latest scams screen
-    (navigation as any).navigate('LatestScams');
+    // This screen is not in the new nav structure yet.
+    Alert.alert("Navigation update needed", "This screen will be implemented in a future step.");
   };
 
   // Get recent activity from logs (up to 5, not dismissed)
@@ -219,23 +184,16 @@ const HomeScreen = () => {
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.headerRow}>
-            <View style={styles.headerLeft}>
-              <Icon name="shield-checkmark" size={40} color="#4A90E2" />
+            <View style={styles.logoContainer}>
+              <Icon name="shield-outline" size={28} color="#A070F2" />
+              <Text style={styles.headerTitle}>ThreatSense</Text>
             </View>
-            <AccessibleText variant="title" style={styles.welcomeText}>
-              ThreatSense
-            </AccessibleText>
             <TouchableOpacity
-              style={styles.headerRight}
-              onPress={() => setRecentModalVisible(true)}
-              accessible={true}
-              accessibilityLabel="Show recent activity"
-              accessibilityHint="Tap to view recent activity"
+              onPress={handleOpenSettings}
+              style={styles.profileButton}
+              accessibilityLabel="Open Settings"
             >
-              <Icon name="notifications-outline" size={28} color="#4A90E2" />
-              {hasUnreadHighThreat && (
-                <View style={styles.badgeDot} />
-              )}
+              <Icon name="person-circle-outline" size={34} color="#fff" style={styles.profileImage} />
             </TouchableOpacity>
           </View>
 
@@ -248,131 +206,102 @@ const HomeScreen = () => {
               {renderStatCard('Threats Detected', stats.threatsDetected, 'warning', '#FF6B6B', handleViewThreats)}
               {renderStatCard('Safe Messages', stats.safeMessages, 'shield-checkmark', '#43A047', handleViewSafeMessages)}
               {renderStatCard('Blocked Senders', stats.blockedSenders, 'ban', '#FFB300', handleViewBlockedSenders)}
-              {renderStatCard('Score', `${stats.securityScore}%`, 'trending-up', '#4A90E2', undefined, true, 'The Security Score represents the percentage of safe messages in your communications. It is calculated as: (Safe Messages ÷ Total Messages) × 100. Higher scores indicate better overall security.')}
+              {renderStatCard('Security Score', `${stats.securityScore}%`, 'trending-up', '#4A90E2', undefined, true, 'This score is based on the ratio of safe to high-threat messages.')}
             </View>
           </View>
 
-          {/* Quick Actions */}
-          <View style={styles.quickActionsSection}>
-            <AccessibleText variant="subtitle" style={styles.sectionTitle}>
-              Quick Actions
-            </AccessibleText>
-            <View style={styles.quickActionsGrid}>
-              {renderQuickAction('Scan Messages', 'scan', handleScanMessages)}
-              {renderQuickAction('View Logs', 'document-text', handleViewLogs)}
-              {renderQuickAction('Analyze Text', 'chatbox-ellipses', handleAnalyzeText)}
-              {renderQuickAction('Latest Scams', 'flame', handleViewLatestScams)}
-              {renderQuickAction('Help Center', 'help-circle', handleOpenHelp)}
-              {renderQuickAction('Settings', 'settings', handleOpenSettings)}
+          {/* Recent Activity */}
+          {recentActivity.length > 0 && (
+            <View style={styles.recentActivitySection}>
+              <View style={styles.sectionHeader}>
+                <AccessibleText variant="subtitle" style={styles.sectionTitle}>
+                  Recent Activity
+                </AccessibleText>
+                {hasUnreadHighThreat && (
+                  <View style={styles.unreadBadge}>
+                    <AccessibleText variant="caption" style={styles.unreadText}>!</AccessibleText>
+                  </View>
+                )}
+              </View>
+              <View style={styles.recentActivityList}>
+                {recentActivity.map((activity, index) => (
+                  <TouchableOpacity
+                    key={activity.id}
+                    style={[
+                      styles.recentActivityItem,
+                      { 
+                        backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
+                        padding: padding,
+                        borderRadius: borderRadius,
+                        marginBottom: spacing,
+                      }
+                    ]}
+                    onPress={() => {
+                      markAsRead(activity.id);
+                      navigation.navigate('LogDetail', { logId: activity.log.id });
+                    }}
+                    accessible={true}
+                    accessibilityLabel={`${activity.title} from ${activity.category}`}
+                    accessibilityHint="Tap to view details"
+                  >
+                    <View style={styles.activityHeader}>
+                      <View style={styles.activityIconContainer}>
+                        <Icon name={activity.icon} size={20} color={activity.color} />
+                      </View>
+                      <View style={styles.activityInfo}>
+                        <AccessibleText variant="body" style={styles.activityTitle}>
+                          {activity.title}
+                        </AccessibleText>
+                        <AccessibleText variant="caption" style={styles.activityCategory}>
+                          {activity.category}
+                        </AccessibleText>
+                      </View>
+                      <View style={styles.activityActions}>
+                        <TouchableOpacity
+                          onPress={() => dismissEvent(activity.id)}
+                          style={styles.dismissButton}
+                          accessible={true}
+                          accessibilityLabel="Dismiss this activity"
+                          accessibilityHint="Tap to remove this item from recent activity"
+                        >
+                          <Icon name="close" size={16} color="#666" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    <AccessibleText variant="caption" style={styles.activityTime}>
+                      {new Date(activity.time).toLocaleDateString()}
+                    </AccessibleText>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
-          </View>
+          )}
 
           {/* Security Score Help Modal */}
           <Modal
             visible={securityScoreHelpVisible}
+            transparent={true}
             animationType="fade"
-            transparent
             onRequestClose={() => setSecurityScoreHelpVisible(false)}
           >
-            <View style={styles.helpModalOverlay}>
-              <View style={styles.helpModalContent}>
-                <AccessibleText variant="subtitle" style={styles.helpModalTitle}>Security Score</AccessibleText>
-                <AccessibleText variant="body" style={styles.helpModalText}>
-                  The Security Score represents the percentage of safe messages in your communications.
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <AccessibleText variant="title" style={styles.modalTitle}>
+                  Security Score Explained
                 </AccessibleText>
-                <AccessibleText variant="body" style={styles.helpModalText}>
-                  <AccessibleText variant="body" style={styles.helpModalBold}>Formula:</AccessibleText> (Safe Messages ÷ Total Messages) × 100
+                <AccessibleText variant="body" style={styles.modalText}>
+                  Your security score is calculated based on the ratio of safe messages to high-threat messages in your analysis history.
                 </AccessibleText>
-                <AccessibleText variant="body" style={styles.helpModalText}>
-                  <AccessibleText variant="body" style={styles.helpModalBold}>Safe Messages:</AccessibleText> Low threat, Medium threat, or no threat detected
+                <AccessibleText variant="body" style={styles.modalText}>
+                  A higher score indicates better overall security, while a lower score suggests you may need to be more cautious about the messages you receive.
                 </AccessibleText>
-                <AccessibleText variant="body" style={styles.helpModalText}>
-                  <AccessibleText variant="body" style={styles.helpModalBold}>High Threat:</AccessibleText> Messages with 4+ threat points
-                </AccessibleText>
-                <AccessibleText variant="body" style={styles.helpModalText}>
-                  <AccessibleText variant="body" style={styles.helpModalBold}>Higher scores</AccessibleText> indicate better overall security.
-                </AccessibleText>
-                <TouchableOpacity 
-                  style={styles.helpModalButton} 
-                  onPress={() => setSecurityScoreHelpVisible(false)}
-                  accessible={true}
-                  accessibilityLabel="Close help modal"
-                >
-                  <AccessibleText variant="button" style={styles.helpModalButtonText}>Got it</AccessibleText>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-
-          {/* Recent Activity Modal */}
-          <Modal
-            visible={recentModalVisible}
-            animationType="fade"
-            transparent
-            onRequestClose={() => setRecentModalVisible(false)}
-          >
-            <View style={styles.recentModalOverlay}>
-              <View style={styles.recentModalContent}>
-                <AccessibleText variant="subtitle" style={styles.recentModalTitle}>Recent Activity</AccessibleText>
-                {recentActivity.length > 0 ? (
-                  recentActivity.map((activity, index) => (
-                    <TouchableOpacity
-                      key={activity.id}
-                      style={[styles.recentModalItem, activity.read && { opacity: 0.5 }]}
-                      onPress={() => {
-                        markAsRead(activity.id);
-                        setRecentModalVisible(false);
-                        (navigation as any).navigate('LogDetail', { log: activity.log });
-                      }}
-                      activeOpacity={0.7}
-                      accessible={true}
-                      accessibilityLabel={`View details for ${activity.title}`}
-                      accessibilityHint="Tap to view log details"
-                    >
-                      <Icon name={activity.icon} size={20} color={activity.color} />
-                      <View style={styles.recentModalContentText}>
-                        <AccessibleText variant="body" style={styles.recentModalItemTitle}>
-                          {activity.title}
-                        </AccessibleText>
-                        <AccessibleText variant="caption" style={styles.recentModalItemTime}>
-                          {activity.time} • {activity.category}
-                        </AccessibleText>
-                      </View>
-                      {/* Dismiss button */}
-                      <TouchableOpacity
-                        style={styles.recentModalDismiss}
-                        onPress={e => {
-                          e.stopPropagation();
-                          dismissEvent(activity.id);
-                        }}
-                        accessible={true}
-                        accessibilityLabel={`Dismiss ${activity.title}`}
-                        accessibilityHint="Remove from recent activity"
-                      >
-                        <Icon name="close-circle" size={20} color="#B0BEC5" />
-                      </TouchableOpacity>
-                    </TouchableOpacity>
-                  ))
-                ) : (
-                  <View style={styles.recentModalItem}>
-                    <Icon name="information-circle" size={20} color="#B0BEC5" />
-                    <View style={styles.recentModalContentText}>
-                      <AccessibleText variant="body" style={styles.recentModalItemTitle}>
-                        No recent activity
-                      </AccessibleText>
-                      <AccessibleText variant="caption" style={styles.recentModalItemTime}>
-                        Start scanning messages to see activity
-                      </AccessibleText>
-                    </View>
-                  </View>
-                )}
                 <TouchableOpacity
-                  style={styles.recentModalClose}
-                  onPress={() => setRecentModalVisible(false)}
-                  accessible={true}
-                  accessibilityLabel="Close recent activity"
+                  style={styles.modalButton}
+                  onPress={() => setSecurityScoreHelpVisible(false)}
                 >
-                  <AccessibleText variant="button" style={styles.recentModalCloseText}>Close</AccessibleText>
+                  <AccessibleText variant="button" style={styles.modalButtonText}>
+                    Got it
+                  </AccessibleText>
                 </TouchableOpacity>
               </View>
             </View>
@@ -394,30 +323,41 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 30,
+    paddingHorizontal: 15,
+    paddingTop: 10,
+    paddingBottom: 20,
   },
-  headerLeft: {
-    marginRight: 10,
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  headerRight: {
-    marginLeft: 'auto',
+  headerTitle: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginLeft: 10,
   },
-  welcomeText: {
-    color: '#FFFFFF',
-    marginTop: 15,
-    marginBottom: 5,
+  profileButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  subtitleText: {
-    color: '#B0BEC5',
+  profileImage: {
+    width: 34,
+    height: 34,
   },
   statsSection: {
     marginBottom: 30,
   },
   sectionTitle: {
-    color: '#4A90E2',
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
     marginBottom: 15,
-    fontWeight: 'bold',
   },
   statsGrid: {
     flexDirection: 'row',
@@ -425,176 +365,133 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   statCard: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    minWidth: 110,
+    maxWidth: 150,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 8,
   },
   statTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    marginBottom: 4,
   },
   statTitle: {
-    color: '#B0BEC5',
+    color: '#B0B0B0',
     fontSize: 12,
-    fontWeight: 'bold',
-    flex: 1,
-  },
-  statValue: {
-    color: '#FFFFFF',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 4,
-  },
-  quickActionsSection: {
-    marginTop: 24,
-  },
-  quickActionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  quickAction: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '30%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  quickActionText: {
-    color: '#4A90E2',
-    marginTop: 8,
     textAlign: 'center',
   },
   helpIcon: {
     marginLeft: 4,
   },
-  helpModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  helpModalContent: {
-    backgroundColor: '#1a1a1a',
-    padding: 24,
-    borderRadius: 16,
-    width: '85%',
-    maxHeight: '80%',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  helpModalTitle: {
-    color: '#4A90E2',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  helpModalText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 12,
-  },
-  helpModalBold: {
-    fontWeight: 'bold',
-    color: '#4A90E2',
-  },
-  helpModalButton: {
-    backgroundColor: '#4A90E2',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    marginTop: 16,
-    alignSelf: 'center',
-  },
-  helpModalButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+  statValue: {
+    fontSize: 24,
     fontWeight: 'bold',
   },
-  badgeDot: {
-    backgroundColor: '#FF6B6B',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    position: 'absolute',
-    top: 4,
-    right: 4,
+  recentActivitySection: {
+    marginBottom: 30,
   },
-  recentModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  recentModalContent: {
-    backgroundColor: '#1a1a1a',
-    padding: 24,
-    borderRadius: 16,
-    width: '85%',
-    maxHeight: '80%',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  recentModalTitle: {
-    color: '#4A90E2',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  recentModalItem: {
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 15,
   },
-  recentModalContentText: {
-    marginLeft: 12,
-    flex: 1,
+  unreadBadge: {
+    backgroundColor: '#FF6B6B',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
   },
-  recentModalItemTitle: {
-    color: '#FFFFFF',
-    marginBottom: 2,
-  },
-  recentModalItemTime: {
-    color: '#B0BEC5',
-  },
-  recentModalClose: {
-    backgroundColor: '#4A90E2',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    marginTop: 16,
-    alignSelf: 'center',
-  },
-  recentModalCloseText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+  unreadText: {
+    color: '#fff',
+    fontSize: 12,
     fontWeight: 'bold',
   },
-  recentModalDismiss: {
-    marginLeft: 8,
-    alignSelf: 'center',
+  recentActivityList: {
+    // Styles for the activity list
+  },
+  recentActivityItem: {
+    marginBottom: 10,
+  },
+  activityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  activityIconContainer: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  activityInfo: {
+    flex: 1,
+  },
+  activityTitle: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  activityCategory: {
+    color: '#B0B0B0',
+    fontSize: 12,
+  },
+  activityActions: {
+    flexDirection: 'row',
+  },
+  dismissButton: {
+    padding: 5,
+  },
+  activityTime: {
+    color: '#666',
+    fontSize: 11,
+    marginLeft: 40,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#1E1E1E',
+    borderRadius: 12,
+    padding: 20,
+    margin: 20,
+    maxWidth: 300,
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  modalText: {
+    color: '#B0B0B0',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  modalButton: {
+    backgroundColor: '#A070F2',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 15,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

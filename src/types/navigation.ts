@@ -1,15 +1,24 @@
-import { ScamAlert } from "../services/perplexity/perplexityService";
+import { NavigatorScreenParams } from '@react-navigation/native';
+import { ScamAlert } from '../services/perplexity/perplexityService';
 
+// Defines the parameters for the screens within the bottom tab navigator
+export type TabParamList = {
+  Home: { openSettings?: boolean } | undefined;
+  Browse: undefined;
+  Library: undefined;
+  Search: undefined;
+};
+
+// Defines the parameters for the screens in the main stack navigator
 export type RootStackParamList = {
-  Main: undefined;
+  MainTabs: NavigatorScreenParams<TabParamList>; // The nested tab navigator
   Home: undefined;
-  ThreatDemo: undefined;
+  Browse: undefined;
+  Library: undefined;
+  Search: undefined;
   LogHistory: { threatFilter?: string };
   KnowledgeBase: undefined;
-  Settings: undefined;
-  About: undefined;
-  LogDetail: { log: any };
-  BlockedSenders: undefined;
+  LogDetail: { logId: string };
   SearchResults: { query: string };
   LatestScams: undefined;
   ScamDetail: { scam: ScamAlert };
@@ -17,12 +26,14 @@ export type RootStackParamList = {
   // Knowledge Base Articles
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseScamsArticle: undefined;
-  KnowledgeBaseLogDetailsOverview: { log: any };
-  KnowledgeBaseLogDetailsGeneral: { log: any };
-  KnowledgeBaseLogDetailsSecurity: { log: any };
-  KnowledgeBaseLogDetailsMetadata: { log: any };
-  KnowledgeBaseLogDetailsThreat: { log: any };
+  KnowledgeBaseLogDetailsOverview: { log?: any };
+  KnowledgeBaseLogDetailsGeneral: { log?: any };
+  KnowledgeBaseLogDetailsSecurity: { log?: any };
+  KnowledgeBaseLogDetailsMetadata: { log?: any };
+  KnowledgeBaseLogDetailsThreat: { log?: any };
   ThreatAnalysis: undefined;
+  AccessibilitySettings: undefined;
+  HelpAndSupport: undefined;
 };
 
 export type DrawerParamList = {
