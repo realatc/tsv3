@@ -144,9 +144,30 @@ const HomeScreen = () => {
     return recentLogs.map(log => {
       const threatLevel = typeof log.threat === 'object' && log.threat.level ? log.threat.level : 'Low';
       const isHighThreat = threatLevel === 'High';
-      const icon = isHighThreat ? 'mail' : 'chatbubble';
       const color = isHighThreat ? '#FF6B6B' : '#43A047';
-      const title = isHighThreat ? 'High threat detected' : 'Safe message received';
+
+      let icon;
+      let title;
+
+      switch (log.category) {
+        case 'Mail':
+          icon = 'mail-outline';
+          title = isHighThreat ? 'High-threat email' : 'Safe email';
+          break;
+        case 'Text':
+          icon = 'chatbubble-outline';
+          title = isHighThreat ? 'High-threat text' : 'Safe text';
+          break;
+        case 'Phone Call':
+          icon = 'call-outline';
+          title = isHighThreat ? 'High-threat call' : 'Safe call';
+          break;
+        default:
+          icon = 'alert-circle-outline';
+          title = isHighThreat ? 'High threat detected' : 'Safe message';
+          break;
+      }
+
       return {
         icon,
         color,
