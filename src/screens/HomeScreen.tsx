@@ -171,6 +171,15 @@ const HomeScreen = () => {
     (navigation as any).navigate('BlockedSenders');
   };
 
+  const handleAnalyzeText = () => {
+    (navigation as any).navigate('ThreatAnalysis');
+  };
+
+  const handleViewLatestScams = () => {
+    // Navigate to latest scams screen
+    (navigation as any).navigate('LatestScams');
+  };
+
   // Get recent activity from logs (up to 5, not dismissed)
   const getRecentActivity = () => {
     const recentLogs = logs.filter(log => !recentMeta[log.id]?.dismissed).slice(0, 5);
@@ -249,10 +258,12 @@ const HomeScreen = () => {
               Quick Actions
             </AccessibleText>
             <View style={styles.quickActionsGrid}>
-              {renderQuickAction('Scan Messages', 'search', handleScanMessages)}
-              {renderQuickAction('View Logs', 'list', handleViewLogs)}
+              {renderQuickAction('Scan Messages', 'scan', handleScanMessages)}
+              {renderQuickAction('View Logs', 'document-text', handleViewLogs)}
+              {renderQuickAction('Analyze Text', 'chatbox-ellipses', handleAnalyzeText)}
+              {renderQuickAction('Latest Scams', 'flame', handleViewLatestScams)}
+              {renderQuickAction('Help Center', 'help-circle', handleOpenHelp)}
               {renderQuickAction('Settings', 'settings', handleOpenSettings)}
-              {renderQuickAction('Help', 'help-circle', handleOpenHelp)}
             </View>
           </View>
 
@@ -461,7 +472,7 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    width: '48%',
+    width: '30%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

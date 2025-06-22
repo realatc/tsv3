@@ -18,6 +18,9 @@ import AboutScreen from './src/screens/AboutScreen';
 import LogDetailScreenWrapper from './src/screens/LogDetailScreenWrapper';
 import ThreatDemoScreen from './src/screens/ThreatDemoScreen';
 import BlockedSendersScreen from './src/screens/BlockedSendersScreen';
+import LatestScamsScreen from './src/screens/LatestScamsScreen';
+import ScamDetailScreen from './src/screens/ScamDetailScreen';
+import ThreatAnalysisScreen from './src/screens/ThreatAnalysisScreen';
 import { LogProvider } from './src/context/LogContext';
 import { AccessibilityProvider } from './src/context/AccessibilityContext';
 import KnowledgeBaseScreen from './src/screens/KnowledgeBaseScreen';
@@ -107,6 +110,10 @@ const App = () => {
                 })}
               />
               <Stack.Screen name="BlockedSenders" component={BlockedSendersScreen} options={{ header: () => <CustomHeader title="Blocked Senders" /> }} />
+              <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ header: () => <CustomHeader title="Search Results" /> }} />
+              <Stack.Screen name="LatestScams" component={LatestScamsScreen} options={{ header: () => <CustomHeader title="Latest Scams" /> }} />
+              <Stack.Screen name="ScamDetail" component={ScamDetailScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="ThreatAnalysis" component={ThreatAnalysisScreen} options={{ header: () => <CustomHeader title="Threat Analysis" /> }} />
               <Stack.Screen
                 name="KnowledgeBaseThreatLevelArticle"
                 component={KnowledgeBaseThreatLevelArticle}
@@ -142,7 +149,8 @@ const App = () => {
                 component={KnowledgeBaseLogDetailsThreat}
                 options={{ headerShown: false }}
               />
-              <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ header: () => <CustomHeader title="Search Results" /> }} />
+              <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="About" component={AboutScreen} options={{ headerShown: false }} />
             </Stack.Navigator>
           </NavigationContainer>
         </AccessibilityProvider>

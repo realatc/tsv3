@@ -82,3 +82,41 @@ export function calculateThreatLevel({
 
   return { level, confidence, score, breakdown, categories, summary };
 }
+
+export const getThreatColor = (level: string) => {
+  const lowerLevel = level.toLowerCase();
+  switch (lowerLevel) {
+    case 'critical':
+      return '#ff4d4d';
+    case 'high':
+      return '#ff8c00';
+    case 'medium':
+      return '#ffd700';
+    case 'low':
+      return '#32cd32';
+    case 'none':
+    case 'unknown':
+      return '#888';
+    default:
+      return '#888';
+  }
+};
+
+export const getThreatIcon = (level: string) => {
+  const lowerLevel = level.toLowerCase();
+  switch (lowerLevel) {
+    case 'critical':
+      return 'skull';
+    case 'high':
+      return 'flame';
+    case 'medium':
+      return 'alert-circle';
+    case 'low':
+      return 'shield-checkmark';
+    case 'none':
+    case 'unknown':
+      return 'help-circle';
+    default:
+      return 'help-circle';
+  }
+};
