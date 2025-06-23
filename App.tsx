@@ -13,6 +13,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
+import { MenuProvider } from 'react-native-popup-menu';
 
 // Screens
 import AboutScreen from './src/screens/AboutScreen';
@@ -32,7 +33,7 @@ import KnowledgeBaseScreen from './src/screens/KnowledgeBaseScreen';
 import KnowledgeBaseThreatLevelArticle from './src/screens/KnowledgeBaseThreatLevelArticle';
 import LatestScamsScreen from './src/screens/LatestScamsScreen';
 import LibraryScreen from './src/screens/LibraryScreen';
-import LogDetailScreenWrapper from './src/screens/LogDetailScreenWrapper';
+import LogDetailScreen from './src/screens/LogDetailScreen';
 import LogHistoryScreen from './src/screens/LogHistoryScreen';
 import ScamDetailScreen from './src/screens/ScamDetailScreen';
 import SearchResultsScreen from './src/screens/SearchResultsScreen';
@@ -63,10 +64,10 @@ const HomeStack = createStackNavigator<HomeStackParamList>();
 function HomeStackNavigator() {
   return (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-      <HomeStack.Screen name="Home" component={HomeScreen} />
+      <HomeStack.Screen name="HomeScreen" component={HomeScreen} />
       <HomeStack.Screen name="LatestScams" component={LatestScamsScreen} />
       <HomeStack.Screen name="ScamDetail" component={ScamDetailScreen} />
-      <HomeStack.Screen name="LogDetail" component={LogDetailScreenWrapper} />
+      <HomeStack.Screen name="LogDetail" component={LogDetailScreen} />
       <HomeStack.Screen name="LogHistory" component={LogHistoryScreen} />
       <HomeStack.Screen name="BlockedSenders" component={BlockedSendersScreen} />
     </HomeStack.Navigator>
@@ -82,7 +83,7 @@ function BrowseStackNavigator() {
       <BrowseStack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} />
       <BrowseStack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} />
       <BrowseStack.Screen name="KnowledgeBaseLogDetailsOverview" component={KnowledgeBaseLogDetailsOverview} />
-      <BrowseStack.Screen name="LogDetail" component={LogDetailScreenWrapper} />
+      <BrowseStack.Screen name="LogDetail" component={LogDetailScreen} />
     </BrowseStack.Navigator>
   );
 }
@@ -150,7 +151,7 @@ function TabNavigator() {
         listeners={({ navigation }) => ({
           tabPress: e => {
             e.preventDefault();
-            navigation.navigate('Home', { screen: 'Home' });
+            navigation.navigate('Home', { screen: 'HomeScreen' });
           },
         })}
       />
@@ -236,13 +237,15 @@ const AppContent = () => {
 const App = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <LogProvider>
-        <AccessibilityProvider>
-          <AppProvider>
-            <AppContent />
-          </AppProvider>
-        </AccessibilityProvider>
-      </LogProvider>
+      <MenuProvider>
+        <LogProvider>
+          <AccessibilityProvider>
+            <AppProvider>
+              <AppContent />
+            </AppProvider>
+          </AccessibilityProvider>
+        </LogProvider>
+      </MenuProvider>
     </GestureHandlerRootView>
   );
 };

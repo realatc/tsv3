@@ -1,127 +1,187 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Modal, Linking, Alert, Pressable } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { ThreatBadge } from '../components/ThreatBadge';
-import { CategoryBadge } from '../components/CategoryBadge';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { calculateThreatLevel } from '../utils/threatLevel';
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
+import { calculateThreatLevel, getThreatColor, getThreatIcon } from '../utils/threatLevel';
 import { checkUrlSafety } from '../services/threatReader/safeBrowsing';
 import { getRelatedSearchResults } from '../services/threatReader/relatedSearch';
 import BottomSheet from '@gorhom/bottom-sheet';
-import { GeneralTab } from '../components/tabs/GeneralTab';
-import { SecurityTab } from '../components/tabs/SecurityTab';
-import { MetadataTab } from '../components/tabs/MetadataTab';
-import { ThreatTab } from '../components/tabs/ThreatTab';
+import { LogEntry, useLogs } from '../context/LogContext';
 
-// Simple URL extraction utility
-function extractUrls(text: string): string[] {
-  if (!text) return [];
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const matches = text.match(urlRegex) || [];
-  // Remove trailing punctuation from each URL
-  return matches.map(url => url.replace(/[.,!?;:]+$/, ''));
+type ThreatInfo = {
+  level: 'High' | 'Medium' | 'Low' | '';
+  score: number;
+  percentage: number;
+  breakdown: { label: string; points: number }[];
+  categories: string[];
+  summary: string;
+};
+
+// Tab Components
+const DetailsTab = ({ log, relatedContent, loadingRelated, handleLinkPress }: { log: LogEntry, relatedContent: any[], loadingRelated: boolean, handleLinkPress: (url: string) => void }) => {
+  const formattedDate = new Date(log.date).toLocaleString();
+
+  return (
+    <View>
+      <View style={styles.tabContentContainer}>
+        <Text style={styles.messageText}>{log.message}</Text>
+      </View>
+
+      <View style={[styles.tabContentContainer, { marginTop: 16 }]}>
+        <Text style={styles.relatedContentTitle}>Details</Text>
+        <View style={styles.metadataRow}>
+          <Text style={styles.metadataKey}>Sender</Text>
+          <Text style={styles.metadataValue}>{log.sender}</Text>
+        </View>
+        <View style={styles.metadataRow}>
+          <Text style={styles.metadataKey}>Category</Text>
+          <Text style={styles.metadataValue}>{log.category}</Text>
+        </View>
+        <View style={styles.metadataRow}>
+          <Text style={styles.metadataKey}>Date</Text>
+          <Text style={styles.metadataValue}>{formattedDate}</Text>
+        </View>
+      </View>
+
+      <View style={[styles.tabContentContainer, { marginTop: 16 }]}>
+        <Text style={styles.relatedContentTitle}>Related Content</Text>
+        {loadingRelated ? (
+          <Text style={{ color: '#fff' }}>Loading...</Text>
+        ) : (
+          relatedContent.map((item: any, index: number) => (
+            <TouchableOpacity key={index} onPress={() => handleLinkPress(item.link)}>
+              <Text style={styles.relatedContentLink}>{item.title}</Text>
+            </TouchableOpacity>
+          ))
+        )}
+      </View>
+    </View>
+  );
+};
+
+const AnalysisTab = ({ log, urls, urlSafety, handleUrlPress }: { log: LogEntry, urls: string[], urlSafety: { [key: string]: string }, handleUrlPress: (url: string) => void }) => (
+  <View style={styles.tabContentContainer}>
+    <View style={styles.analysisSection}>
+      <Text style={styles.analysisTitle}>NLP Analysis</Text>
+      <Text style={styles.analysisContent}>{log.nlpAnalysis}</Text>
+    </View>
+    <View style={styles.analysisSection}>
+      <Text style={styles.analysisTitle}>Behavioral Analysis</Text>
+      <Text style={styles.analysisContent}>{log.behavioralAnalysis}</Text>
+    </View>
+    {urls.length > 0 && (
+      <View style={styles.analysisSection}>
+        <Text style={styles.analysisTitle}>URL Safety Check</Text>
+        {urls.map((url: string, index: number) => (
+          <View key={index} style={styles.urlCheckContainer}>
+            <TouchableOpacity onPress={() => handleUrlPress(url)}>
+              <Text style={styles.urlText} numberOfLines={1}>{url}</Text>
+            </TouchableOpacity>
+            <Text style={[styles.urlStatus, { color: getStatusColor(urlSafety[url]) }]}>
+              {urlSafety[url] || 'checking...'}
+            </Text>
+          </View>
+        ))}
+      </View>
+    )}
+  </View>
+);
+
+const MetadataTab = ({ log }: { log: LogEntry }) => (
+  <View style={styles.tabContentContainer}>
+    <View style={styles.metadataRow}>
+      <Text style={styles.metadataKey}>Device</Text>
+      <Text style={styles.metadataValue}>{log.metadata.device}</Text>
+    </View>
+    <View style={styles.metadataRow}>
+      <Text style={styles.metadataKey}>Location</Text>
+      <Text style={styles.metadataValue}>{log.metadata.location}</Text>
+    </View>
+    <View style={styles.metadataRow}>
+      <Text style={styles.metadataKey}>Received At</Text>
+      <Text style={styles.metadataValue}>{new Date(log.metadata.receivedAt).toLocaleString()}</Text>
+    </View>
+    <View style={styles.metadataRow}>
+      <Text style={styles.metadataKey}>Message Length</Text>
+      <Text style={styles.metadataValue}>{log.metadata.messageLength} characters</Text>
+    </View>
+  </View>
+);
+
+const ThreatTab = ({ threatInfo }: { threatInfo: ThreatInfo }) => (
+  <View style={styles.tabContentContainer}>
+    <View style={styles.threatBreakdownSection}>
+      <Text style={styles.threatBreakdownTitle}>Threat Breakdown</Text>
+      {threatInfo.breakdown.map((item, index) => (
+        <View key={index} style={styles.threatBreakdownRow}>
+          <Text style={styles.threatBreakdownItem}>- {item.label}</Text>
+          <Text style={styles.threatBreakdownPoints}>(+{item.points})</Text>
+        </View>
+      ))}
+    </View>
+  </View>
+);
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'safe': return '#06D6A0';
+    case 'malware':
+    case 'phishing': return '#FF6B6B';
+    default: return '#aaa';
+  }
 }
 
-// Mock data for demonstration
-const mockLog = {
-  id: '1',
-  date: '2024-12-15',
-  category: 'Mail',
-  sender: 'security@paypal-support.com',
-  message: 'URGENT: Your PayPal account has been suspended due to suspicious activity. To restore access immediately, please verify your identity by clicking this secure link: https://paypal-verify-account.com/secure/login. If you do not verify within 24 hours, your account will be permanently disabled.',
-  nlpAnalysis: 'High risk phishing attempt. Contains urgent language, impersonates PayPal, requests immediate action, and includes suspicious verification link.',
-  behavioralAnalysis: 'Sender domain does not match official PayPal domain. Similar to known phishing patterns. Account verification requests via email are unusual for PayPal.',
-  metadata: {
-    device: 'iPhone 15',
-    location: 'Austin, TX',
-    receivedAt: '2024-12-15T14:30:00Z',
-    messageLength: 245,
-    senderHistory: 1,
-    senderFlagged: true,
-    attachments: 'None',
-    links: 1,
-    network: 'Wi-Fi',
-    appVersion: '1.2.3',
-    threatDetection: 'NLP, Safe Browsing',
-    geolocation: 'Austin, TX, USA',
-  },
-};
-
-const tabs = [
-  { id: 'general', label: 'Details' },
-  { id: 'security', label: 'Analysis' },
-  { id: 'metadata', label: 'Metadata' },
-  { id: 'threat', label: 'Threat' }
-];
-
-const formatDate = (dateString: string) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: '2-digit' });
-};
-
-type LogDetailScreenProps = {
-  actionSheetVisible: boolean;
-  setActionSheetVisible: (visible: boolean) => void;
-};
-
-const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetailScreenProps) => {
-  const route = useRoute();
+// Main Component
+const LogDetailScreen = () => {
+  const route = useRoute<RouteProp<any>>();
   const navigation = useNavigation();
+  const { log } = route.params as { log: LogEntry };
+  const { blockSender, deleteLog } = useLogs();
   
-  // @ts-ignore
-  const log = (route.params && route.params.log) ? route.params.log : mockLog;
-  const [activeTab, setActiveTab] = useState('general');
-  const urls = extractUrls(log.message);
-
-  // Threat calculation
-  const threatInfo = calculateThreatLevel({
-    nlpAnalysis: log.nlpAnalysis || '',
-    behavioralAnalysis: log.behavioralAnalysis || '',
-    sender: log.sender || '',
-  });
-
-  // URL safety check state
+  const [activeTab, setActiveTab] = useState('Details');
+  const [threatInfo, setThreatInfo] = useState<ThreatInfo>({ level: '', score: 0, breakdown: [], percentage: 0, categories: [], summary: '' });
+  const [urls, setUrls] = useState<string[]>([]);
   const [urlSafety, setUrlSafety] = useState<{ [url: string]: string }>({});
-  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
-  const [showUrlWarning, setShowUrlWarning] = useState(false);
-  const [showUrlHelp, setShowUrlHelp] = useState(false);
-
-  // Related search state
-  const [relatedSearchResults, setRelatedSearchResults] = useState<any[]>([]);
-  const [loadingRelated, setLoadingRelated] = useState(false);
-  const [relatedError, setRelatedError] = useState<string | null>(null);
-
-  // Bottom sheet ref and snap points
+  const [relatedContent, setRelatedContent] = useState<any[]>([]);
+  const [loadingRelated, setLoadingRelated] = useState(true);
+  
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const handleSheetChange = useCallback((index: number) => {}, []);
-
-  // Debug logging
-  console.log('LogDetailScreen mounted:', {
-    routeName: route.name,
-    params: route.params,
-    canGoBack: navigation.canGoBack()
-  });
-
+  const snapPoints = useMemo(() => ['40%'], []);
+  
+  // Threat Calculation
   useEffect(() => {
-    if (urls.length === 0) return;
-    urls.forEach(url => {
-      setUrlSafety(prev => ({ ...prev, [url]: 'loading' }));
-      checkUrlSafety(url).then(status => {
-        setUrlSafety(prev => ({ ...prev, [url]: status }));
-      });
-    });
-    // eslint-disable-next-line
+    const info = calculateThreatLevel(log);
+    setThreatInfo(info);
+  }, [log]);
+
+  // URL Extraction
+  useEffect(() => {
+    const extractedUrls = extractUrls(log.message);
+    setUrls(extractedUrls);
   }, [log.message]);
 
+  // URL Safety Check
   useEffect(() => {
-    console.log('[LogDetailScreen] Fetching related search for:', log.message);
+    if (urls.length === 0) return;
+    const safetyMap: { [url: string]: string } = {};
+    urls.forEach(url => {
+      safetyMap[url] = 'loading';
+      checkUrlSafety(url).then(status => {
+        safetyMap[url] = status;
+        // @ts-ignore
+        setUrlSafety(safetyMap);
+      });
+    });
+  }, [urls]);
+
+  // Related Content
+  useEffect(() => {
     setLoadingRelated(true);
-    setRelatedError(null);
     getRelatedSearchResults(log.message)
-      .then(results => setRelatedSearchResults(results))
-      .catch(() => setRelatedError('Failed to fetch related searches.'))
+      .then(setRelatedContent)
+      .catch(console.error)
       .finally(() => setLoadingRelated(false));
   }, [log.message]);
 
@@ -130,385 +190,177 @@ const LogDetailScreen = ({ actionSheetVisible, setActionSheetVisible }: LogDetai
     if (status === 'safe') {
       Linking.openURL(url.startsWith('http') ? url : `https://${url}`);
     } else if (status === 'malware' || status === 'phishing' || status === 'unknown') {
-      setPendingUrl(url);
-      setShowUrlWarning(true);
+      Alert.alert('Warning', 'This URL is not safe. Are you sure you want to proceed?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Proceed', onPress: () => Linking.openURL(url.startsWith('http') ? url : `https://${url}`) },
+      ]);
     } else {
-      Linking.openURL(url.startsWith('http') ? url : `https://${url}`);
+      Linking.openURL(url.startsWith('http') ? url : `https://www.google.com/search?q=${encodeURIComponent(url)}`);
     }
   };
 
-  // Action sheet actions
-  const actionButtons = [
-    { label: 'Add Contact', icon: 'person-add', color: '#4A90E2', onPress: () => Alert.alert('Add Contact', 'Contact added!') },
-    { label: 'Block Sender', icon: 'ban', color: '#FF6B6B', onPress: () => Alert.alert('Block Sender', 'Sender blocked!') },
-    { label: 'Report Threat', icon: 'flag', color: '#FFB300', onPress: () => Alert.alert('Report Threat', 'Threat reported!') },
-    { label: 'Ignore', icon: 'eye-off', color: '#B0BEC5', onPress: () => Alert.alert('Ignore', 'Threat ignored!') },
-    { label: 'Archive', icon: 'archive', color: '#43A047', onPress: () => Alert.alert('Archive', 'Log archived!') },
-    { label: 'Share', icon: 'share', color: '#9C27B0', onPress: () => Alert.alert('Share', 'Share functionality!') },
-    { label: 'Delete', icon: 'trash', color: '#FF6B6B', onPress: () => Alert.alert('Delete', 'Log deleted!') },
-  ];
+  const handleLinkPress = (url: string) => {
+    Linking.openURL(url).catch(err => Alert.alert('Error', 'Could not open the link.'));
+  };
+
+  const showHelpAlert = () => {
+    Alert.alert(
+      "How is the score calculated?",
+      "The threat score is based on a combination of factors:\n\n" +
+      "• NLP analysis for urgent or suspicious language.\n" +
+      "• Behavioral analysis for unusual sender patterns.\n" +
+      "• Sender reputation and known scam indicators.\n\n" +
+      "Scores:\n" +
+      "Low: 0-1\n" +
+      "Medium: 2-4\n" +
+      "High: 5+",
+      [{ text: "OK" }]
+    );
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'general':
-        return <GeneralTab log={log} />;
-      case 'security':
-        return <SecurityTab log={log} urls={urls} urlSafety={urlSafety} />;
-      case 'metadata':
-        return <MetadataTab log={log} urls={urls} />;
-      case 'threat':
+      case 'Details':
+        return <DetailsTab log={log} relatedContent={relatedContent} loadingRelated={loadingRelated} handleLinkPress={handleLinkPress} />;
+      case 'Analysis':
+        return <AnalysisTab log={log} urls={urls} urlSafety={urlSafety} handleUrlPress={handleUrlPress} />;
+      case 'Metadata':
+        return <MetadataTab log={log} />;
+      case 'Threat':
         return <ThreatTab threatInfo={threatInfo} />;
       default:
         return null;
     }
   };
 
+  const TABS = ['Details', 'Analysis', 'Metadata', 'Threat'];
+
   return (
-    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
-        <ScrollView style={{ padding: 16 }}>
-          {/* Top Card */}
-          <View style={styles.card}>
-            <View style={styles.topCardRowCentered}>
-              <View style={styles.topCardLeft}>
-                <CategoryBadge category={log.category} />
-              </View>
-              <View style={styles.topCardCenter}>
-                <View style={styles.badgeWithHelpContainer}>
-                  <ThreatBadge level={threatInfo.level || 'Low'} score={threatInfo.score} />
-                  <TouchableOpacity
-                    style={styles.helpIconInsideBadge}
-                    onPress={() => Alert.alert('Threat Level Info', 'Threat level is calculated based on NLP and behavioral analysis, sender, and message content. Higher scores are given for urgent, suspicious, or scam-like language, unknown senders, and known scam patterns.')}
-                    hitSlop={8}
-                  >
-                    <Icon name="help-circle-outline" size={18} color="#4A90E2" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.topCardRight} />
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle} numberOfLines={1}>{log.category} from {log.sender}</Text>
+        <Menu>
+          <MenuTrigger>
+            <Icon name="ellipsis-vertical" size={24} color="#fff" />
+          </MenuTrigger>
+          <MenuOptions customStyles={menuOptionsStyles}>
+            <MenuOption onSelect={() => Alert.alert('Add to Contacts', 'This feature is not yet implemented.')}>
+              <Text style={styles.menuOptionText}>Add to Contacts</Text>
+            </MenuOption>
+            <MenuOption onSelect={() => {
+              blockSender(log.sender, 'Manually blocked', log.category);
+              Alert.alert('Sender Blocked', `${log.sender} has been blocked.`);
+              navigation.goBack();
+            }}>
+              <Text style={styles.menuOptionText}>Block Sender</Text>
+            </MenuOption>
+            <MenuOption onSelect={() => Alert.alert('Report Phishing', 'This feature is not yet implemented.')}>
+              <Text style={styles.menuOptionText}>Report as Phishing</Text>
+            </MenuOption>
+            <MenuOption onSelect={() => {
+              deleteLog(log.id);
+              Alert.alert('Log Deleted', 'The log has been deleted.');
+              navigation.goBack();
+            }}>
+              <Text style={styles.menuOptionText}>Delete Log</Text>
+            </MenuOption>
+          </MenuOptions>
+        </Menu>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Threat Level */}
+        <View style={styles.threatSection}>
+            <View style={{flex: 1}}>
+                <Text style={[styles.threatLevelTitle, { color: getThreatColor(threatInfo.level) }]}>{threatInfo.level} Threat</Text>
+                <Text style={styles.threatScore}>Score: {threatInfo.score}/9</Text>
             </View>
-          </View>
-          {/* Tab Navigation */}
-          <View style={styles.tabContainer}>
-            {tabs.map((tab) => (
-              <TouchableOpacity
-                key={tab.id}
-                style={[styles.tab, activeTab === tab.id && styles.activeTab]}
-                onPress={() => setActiveTab(tab.id)}
-                activeOpacity={0.85}
-              >
-                <Text style={[styles.tabText, activeTab === tab.id && styles.activeTabText]}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          {/* Tab Content */}
-          {renderTabContent()}
-          {/* Action Sheet Modal */}
-          <Modal
-            visible={actionSheetVisible}
-            animationType="slide"
-            transparent
-            onRequestClose={() => setActionSheetVisible(false)}
-          >
-            <TouchableOpacity
-              style={styles.actionSheetOverlay}
-              activeOpacity={1}
-              onPressOut={() => setActionSheetVisible(false)}
-            >
-              <View style={styles.actionSheetContainer}>
-                <Text style={styles.actionSheetTitle}>Select Action</Text>
-                {actionButtons.map((button) => (
-                  <TouchableOpacity
-                    key={button.label}
-                    style={styles.actionSheetButton}
-                    onPress={() => {
-                      setActionSheetVisible(false);
-                      setTimeout(button.onPress, 200);
-                    }}
-                  >
-                    <Icon name={button.icon} size={22} color={button.color} style={{ marginRight: 14 }} />
-                    <Text style={[styles.actionSheetButtonText, { color: button.color }]}>{button.label}</Text>
-                  </TouchableOpacity>
-                ))}
-                <TouchableOpacity
-                  style={styles.actionSheetCancel}
-                  onPress={() => setActionSheetVisible(false)}
-                >
-                  <Text style={styles.actionSheetCancelText}>Cancel</Text>
-                </TouchableOpacity>
-              </View>
+            <TouchableOpacity onPress={showHelpAlert}>
+              <Icon name="help-circle-outline" size={24} color="#aaa" />
             </TouchableOpacity>
-          </Modal>
-        </ScrollView>
-        {/* Bottom Sheet for Related Search - moved outside ScrollView */}
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={0}
-          snapPoints={useMemo(() => ['8%', '45%'], [])}
-          onChange={handleSheetChange}
-          backgroundStyle={{ backgroundColor: 'rgba(30,30,30,0.98)' }}
-          handleIndicatorStyle={{ backgroundColor: '#4A90E2' }}
-        >
-          <View style={{ paddingHorizontal: 20, paddingTop: 0 }}>
-            <Text style={{ color: '#4A90E2', fontWeight: 'bold', fontSize: 16, marginBottom: 20 }}>Related Content</Text>
-            {loadingRelated ? (
-              <Text style={styles.value}>Loading...</Text>
-            ) : relatedError ? (
-              <Text style={styles.value}>{relatedError}</Text>
-            ) : relatedSearchResults.length === 0 ? (
-              <Text style={styles.value}>No related searches found.</Text>
-            ) : (
-              relatedSearchResults.map((item, idx) => (
-                <TouchableOpacity key={idx} onPress={() => Linking.openURL(item.url)}>
-                  <Text style={[styles.value, { color: '#4A90E2', textDecorationLine: 'underline', fontWeight: 'bold' }]}>{item.title}</Text>
-                  <Text style={styles.value}>{item.snippet}</Text>
-                </TouchableOpacity>
-              ))
-            )}
-            {/* Spacer to add bottom space */}
-            <View style={{ height: 100 }} />
-          </View>
-        </BottomSheet>
-      </SafeAreaView>
-    </LinearGradient>
+        </View>
+
+        {/* Tabs */}
+        <View style={styles.tabBar}>
+          {TABS.map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              style={[styles.tab, activeTab === tab && styles.activeTab]}
+              onPress={() => setActiveTab(tab)}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+                {tab}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        
+        {/* Tab Content */}
+        {renderTabContent()}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
+const extractUrls = (text: string): string[] => {
+  if (!text) return [];
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.match(urlRegex) || [];
+};
+
+const menuOptionsStyles = {
+  optionsContainer: {
+    backgroundColor: '#2C2C2E',
+    borderRadius: 12,
+    padding: 5,
+  },
+  optionText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+};
+
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  topCardRowCentered: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  topCardLeft: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-  },
-  topCardCenter: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  topCardRight: {
-    flex: 1,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 18,
-    marginTop: 8,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: 24,
-    padding: 4,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 20,
-    marginHorizontal: 4,
-  },
-  activeTab: {
-    backgroundColor: 'rgba(74, 144, 226, 0.18)',
-    borderRadius: 20,
-  },
-  tabText: {
-    color: '#B0BEC5',
-    fontSize: 15,
-    fontWeight: 'bold',
-  },
-  activeTabText: {
-    color: '#4A90E2',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  tabContent: {
-    paddingTop: 8,
-  },
-  sectionTitle: {
-    color: '#4A90E2',
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  label: {
-    color: '#B0BEC5',
-    fontWeight: 'bold',
-    fontSize: 14,
-    marginTop: 6,
-  },
-  value: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    marginBottom: 2,
-  },
-  urlText: {
-    color: '#4A90E2',
-    textDecorationLine: 'underline',
-    marginBottom: 4,
-    marginRight: 8,
-  },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 2,
-    marginTop: 2,
-    marginBottom: 2,
-  },
-  statusBadgeText: {
+  container: { flex: 1, backgroundColor: '#000' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
+  headerTitle: { flex:1, marginHorizontal: 16, fontSize: 16, fontWeight: 'bold', color: '#fff', textAlign: 'center' },
+  scrollContent: { paddingHorizontal: 16, paddingBottom: 100 },
+  threatSection: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1C1C1E', padding: 16, borderRadius: 12, marginBottom: 16 },
+  threatLevelTitle: { fontSize: 20, fontWeight: 'bold' },
+  threatScore: { fontSize: 14, color: '#aaa' },
+  tabBar: { flexDirection: 'row', marginBottom: 16, backgroundColor: '#1C1C1E', borderRadius: 12, padding: 4 },
+  tab: { flex: 1, paddingVertical: 10, borderRadius: 8 },
+  activeTab: { backgroundColor: '#4A90E2' },
+  tabText: { textAlign: 'center', color: '#aaa', fontWeight: '600' },
+  activeTabText: { color: '#fff' },
+  tabContentContainer: { backgroundColor: '#1C1C1E', padding: 16, borderRadius: 12 },
+  messageText: { fontSize: 16, color: '#fff', lineHeight: 24 },
+  analysisSection: { marginBottom: 16 },
+  analysisTitle: { fontSize: 16, fontWeight: 'bold', color: '#fff', marginBottom: 8 },
+  analysisContent: { fontSize: 14, color: '#aaa' },
+  urlCheckContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
+  urlText: { color: '#4A90E2', textDecorationLine: 'underline' },
+  urlStatus: { fontWeight: 'bold' },
+  metadataRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#2C2C2E' },
+  metadataKey: { color: '#B0B0B0', fontSize: 16 },
+  metadataValue: { color: '#FFFFFF', fontSize: 16 },
+  threatBreakdownSection: { padding: 16 },
+  threatBreakdownTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
+  threatBreakdownRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 4 },
+  threatBreakdownItem: { color: '#E0E0E0', fontSize: 16 },
+  threatBreakdownPoints: { color: '#FF6B6B', fontSize: 16, fontWeight: 'bold' },
+  relatedContentTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff', marginBottom: 12 },
+  relatedContentLink: { color: '#4A90E2', fontSize: 16, marginBottom: 8 },
+  menuOptionText: {
     color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-  helpIconButton: {
-    marginLeft: 6,
-    padding: 4,
-  },
-  helpModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  helpModalContent: {
-    backgroundColor: '#23294d',
-    borderRadius: 16,
-    padding: 24,
-    minWidth: 260,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  helpModalTitle: {
-    color: '#4A90E2',
-    fontWeight: 'bold',
-    fontSize: 18,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  helpModalText: {
-    color: '#B0BEC5',
-    fontSize: 15,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  helpModalButton: {
-    marginTop: 10,
-    backgroundColor: '#4A90E2',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-  },
-  helpModalButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-  actionSheetOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionSheetContainer: {
-    backgroundColor: '#23294d',
-    borderRadius: 16,
-    padding: 24,
-    minWidth: 260,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  actionSheetTitle: {
-    color: '#4A90E2',
-    fontWeight: 'bold',
-    fontSize: 18,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  actionSheetButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    marginBottom: 8,
-  },
-  actionSheetButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: 'bold',
-  },
-  actionSheetCancel: {
-    marginTop: 10,
-    backgroundColor: '#FF6B6B',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-  },
-  actionSheetCancelText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-  helpText: {
-    color: '#B0BEC5',
-    fontSize: 13,
-    marginBottom: 10,
-  },
-  helpTextContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  helpIcon: {
-    marginRight: 4,
-  },
-  helpLink: {
-    color: '#4A90E2',
-    textDecorationLine: 'underline',
-  },
-  badgeWithHelpContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-  },
-  helpIconInsideBadge: {
-    marginLeft: 8,
-    alignSelf: 'center',
-  },
-  headerScore: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,
-  },
-  headerScoreLabel: {
-    color: '#B0BEC5',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  headerScoreValue: {
-    color: '#4A90E2',
-    fontWeight: 'bold',
     fontSize: 16,
+    padding: 10,
   },
 });
 
-export { LogDetailScreen }; 
+export default LogDetailScreen;

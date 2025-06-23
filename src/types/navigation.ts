@@ -3,7 +3,7 @@ import { ScamAlert } from '../services/perplexity/perplexityService';
 import type { LogEntry } from '../context/LogContext';
 
 export type HomeStackParamList = {
-  Home: undefined;
+  HomeScreen: undefined;
   LatestScams: undefined;
   ScamDetail: { scam: ScamAlert };
   LogDetail: { log: LogEntry };

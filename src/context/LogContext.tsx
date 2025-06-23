@@ -97,6 +97,7 @@ export type LogContextType = {
   logs: LogEntry[];
   blockedSenders: BlockedSender[];
   addLog: (log: Omit<LogEntry, 'threat'>) => void;
+  deleteLog: (id: string) => void;
   clearAllLogs: () => void;
   blockSender: (sender: string, reason: string, category: string) => void;
   unblockSender: (sender: string) => void;
@@ -209,6 +210,10 @@ export const LogProvider = ({ children }: { children: ReactNode }) => {
     setLogs(prev => [withThreat({ ...log, nlpAnalysis, behavioralAnalysis, sender: normalizedSender }), ...prev]);
   };
 
+  const deleteLog = (id: string) => {
+    setLogs(prev => prev.filter(log => log.id !== id));
+  };
+
   const clearAllLogs = () => setLogs([]);
 
   const blockSender = (sender: string, reason: string, category: string) => {
@@ -243,6 +248,7 @@ export const LogProvider = ({ children }: { children: ReactNode }) => {
         logs,
         blockedSenders,
         addLog,
+        deleteLog,
         clearAllLogs,
         blockSender,
         unblockSender,

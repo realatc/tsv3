@@ -29,7 +29,12 @@ export const addSampleLogs = (logContext: LogContextType) => {
     date: new Date().toISOString(),
     nlpAnalysis: text.message.includes('URGENT') || text.message.includes('prize') ? 'Urgent language detected, possible phishing.' : 'No threat detected.',
     behavioralAnalysis: text.sender.includes('555') ? 'Sender not in contacts. Similar pattern to previous scams.' : 'Sender in contacts, normal behavior.',
-    metadata: { device: '', location: '', receivedAt: '', messageLength: 0 }
+    metadata: {
+      device: 'iPhone 15 Pro',
+      location: 'New York, NY',
+      receivedAt: new Date().toISOString(),
+      messageLength: text.message.length,
+    },
   }));
 
   // Add sample emails
@@ -41,7 +46,12 @@ export const addSampleLogs = (logContext: LogContextType) => {
     date: new Date().toISOString(),
     nlpAnalysis: email.message.includes('Security Alert') || email.message.includes('suspicious login') ? 'Urgent language detected, possible phishing.' : 'No threat detected.',
     behavioralAnalysis: email.sender.includes('yourbank') ? 'Sender not in contacts. Similar pattern to previous scams.' : 'Sender in contacts, normal behavior.',
-    metadata: { device: '', location: '', receivedAt: '', messageLength: 0 }
+    metadata: {
+      device: 'MacBook Pro',
+      location: 'San Francisco, CA',
+      receivedAt: new Date().toISOString(),
+      messageLength: email.message.length,
+    },
   }));
   
   // Add sample calls
@@ -53,33 +63,50 @@ export const addSampleLogs = (logContext: LogContextType) => {
     date: new Date().toISOString(),
     nlpAnalysis: call.sender.includes('SCAM') ? 'Possible scam call detected.' : 'No threat detected.',
     behavioralAnalysis: call.sender.includes('SCAM') ? 'Number not in contacts. Matches scam call patterns.' : 'Number in contacts, normal behavior.',
-    metadata: { device: '', location: '', receivedAt: '', messageLength: 0 }
+    metadata: {
+      device: 'Samsung Galaxy S23',
+      location: 'Chicago, IL',
+      receivedAt: new Date().toISOString(),
+      messageLength: call.message.length,
+    },
   }));
 };
 
 export const addHighThreatLog = (logContext: LogContextType) => {
+  const message = 'FINAL WARNING: Your social security number has been suspended due to fraudulent activity. You must call us immediately at 1-800-FAKE-IRS to avoid legal action. This is your last chance.';
   logContext.addLog({
     id: `high-threat-${Date.now()}`,
     category: 'Text',
     sender: '1-555-DANGER-NOW',
-    message: 'FINAL WARNING: Your social security number has been suspended due to fraudulent activity. You must call us immediately at 1-800-FAKE-IRS to avoid legal action. This is your last chance.',
+    message: message,
     date: new Date().toISOString(),
     nlpAnalysis: 'Urgent language detected, possible phishing. Authority impersonation detected.',
     behavioralAnalysis: 'Sender not in contacts. Matches scam patterns.',
-    metadata: { device: '', location: '', receivedAt: '', messageLength: 0 }
+    metadata: {
+      device: 'iPhone 15 Pro',
+      location: 'Miami, FL',
+      receivedAt: new Date().toISOString(),
+      messageLength: message.length,
+    },
   });
 };
 
 export const addPhishingEmail = (logContext: LogContextType) => {
+  const message = 'Subject: Account Hold Notification\n\nDear Customer,\n\nWe have detected unusual activity on your PayPal account. For your safety, we have placed a temporary hold on it. Please log in at your earliest convenience to verify your identity and restore access.\n\nClick here: http://pay-pal-services-login.com/auth\n\nThank you,\nPayPal Support Team';
   logContext.addLog({
     id: `phishing-email-${Date.now()}`,
     category: 'Mail',
     sender: 'customer-support@pay-pal-services.com',
-    message: 'Subject: Account Hold Notification\n\nDear Customer,\n\nWe have detected unusual activity on your PayPal account. For your safety, we have placed a temporary hold on it. Please log in at your earliest convenience to verify your identity and restore access.\n\nClick here: http://pay-pal-services-login.com/auth\n\nThank you,\nPayPal Support Team',
+    message: message,
     date: new Date().toISOString(),
     nlpAnalysis: 'Urgent language detected, possible phishing. Authority impersonation detected.',
     behavioralAnalysis: 'Sender not in contacts. Matches phishing patterns.',
-    metadata: { device: '', location: '', receivedAt: '', messageLength: 0 }
+    metadata: {
+      device: 'Windows PC',
+      location: 'Los Angeles, CA',
+      receivedAt: new Date().toISOString(),
+      messageLength: message.length,
+    },
   });
 };
 
@@ -98,7 +125,12 @@ export const addScamTexts = (logContext: LogContextType) => {
     date: new Date().toISOString(),
     nlpAnalysis: 'Urgent language detected, possible phishing. Authority impersonation detected.',
     behavioralAnalysis: 'Sender not in contacts. Matches scam patterns.',
-    metadata: { device: '', location: '', receivedAt: '', messageLength: 0 }
+    metadata: {
+      device: 'iPhone 14',
+      location: 'Houston, TX',
+      receivedAt: new Date().toISOString(),
+      messageLength: text.message.length,
+    },
   }));
 };
 
