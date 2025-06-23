@@ -35,6 +35,7 @@ import LogDetailScreenWrapper from './src/screens/LogDetailScreenWrapper';
 import LogHistoryScreen from './src/screens/LogHistoryScreen';
 import ScamDetailScreen from './src/screens/ScamDetailScreen';
 import SearchResultsScreen from './src/screens/SearchResultsScreen';
+import ThreatAnalysisScreen from './src/screens/ThreatAnalysisScreen';
 
 // Components
 import SettingsSheet from './src/components/SettingsSheet';
@@ -107,6 +108,7 @@ function SearchStackNavigator() {
   return (
     <SearchStack.Navigator screenOptions={{ headerShown: false }}>
       <SearchStack.Screen name="Search" component={SearchResultsScreen} />
+      <SearchStack.Screen name="ThreatAnalysis" component={ThreatAnalysisScreen} />
     </SearchStack.Navigator>
   );
 }

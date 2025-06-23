@@ -34,6 +34,7 @@ export type LibraryStackParamList = {
 
 export type SearchStackParamList = {
   Search: undefined;
+  ThreatAnalysis: undefined;
 };
 
 // Defines the parameters for the screens within the bottom tab navigator

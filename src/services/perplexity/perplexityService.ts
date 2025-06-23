@@ -204,6 +204,7 @@ function getMockScamData(): ScamAlert[] {
 }
 
 async function callPerplexityAPI(prompt: string, model: string = 'llama-3.1-sonar-small-128k-online') {
+  console.log(`[callPerplexityAPI] Making API call with model: ${model}`);
   const response = await fetch(PERPLEXITY_API_URL, {
     method: 'POST',
     headers: {
@@ -217,7 +218,7 @@ async function callPerplexityAPI(prompt: string, model: string = 'llama-3.1-sona
         { role: 'user', content: prompt },
       ],
       max_tokens: 1000,
-      temperature: 0.2,
+      temperature: 0.0,
     }),
   });
 
@@ -234,6 +235,7 @@ async function callPerplexityAPI(prompt: string, model: string = 'llama-3.1-sona
     throw new Error('No content received from Perplexity API');
   }
 
+  console.log(`[callPerplexityAPI] Received response length: ${content.length} characters`);
   return content;
 }
 
@@ -243,6 +245,8 @@ export async function analyzeText(text: string): Promise<any> {
     return mockAnalyzeText(text); // Keep mock function for fallback
   }
 
+  console.log(`[analyzeText] Starting analysis for text: "${text.substring(0, 100)}..."`);
+  
   const prompt = `Analyze the following text for security threats. Respond with a JSON object containing three fields: 
 1. "threatLevel": A string, one of 'critical', 'high', 'medium', 'low', or 'none'.
 2. "summary": A concise, one-sentence summary of the potential threat.
@@ -259,10 +263,13 @@ ${text}
     console.log(`[analyzeText] Sending text to Perplexity for analysis...`);
     const content = await callPerplexityAPI(prompt);
     
+    console.log(`[analyzeText] Raw API response: ${content.substring(0, 200)}...`);
+    
     const jsonMatch = content.match(/{[\s\S]*}/);
     if (jsonMatch && jsonMatch[0]) {
-      console.log(`[analyzeText] Received JSON response.`);
-      return JSON.parse(jsonMatch[0]);
+      const parsedResult = JSON.parse(jsonMatch[0]);
+      console.log(`[analyzeText] Successfully parsed result:`, parsedResult);
+      return parsedResult;
     } else {
       console.error('[analyzeText] Failed to extract JSON from response:', content);
       throw new Error('Invalid response format from API.');
