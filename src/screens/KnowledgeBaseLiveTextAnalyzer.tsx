@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,9 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  TextInput,
+  Modal,
+  Animated,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -18,8 +21,199 @@ type KnowledgeBaseLiveTextAnalyzerNavigationProp = StackNavigationProp<
   'KnowledgeBaseLiveTextAnalyzer'
 >;
 
+interface TableOfContentsItem {
+  id: string;
+  title: string;
+  level: number;
+}
+
+interface SearchResult {
+  text: string;
+  section: string;
+  sectionId: string;
+  index: number;
+}
+
 const KnowledgeBaseLiveTextAnalyzer = () => {
   const navigation = useNavigation<KnowledgeBaseLiveTextAnalyzerNavigationProp>();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [showTableOfContents, setShowTableOfContents] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
+  const [highlightedSection, setHighlightedSection] = useState<string | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  
+  // Section refs for scrolling
+  const sectionRefs = useRef<{ [key: string]: any }>({});
+
+  const tableOfContents: TableOfContentsItem[] = [
+    { id: 'overview', title: 'Overview', level: 1 },
+    { id: 'how-it-works', title: 'How It Works', level: 1 },
+    { id: 'text-input', title: 'Text Input Processing', level: 2 },
+    { id: 'ai-analysis', title: 'AI-Powered Analysis', level: 2 },
+    { id: 'threat-intelligence', title: 'Threat Intelligence Integration', level: 2 },
+    { id: 'grading-system', title: 'Threat Level Grading System', level: 1 },
+    { id: 'what-it-looks-for', title: 'What the Analyzer Looks For', level: 1 },
+    { id: 'red-flags', title: 'Red Flags & Indicators', level: 2 },
+    { id: 'technical-analysis', title: 'Technical Analysis', level: 2 },
+    { id: 'data-sources', title: 'Data Sources & Privacy', level: 1 },
+    { id: 'privacy', title: 'Privacy & Data Handling', level: 2 },
+    { id: 'limitations', title: 'Limitations & Considerations', level: 1 },
+    { id: 'best-practices', title: 'Best Practices', level: 1 },
+    { id: 'conclusion', title: 'Conclusion', level: 1 },
+  ];
+
+  const articleContent = {
+    overview: {
+      title: 'Overview',
+      content: 'The Live Text Analyzer is a powerful AI-powered tool that scans text content in real-time to identify potential security threats, scams, and malicious content. It provides instant threat assessments with actionable recommendations to help you stay safe online.'
+    },
+    'how-it-works': {
+      title: 'How It Works',
+      content: 'The analyzer processes text through multiple stages of analysis to provide comprehensive threat assessment.'
+    },
+    'text-input': {
+      title: 'Text Input Processing',
+      content: 'When you paste text into the analyzer, the system processes your input through advanced natural language processing, analyzes the content for suspicious patterns, keywords, and contextual clues, and uses multiple threat detection algorithms simultaneously.'
+    },
+    'ai-analysis': {
+      title: 'AI-Powered Analysis',
+      content: 'The analyzer uses Perplexity AI with the llama-3.1-sonar-small-128k-online model to evaluate text for phishing attempts, scams, and malicious content, identify social engineering tactics, detect suspicious URLs, and analyze language patterns associated with fraud.'
+    },
+    'threat-intelligence': {
+      title: 'Threat Intelligence Integration',
+      content: 'The system leverages real-time threat intelligence from Perplexity AI\'s Knowledge Base, cybersecurity databases, real-time web search, and pattern recognition models trained on millions of scam examples.'
+    },
+    'grading-system': {
+      title: 'Threat Level Grading System',
+      content: 'The analyzer uses a 5-tier threat assessment system: Critical (Red), High (Orange), Medium (Yellow), Low (Green), and None (White).'
+    },
+    'what-it-looks-for': {
+      title: 'What the Analyzer Looks For',
+      content: 'The analyzer examines text for various red flags and indicators of malicious content.'
+    },
+    'red-flags': {
+      title: 'Red Flags & Indicators',
+      content: 'Key indicators include urgency tactics, authority impersonation, sensitive data requests, suspicious URLs, unusual language, too-good-to-be-true offers, and pressure tactics.'
+    },
+    'technical-analysis': {
+      title: 'Technical Analysis',
+      content: 'Technical analysis includes URL analysis, pattern recognition, context analysis, temporal analysis, and cross-referencing against threat intelligence databases.'
+    },
+    'data-sources': {
+      title: 'Data Sources & Privacy',
+      content: 'Information about the data sources used and privacy considerations.'
+    },
+    'privacy': {
+      title: 'Privacy & Data Handling',
+      content: 'Your privacy is paramount. The Live Text Analyzer is designed with privacy-first principles.'
+    },
+    'limitations': {
+      title: 'Limitations & Considerations',
+      content: 'While powerful, the analyzer has limitations and should be used as part of a comprehensive security strategy.'
+    },
+    'best-practices': {
+      title: 'Best Practices',
+      content: 'Guidelines for using the analyzer effectively and maintaining good security practices.'
+    },
+    'conclusion': {
+      title: 'Conclusion',
+      content: 'The Live Text Analyzer is a valuable tool for identifying potential threats, but should be used alongside other security measures.'
+    }
+  };
+
+  const performSearch = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setCurrentSearchIndex(0);
+      return;
+    }
+
+    const results: SearchResult[] = [];
+    const searchTerm = query.toLowerCase();
+
+    Object.entries(articleContent).forEach(([sectionId, section]) => {
+      if (section.title.toLowerCase().includes(searchTerm) || 
+          section.content.toLowerCase().includes(searchTerm)) {
+        results.push({
+          text: section.title,
+          section: section.title,
+          sectionId: sectionId,
+          index: results.length
+        });
+      }
+    });
+
+    setSearchResults(results);
+    setCurrentSearchIndex(0);
+  };
+
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+    performSearch(text);
+  };
+
+  const scrollToSection = useCallback((sectionId: string) => {
+    if (sectionRefs.current[sectionId]) {
+      sectionRefs.current[sectionId].measureLayout(
+        scrollViewRef.current,
+        (x: number, y: number) => {
+          scrollViewRef.current?.scrollTo({
+            y: y - 100, // Offset for header
+            animated: true,
+          });
+        },
+        () => {
+          // Fallback if measureLayout fails
+          console.log('Could not measure section position');
+        }
+      );
+    }
+    setShowTableOfContents(false);
+  }, []);
+
+  const navigateToSearchResult = (direction: 'next' | 'prev') => {
+    if (searchResults.length === 0) return;
+    
+    let newIndex = currentSearchIndex;
+    if (direction === 'next') {
+      newIndex = (currentSearchIndex + 1) % searchResults.length;
+    } else {
+      newIndex = currentSearchIndex === 0 ? searchResults.length - 1 : currentSearchIndex - 1;
+    }
+    
+    setCurrentSearchIndex(newIndex);
+    const result = searchResults[newIndex];
+    
+    // Highlight the section briefly
+    setHighlightedSection(result.sectionId);
+    setTimeout(() => setHighlightedSection(null), 2000);
+    
+    // Scroll to the section
+    scrollToSection(result.sectionId);
+  };
+
+  const toggleSearch = () => {
+    setShowSearch(!showSearch);
+    if (!showSearch) {
+      setSearchQuery('');
+      setSearchResults([]);
+      setCurrentSearchIndex(0);
+      setHighlightedSection(null);
+    }
+  };
+
+  const toggleTableOfContents = () => {
+    setShowTableOfContents(!showTableOfContents);
+  };
+
+  const getSectionStyle = (sectionId: string) => {
+    if (highlightedSection === sectionId) {
+      return [styles.section, styles.highlightedSection];
+    }
+    return styles.section;
+  };
 
   return (
     <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
@@ -32,10 +226,95 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
             <Icon name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Live Text Analyzer</Text>
-          <View style={styles.placeholder} />
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={toggleSearch}
+            >
+              <Icon name={showSearch ? "close" : "search"} size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={toggleTableOfContents}
+            >
+              <Icon name="list" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
         </View>
+
+        {showSearch && (
+          <View style={styles.searchContainer}>
+            <View style={styles.searchInputContainer}>
+              <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search article content..."
+                placeholderTextColor="#666"
+                value={searchQuery}
+                onChangeText={handleSearch}
+                autoFocus
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => handleSearch('')}
+                  style={styles.clearButton}
+                >
+                  <Icon name="close-circle" size={20} color="#666" />
+                </TouchableOpacity>
+              )}
+            </View>
+            {searchResults.length > 0 && (
+              <View style={styles.searchResults}>
+                <View style={styles.searchResultsHeader}>
+                  <Text style={styles.searchResultsTitle}>
+                    Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                  </Text>
+                  <View style={styles.searchNavigation}>
+                    <TouchableOpacity
+                      onPress={() => navigateToSearchResult('prev')}
+                      style={styles.navButton}
+                    >
+                      <Icon name="chevron-up" size={16} color="#00BCD4" />
+                    </TouchableOpacity>
+                    <Text style={styles.navText}>
+                      {currentSearchIndex + 1} of {searchResults.length}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => navigateToSearchResult('next')}
+                      style={styles.navButton}
+                    >
+                      <Icon name="chevron-down" size={16} color="#00BCD4" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {searchResults.map((result, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.searchResultItem,
+                      index === currentSearchIndex && styles.activeSearchResult
+                    ]}
+                    onPress={() => {
+                      setCurrentSearchIndex(index);
+                      setHighlightedSection(result.sectionId);
+                      setTimeout(() => setHighlightedSection(null), 2000);
+                      scrollToSection(result.sectionId);
+                    }}
+                  >
+                    <Icon name="document-text" size={16} color="#00BCD4" />
+                    <Text style={styles.searchResultText}>{result.text}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
         
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          ref={scrollViewRef}
+          style={styles.container} 
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.content}>
             <View style={styles.titleSection}>
               <View style={styles.iconContainer}>
@@ -44,50 +323,56 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
               <Text style={styles.title}>Live Text Analyzer: How It Works</Text>
             </View>
 
-            <View style={styles.section}>
+            <View style={getSectionStyle('overview')} ref={(ref) => { sectionRefs.current['overview'] = ref; }}>
               <Text style={styles.sectionTitle}>Overview</Text>
               <Text style={styles.bodyText}>
                 The Live Text Analyzer is a powerful AI-powered tool that scans text content in real-time to identify potential security threats, scams, and malicious content. It provides instant threat assessments with actionable recommendations to help you stay safe online.
               </Text>
             </View>
 
-            <View style={styles.section}>
+            <View style={getSectionStyle('how-it-works')} ref={(ref) => { sectionRefs.current['how-it-works'] = ref; }}>
               <Text style={styles.sectionTitle}>How It Works</Text>
               
-              <Text style={styles.subsectionTitle}>1. Text Input Processing</Text>
-              <Text style={styles.bodyText}>
-                When you paste text into the analyzer:
-              </Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• The system processes your input through advanced natural language processing</Text>
-                <Text style={styles.bulletPoint}>• It analyzes the content for suspicious patterns, keywords, and contextual clues</Text>
-                <Text style={styles.bulletPoint}>• Multiple threat detection algorithms work simultaneously to assess risk</Text>
+              <View style={getSectionStyle('text-input')} ref={(ref) => { sectionRefs.current['text-input'] = ref; }}>
+                <Text style={styles.subsectionTitle}>1. Text Input Processing</Text>
+                <Text style={styles.bodyText}>
+                  When you paste text into the analyzer:
+                </Text>
+                <View style={styles.bulletList}>
+                  <Text style={styles.bulletPoint}>• The system processes your input through advanced natural language processing</Text>
+                  <Text style={styles.bulletPoint}>• It analyzes the content for suspicious patterns, keywords, and contextual clues</Text>
+                  <Text style={styles.bulletPoint}>• Multiple threat detection algorithms work simultaneously to assess risk</Text>
+                </View>
               </View>
 
-              <Text style={styles.subsectionTitle}>2. AI-Powered Analysis</Text>
-              <Text style={styles.bodyText}>
-                The analyzer uses <Text style={styles.highlight}>Perplexity AI</Text> with the <Text style={styles.code}>llama-3.1-sonar-small-128k-online</Text> model to:
-              </Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• Evaluate text for phishing attempts, scams, and malicious content</Text>
-                <Text style={styles.bulletPoint}>• Identify social engineering tactics and urgency indicators</Text>
-                <Text style={styles.bulletPoint}>• Detect suspicious URLs, phone numbers, and contact information</Text>
-                <Text style={styles.bulletPoint}>• Analyze language patterns associated with fraud and deception</Text>
+              <View style={getSectionStyle('ai-analysis')} ref={(ref) => { sectionRefs.current['ai-analysis'] = ref; }}>
+                <Text style={styles.subsectionTitle}>2. AI-Powered Analysis</Text>
+                <Text style={styles.bodyText}>
+                  The analyzer uses <Text style={styles.highlight}>Perplexity AI</Text> with the <Text style={styles.code}>llama-3.1-sonar-small-128k-online</Text> model to:
+                </Text>
+                <View style={styles.bulletList}>
+                  <Text style={styles.bulletPoint}>• Evaluate text for phishing attempts, scams, and malicious content</Text>
+                  <Text style={styles.bulletPoint}>• Identify social engineering tactics and urgency indicators</Text>
+                  <Text style={styles.bulletPoint}>• Detect suspicious URLs, phone numbers, and contact information</Text>
+                  <Text style={styles.bulletPoint}>• Analyze language patterns associated with fraud and deception</Text>
+                </View>
               </View>
 
-              <Text style={styles.subsectionTitle}>3. Threat Intelligence Integration</Text>
-              <Text style={styles.bodyText}>
-                The system leverages real-time threat intelligence from:
-              </Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Perplexity AI's Knowledge Base</Text>: Access to current threat data and scam patterns</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Cybersecurity Databases</Text>: Information about known malicious entities</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Real-time Web Search</Text>: Latest information about emerging threats</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pattern Recognition</Text>: AI models trained on millions of scam examples</Text>
+              <View style={getSectionStyle('threat-intelligence')} ref={(ref) => { sectionRefs.current['threat-intelligence'] = ref; }}>
+                <Text style={styles.subsectionTitle}>3. Threat Intelligence Integration</Text>
+                <Text style={styles.bodyText}>
+                  The system leverages real-time threat intelligence from:
+                </Text>
+                <View style={styles.bulletList}>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Perplexity AI's Knowledge Base</Text>: Access to current threat data and scam patterns</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Cybersecurity Databases</Text>: Information about known malicious entities</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Real-time Web Search</Text>: Latest information about emerging threats</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pattern Recognition</Text>: AI models trained on millions of scam examples</Text>
+                </View>
               </View>
             </View>
 
-            <View style={styles.section}>
+            <View style={getSectionStyle('grading-system')} ref={(ref) => { sectionRefs.current['grading-system'] = ref; }}>
               <Text style={styles.sectionTitle}>Threat Level Grading System</Text>
               <Text style={styles.bodyText}>
                 The analyzer uses a 5-tier threat assessment system:
@@ -173,124 +458,131 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
               </View>
             </View>
 
-            <View style={styles.section}>
+            <View style={getSectionStyle('what-it-looks-for')} ref={(ref) => { sectionRefs.current['what-it-looks-for'] = ref; }}>
               <Text style={styles.sectionTitle}>What the Analyzer Looks For</Text>
               
-              <Text style={styles.subsectionTitle}>Red Flags & Indicators</Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Urgency Tactics</Text>: "Act now," "Limited time," "Immediate action required"</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Authority Impersonation</Text>: Claims to be from banks, government agencies, tech support</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Sensitive Data Requests</Text>: Passwords, credit card numbers, Social Security numbers</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Suspicious URLs</Text>: Slightly misspelled domains, unusual TLDs, redirect chains</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Unusual Language</Text>: Grammatical errors, inconsistent formatting, foreign language mixed in</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Too-Good-to-Be-True Offers</Text>: Free money, prizes, unexpected refunds</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pressure Tactics</Text>: Threats, deadlines, emotional manipulation</Text>
+              <View style={getSectionStyle('red-flags')} ref={(ref) => { sectionRefs.current['red-flags'] = ref; }}>
+                <Text style={styles.subsectionTitle}>Red Flags & Indicators</Text>
+                <View style={styles.bulletList}>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Urgency Tactics</Text>: "Act now," "Limited time," "Immediate action required"</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Authority Impersonation</Text>: Claims to be from banks, government agencies, tech support</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Sensitive Data Requests</Text>: Passwords, credit card numbers, Social Security numbers</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Suspicious URLs</Text>: Slightly misspelled domains, unusual TLDs, redirect chains</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Unusual Language</Text>: Grammatical errors, inconsistent formatting, foreign language mixed in</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Too-Good-to-Be-True Offers</Text>: Free money, prizes, unexpected refunds</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pressure Tactics</Text>: Threats, deadlines, emotional manipulation</Text>
+                </View>
               </View>
 
-              <Text style={styles.subsectionTitle}>Technical Analysis</Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>URL Analysis</Text>: Checks against known malicious domains and phishing databases</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pattern Recognition</Text>: Identifies common scam templates and social engineering techniques</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Context Analysis</Text>: Evaluates the relationship between sender and recipient</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Temporal Analysis</Text>: Considers timing and frequency of communications</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Cross-Reference</Text>: Compares against known threat intelligence databases</Text>
+              <View style={getSectionStyle('technical-analysis')} ref={(ref) => { sectionRefs.current['technical-analysis'] = ref; }}>
+                <Text style={styles.subsectionTitle}>Technical Analysis</Text>
+                <View style={styles.bulletList}>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>URL Analysis</Text>: Checks against known malicious domains and phishing databases</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pattern Recognition</Text>: Identifies common scam templates and social engineering techniques</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Context Analysis</Text>: Evaluates the relationship between sender and recipient</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Temporal Analysis</Text>: Considers timing and frequency of communications</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Cross-Reference</Text>: Compares against known threat intelligence databases</Text>
+                </View>
               </View>
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Data Sources & Intelligence</Text>
+            <View style={getSectionStyle('data-sources')} ref={(ref) => { sectionRefs.current['data-sources'] = ref; }}>
+              <Text style={styles.sectionTitle}>Data Sources & Privacy</Text>
               
-              <Text style={styles.subsectionTitle}>Real-Time Threat Intelligence</Text>
-              <Text style={styles.bodyText}>
-                The analyzer connects to multiple data sources:
-              </Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Perplexity AI Knowledge Base</Text>: Current threat information and scam patterns</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Google Safe Browsing API</Text>: Real-time URL safety checking</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Cybersecurity Feeds</Text>: Latest threat intelligence from security researchers</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Community Reports</Text>: User-submitted scam reports and patterns</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>AI Training Data</Text>: Millions of examples of legitimate vs. malicious content</Text>
-              </View>
-
-              <Text style={styles.subsectionTitle}>Continuous Learning</Text>
-              <Text style={styles.bodyText}>
-                The system continuously improves through:
-              </Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Machine Learning</Text>: Adapts to new threat patterns and techniques</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>User Feedback</Text>: Learns from user reports and corrections</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Threat Evolution</Text>: Updates to counter new scam tactics</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pattern Recognition</Text>: Identifies emerging threat trends</Text>
+              <View style={getSectionStyle('privacy')} ref={(ref) => { sectionRefs.current['privacy'] = ref; }}>
+                <Text style={styles.subsectionTitle}>Privacy & Data Handling</Text>
+                <Text style={styles.bodyText}>
+                  Your privacy is paramount. The Live Text Analyzer is designed with privacy-first principles:
+                </Text>
+                <View style={styles.bulletList}>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>No Data Storage</Text>: Your text is not stored or saved anywhere</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Secure Processing</Text>: Analysis is performed through encrypted connections</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>No Third-Party Sharing</Text>: Your data is never shared with external parties</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Temporary Processing</Text>: Text is only processed for the duration of analysis</Text>
+                </View>
               </View>
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Privacy & Security</Text>
-              
-              <Text style={styles.subsectionTitle}>Data Protection</Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>No Data Storage</Text>: Your text is not stored or saved after analysis</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Secure Processing</Text>: All analysis happens through encrypted API connections</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Privacy First</Text>: No personal information is collected or shared</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Local Processing</Text>: Sensitive content is processed securely without logging</Text>
-              </View>
-
-              <Text style={styles.subsectionTitle}>API Security</Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Encrypted Communication</Text>: All API calls use HTTPS encryption</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Secure Authentication</Text>: API keys are protected and rotated regularly</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Rate Limiting</Text>: Prevents abuse and ensures fair usage</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Error Handling</Text>: Graceful fallbacks if services are unavailable</Text>
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Technical Specifications</Text>
-              
-              <Text style={styles.subsectionTitle}>AI Model Details</Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Model</Text>: llama-3.1-sonar-small-128k-online</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Temperature</Text>: 0.0 (for consistent results)</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Max Tokens</Text>: 1000</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Response Time</Text>: Typically 2-5 seconds</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Accuracy</Text>: Continuously improving through machine learning</Text>
-              </View>
-
-              <Text style={styles.subsectionTitle}>System Requirements</Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Internet Connection</Text>: Required for real-time analysis</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>API Access</Text>: Perplexity AI integration for threat intelligence</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Processing Power</Text>: Minimal - runs on mobile devices efficiently</Text>
-              </View>
-            </View>
-
-            <View style={styles.section}>
+            <View style={getSectionStyle('limitations')} ref={(ref) => { sectionRefs.current['limitations'] = ref; }}>
               <Text style={styles.sectionTitle}>Limitations & Considerations</Text>
-              
-              <Text style={styles.subsectionTitle}>What the Analyzer Cannot Do</Text>
+              <Text style={styles.bodyText}>
+                While the Live Text Analyzer is a powerful tool, it has certain limitations:
+              </Text>
               <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>100% Guarantee</Text>: No system can catch every possible threat</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Context Awareness</Text>: May not understand complex personal relationships</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Evolving Threats</Text>: New scam techniques may not be immediately detected</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Language Limitations</Text>: Works best with English content</Text>
-              </View>
-
-              <Text style={styles.subsectionTitle}>False Positives/Negatives</Text>
-              <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>False Positives</Text>: Legitimate content may be flagged as suspicious</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>False Negatives</Text>: Some sophisticated threats may not be detected</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Context Dependence</Text>: Results depend on the quality of input text</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Timing</Text>: New threats may not be immediately recognized</Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>AI Limitations</Text>: May occasionally miss sophisticated or novel threats</Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Context Dependency</Text>: Analysis quality depends on the clarity and completeness of input text</Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>False Positives</Text>: Legitimate content may sometimes be flagged as suspicious</Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Language Support</Text>: Currently optimized for English-language content</Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Not a Replacement</Text>: Should be used alongside other security measures, not as a sole defense</Text>
               </View>
             </View>
 
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>
-                The Live Text Analyzer is designed to be your first line of defense against online threats. While it provides valuable insights, always use your judgment and verify information through trusted sources when dealing with sensitive matters.
+            <View style={getSectionStyle('best-practices')} ref={(ref) => { sectionRefs.current['best-practices'] = ref; }}>
+              <Text style={styles.sectionTitle}>Best Practices</Text>
+              <Text style={styles.bodyText}>
+                To get the most out of the Live Text Analyzer:
+              </Text>
+              <View style={styles.bulletList}>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Use Regularly</Text>: Scan suspicious messages, emails, and social media posts</Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Provide Context</Text>: Include relevant details like sender information and context</Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Verify Results</Text>: Don't rely solely on the analyzer - use your judgment</Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Stay Updated</Text>: Keep the app updated for the latest threat detection capabilities</Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Report Issues</Text>: Help improve the system by reporting false positives or missed threats</Text>
+              </View>
+            </View>
+
+            <View style={getSectionStyle('conclusion')} ref={(ref) => { sectionRefs.current['conclusion'] = ref; }}>
+              <Text style={styles.sectionTitle}>Conclusion</Text>
+              <Text style={styles.bodyText}>
+                The Live Text Analyzer is a valuable tool in your digital security toolkit. By combining AI-powered analysis with your own judgment and other security measures, you can significantly reduce your risk of falling victim to online scams and threats.
+              </Text>
+              <Text style={styles.bodyText}>
+                Remember: The best defense is a layered approach. Use the analyzer as part of a comprehensive security strategy that includes strong passwords, two-factor authentication, regular software updates, and healthy skepticism about unsolicited communications.
               </Text>
             </View>
           </View>
         </ScrollView>
+
+        {/* Table of Contents Modal */}
+        <Modal
+          visible={showTableOfContents}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowTableOfContents(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.tableOfContentsContainer}>
+              <View style={styles.tocHeader}>
+                <Text style={styles.tocTitle}>Table of Contents</Text>
+                <TouchableOpacity
+                  onPress={() => setShowTableOfContents(false)}
+                  style={styles.closeButton}
+                >
+                  <Icon name="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={styles.tocContent}>
+                {tableOfContents.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.tocItem,
+                      { paddingLeft: 16 + (item.level - 1) * 20 }
+                    ]}
+                    onPress={() => scrollToSection(item.id)}
+                  >
+                    <Text style={[
+                      styles.tocItemText,
+                      item.level === 1 ? styles.tocMainItem : styles.tocSubItem
+                    ]}>
+                      {item.title}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -305,8 +597,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#333',
   },
@@ -314,99 +606,186 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   headerTitle: {
-    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '600',
+    color: '#FFFFFF',
+    flex: 1,
+    textAlign: 'center',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerButton: {
+    padding: 8,
+    marginLeft: 8,
   },
   placeholder: {
     width: 40,
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2C2C2E',
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  clearButton: {
+    padding: 4,
+  },
+  searchResults: {
+    marginTop: 15,
+  },
+  searchResultsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  searchResultsTitle: {
+    color: '#00BCD4',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  searchNavigation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  navButton: {
+    padding: 4,
+    marginHorizontal: 4,
+  },
+  navText: {
+    color: '#00BCD4',
+    fontSize: 12,
+    marginHorizontal: 8,
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#2C2C2E',
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  activeSearchResult: {
+    backgroundColor: '#00BCD422',
+    borderWidth: 1,
+    borderColor: '#00BCD4',
+  },
+  searchResultText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginLeft: 8,
+    flex: 1,
   },
   container: {
     flex: 1,
   },
   content: {
     padding: 20,
+    paddingBottom: 40,
   },
   titleSection: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 30,
   },
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#00BCD422',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
+    backgroundColor: 'rgba(0, 188, 212, 0.1)',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 15,
   },
   title: {
-    color: '#FFFFFF',
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    flex: 1,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    lineHeight: 36,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: 30,
+  },
+  highlightedSection: {
+    backgroundColor: '#00BCD422',
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#00BCD4',
+  },
+  subsection: {
+    marginBottom: 20,
   },
   sectionTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 12,
+    color: '#FFFFFF',
+    marginBottom: 15,
   },
   subsectionTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
-    marginTop: 16,
-    marginBottom: 8,
+    color: '#00BCD4',
+    marginBottom: 10,
+    marginTop: 15,
   },
   bodyText: {
+    fontSize: 16,
+    lineHeight: 24,
     color: '#E0E0E0',
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 12,
+    marginBottom: 15,
   },
   bulletList: {
-    marginLeft: 8,
-    marginBottom: 12,
+    marginLeft: 10,
   },
   bulletPoint: {
+    fontSize: 15,
+    lineHeight: 22,
     color: '#E0E0E0',
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 6,
+    marginBottom: 8,
   },
   highlight: {
     color: '#00BCD4',
     fontWeight: '600',
   },
   code: {
-    color: '#FF9800',
     fontFamily: 'monospace',
-    backgroundColor: '#333',
-    paddingHorizontal: 4,
+    backgroundColor: '#2C2C2E',
+    paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
+    color: '#00BCD4',
   },
   threatLevel: {
     flexDirection: 'row',
-    marginBottom: 20,
-    padding: 16,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#2C2C2E',
     borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#333',
+    padding: 15,
+    marginBottom: 15,
   },
   threatIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    alignItems: 'center',
+    marginRight: 15,
   },
   threatContent: {
     flex: 1,
@@ -414,26 +793,58 @@ const styles = StyleSheet.create({
   threatTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 5,
   },
   threatDescription: {
+    fontSize: 14,
     color: '#B0B0B0',
-    fontSize: 14,
-    marginBottom: 8,
+    marginBottom: 10,
   },
-  footer: {
-    marginTop: 32,
-    padding: 20,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'flex-end',
+  },
+  tableOfContentsContainer: {
     backgroundColor: '#1E1E1E',
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#00BCD4',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '70%',
   },
-  footerText: {
-    color: '#E0E0E0',
-    fontSize: 14,
-    fontStyle: 'italic',
-    lineHeight: 20,
+  tocHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  tocTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  tocContent: {
+    padding: 20,
+  },
+  tocItem: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  tocItemText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  tocMainItem: {
+    fontWeight: '600',
+  },
+  tocSubItem: {
+    fontWeight: '400',
+    color: '#B0B0B0',
   },
 });
 
