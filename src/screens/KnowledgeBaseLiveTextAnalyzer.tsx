@@ -28,11 +28,33 @@ interface TableOfContentsItem {
 }
 
 interface SearchResult {
-  text: string;
-  section: string;
   sectionId: string;
+  sectionTitle: string;
+  snippet: string;
   index: number;
 }
+
+const HighlightText = ({ text, highlight, style, highlightStyle }: { text: string, highlight: string, style: any, highlightStyle: any }) => {
+  if (!highlight.trim() || !text) {
+    return <Text style={style}>{text}</Text>;
+  }
+
+  const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+
+  return (
+    <Text style={style}>
+      {parts.map((part, index) =>
+        part.toLowerCase() === highlight.toLowerCase() ? (
+          <Text key={index} style={highlightStyle}>
+            {part}
+          </Text>
+        ) : (
+          part
+        )
+      )}
+    </Text>
+  );
+};
 
 const KnowledgeBaseLiveTextAnalyzer = () => {
   const navigation = useNavigation<KnowledgeBaseLiveTextAnalyzerNavigationProp>();
@@ -132,16 +154,35 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
 
     const results: SearchResult[] = [];
     const searchTerm = query.toLowerCase();
+    const snippetPadding = 40;
+
+    const addedSections = new Set<string>();
 
     Object.entries(articleContent).forEach(([sectionId, section]) => {
-      if (section.title.toLowerCase().includes(searchTerm) || 
-          section.content.toLowerCase().includes(searchTerm)) {
+      const content = section.content;
+      const title = section.title;
+      const combinedText = `${title}. ${content}`;
+      const lowerCombinedText = combinedText.toLowerCase();
+      const matchIndex = lowerCombinedText.indexOf(searchTerm);
+
+      if (matchIndex !== -1 && !addedSections.has(sectionId)) {
+        const startIndex = Math.max(0, matchIndex - snippetPadding);
+        const endIndex = Math.min(
+          combinedText.length,
+          matchIndex + searchTerm.length + snippetPadding
+        );
+
+        let snippet = combinedText.substring(startIndex, endIndex);
+        if (startIndex > 0) snippet = '...' + snippet;
+        if (endIndex < combinedText.length) snippet = snippet + '...';
+
         results.push({
-          text: section.title,
-          section: section.title,
-          sectionId: sectionId,
-          index: results.length
+          sectionId,
+          sectionTitle: title,
+          snippet,
+          index: results.length,
         });
+        addedSections.add(sectionId);
       }
     });
 
@@ -301,8 +342,16 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
                       scrollToSection(result.sectionId);
                     }}
                   >
-                    <Icon name="document-text" size={16} color="#00BCD4" />
-                    <Text style={styles.searchResultText}>{result.text}</Text>
+                    <Icon name="document-text-outline" size={20} color="#00BCD4" style={{marginRight: 8}}/>
+                    <View>
+                      <Text style={styles.searchResultTitleText}>{result.sectionTitle}</Text>
+                      <HighlightText
+                        text={result.snippet}
+                        highlight={searchQuery}
+                        style={styles.searchResultSnippet}
+                        highlightStyle={styles.searchResultHighlight}
+                      />
+                    </View>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -325,9 +374,12 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
 
             <View style={getSectionStyle('overview')} ref={(ref) => { sectionRefs.current['overview'] = ref; }}>
               <Text style={styles.sectionTitle}>Overview</Text>
-              <Text style={styles.bodyText}>
-                The Live Text Analyzer is a powerful AI-powered tool that scans text content in real-time to identify potential security threats, scams, and malicious content. It provides instant threat assessments with actionable recommendations to help you stay safe online.
-              </Text>
+              <HighlightText 
+                text="The Live Text Analyzer is a powerful AI-powered tool that scans text content in real-time to identify potential security threats, scams, and malicious content. It provides instant threat assessments with actionable recommendations to help you stay safe online."
+                highlight={searchQuery}
+                style={styles.bodyText}
+                highlightStyle={styles.highlightedWord}
+              />
             </View>
 
             <View style={getSectionStyle('how-it-works')} ref={(ref) => { sectionRefs.current['how-it-works'] = ref; }}>
@@ -335,48 +387,61 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
               
               <View style={getSectionStyle('text-input')} ref={(ref) => { sectionRefs.current['text-input'] = ref; }}>
                 <Text style={styles.subsectionTitle}>1. Text Input Processing</Text>
-                <Text style={styles.bodyText}>
-                  When you paste text into the analyzer:
-                </Text>
+                <HighlightText 
+                  text="When you paste text into the analyzer:"
+                  highlight={searchQuery}
+                  style={styles.bodyText}
+                  highlightStyle={styles.highlightedWord}
+                />
                 <View style={styles.bulletList}>
-                  <Text style={styles.bulletPoint}>• The system processes your input through advanced natural language processing</Text>
-                  <Text style={styles.bulletPoint}>• It analyzes the content for suspicious patterns, keywords, and contextual clues</Text>
-                  <Text style={styles.bulletPoint}>• Multiple threat detection algorithms work simultaneously to assess risk</Text>
+                  <HighlightText text="• The system processes your input through advanced natural language processing" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                  <HighlightText text="• It analyzes the content for suspicious patterns, keywords, and contextual clues" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                  <HighlightText text="• Multiple threat detection algorithms work simultaneously to assess risk" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
                 </View>
               </View>
 
               <View style={getSectionStyle('ai-analysis')} ref={(ref) => { sectionRefs.current['ai-analysis'] = ref; }}>
                 <Text style={styles.subsectionTitle}>2. AI-Powered Analysis</Text>
                 <Text style={styles.bodyText}>
-                  The analyzer uses <Text style={styles.highlight}>Perplexity AI</Text> with the <Text style={styles.code}>llama-3.1-sonar-small-128k-online</Text> model to:
+                  <HighlightText text="The analyzer uses " highlight={searchQuery} style={styles.bodyText} highlightStyle={styles.highlightedWord} />
+                  <Text style={styles.highlight}>Perplexity AI</Text>
+                  <HighlightText text=" with the " highlight={searchQuery} style={styles.bodyText} highlightStyle={styles.highlightedWord} />
+                  <Text style={styles.code}>llama-3.1-sonar-small-128k-online</Text>
+                  <HighlightText text=" model to:" highlight={searchQuery} style={styles.bodyText} highlightStyle={styles.highlightedWord} />
                 </Text>
                 <View style={styles.bulletList}>
-                  <Text style={styles.bulletPoint}>• Evaluate text for phishing attempts, scams, and malicious content</Text>
-                  <Text style={styles.bulletPoint}>• Identify social engineering tactics and urgency indicators</Text>
-                  <Text style={styles.bulletPoint}>• Detect suspicious URLs, phone numbers, and contact information</Text>
-                  <Text style={styles.bulletPoint}>• Analyze language patterns associated with fraud and deception</Text>
+                  <HighlightText text="• Evaluate text for phishing attempts, scams, and malicious content" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                  <HighlightText text="• Identify social engineering tactics and urgency indicators" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                  <HighlightText text="• Detect suspicious URLs, phone numbers, and contact information" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                  <HighlightText text="• Analyze language patterns associated with fraud and deception" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
                 </View>
               </View>
 
               <View style={getSectionStyle('threat-intelligence')} ref={(ref) => { sectionRefs.current['threat-intelligence'] = ref; }}>
                 <Text style={styles.subsectionTitle}>3. Threat Intelligence Integration</Text>
-                <Text style={styles.bodyText}>
-                  The system leverages real-time threat intelligence from:
-                </Text>
+                <HighlightText 
+                  text="The system leverages real-time threat intelligence from:"
+                  highlight={searchQuery}
+                  style={styles.bodyText}
+                  highlightStyle={styles.highlightedWord}
+                />
                 <View style={styles.bulletList}>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Perplexity AI's Knowledge Base</Text>: Access to current threat data and scam patterns</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Cybersecurity Databases</Text>: Information about known malicious entities</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Real-time Web Search</Text>: Latest information about emerging threats</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pattern Recognition</Text>: AI models trained on millions of scam examples</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Perplexity AI's Knowledge Base</Text>: <HighlightText text="Access to current threat data and scam patterns" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Cybersecurity Databases</Text>: <HighlightText text="Information about known malicious entities" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Real-time Web Search</Text>: <HighlightText text="Latest information about emerging threats" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pattern Recognition</Text>: <HighlightText text="AI models trained on millions of scam examples" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
                 </View>
               </View>
             </View>
 
             <View style={getSectionStyle('grading-system')} ref={(ref) => { sectionRefs.current['grading-system'] = ref; }}>
               <Text style={styles.sectionTitle}>Threat Level Grading System</Text>
-              <Text style={styles.bodyText}>
-                The analyzer uses a 5-tier threat assessment system:
-              </Text>
+              <HighlightText 
+                text="The analyzer uses a 5-tier threat assessment system:"
+                highlight={searchQuery}
+                style={styles.bodyText}
+                highlightStyle={styles.highlightedWord}
+              />
 
               <View style={styles.threatLevel}>
                 <View style={[styles.threatIcon, { backgroundColor: '#F44336' }]}>
@@ -384,12 +449,12 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
                 </View>
                 <View style={styles.threatContent}>
                   <Text style={[styles.threatTitle, { color: '#F44336' }]}>CRITICAL (Red)</Text>
-                  <Text style={styles.threatDescription}>Immediate action required</Text>
+                  <HighlightText text="Immediate action required" highlight={searchQuery} style={styles.threatDescription} highlightStyle={styles.highlightedWord}/>
                   <View style={styles.bulletList}>
-                    <Text style={styles.bulletPoint}>• Confirmed phishing attempts</Text>
-                    <Text style={styles.bulletPoint}>• Known scam patterns</Text>
-                    <Text style={styles.bulletPoint}>• Requests for sensitive information</Text>
-                    <Text style={styles.bulletPoint}>• Suspicious payment requests</Text>
+                    <HighlightText text="• Confirmed phishing attempts" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Known scam patterns" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Requests for sensitive information" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Suspicious payment requests" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
                   </View>
                 </View>
               </View>
@@ -400,12 +465,12 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
                 </View>
                 <View style={styles.threatContent}>
                   <Text style={[styles.threatTitle, { color: '#FF9800' }]}>HIGH (Orange)</Text>
-                  <Text style={styles.threatDescription}>High risk - proceed with extreme caution</Text>
+                  <HighlightText text="High risk - proceed with extreme caution" highlight={searchQuery} style={styles.threatDescription} highlightStyle={styles.highlightedWord}/>
                   <View style={styles.bulletList}>
-                    <Text style={styles.bulletPoint}>• Strong indicators of malicious intent</Text>
-                    <Text style={styles.bulletPoint}>• Urgency tactics and pressure techniques</Text>
-                    <Text style={styles.bulletPoint}>• Suspicious URLs or attachments</Text>
-                    <Text style={styles.bulletPoint}>• Offers that seem too good to be true</Text>
+                    <HighlightText text="• Strong indicators of malicious intent" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Urgency tactics and pressure techniques" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Suspicious URLs or attachments" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Offers that seem too good to be true" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
                   </View>
                 </View>
               </View>
@@ -416,12 +481,12 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
                 </View>
                 <View style={styles.threatContent}>
                   <Text style={[styles.threatTitle, { color: '#FFC107' }]}>MEDIUM (Yellow)</Text>
-                  <Text style={styles.threatDescription}>Moderate risk - exercise caution</Text>
+                  <HighlightText text="Moderate risk - exercise caution" highlight={searchQuery} style={styles.threatDescription} highlightStyle={styles.highlightedWord}/>
                   <View style={styles.bulletList}>
-                    <Text style={styles.bulletPoint}>• Some suspicious elements present</Text>
-                    <Text style={styles.bulletPoint}>• Unusual language or formatting</Text>
-                    <Text style={styles.bulletPoint}>• Requests for personal information</Text>
-                    <Text style={styles.bulletPoint}>• Links to unfamiliar websites</Text>
+                    <HighlightText text="• Some suspicious elements present" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Unusual language or formatting" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Requests for personal information" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Links to unfamiliar websites" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
                   </View>
                 </View>
               </View>
@@ -432,12 +497,12 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
                 </View>
                 <View style={styles.threatContent}>
                   <Text style={[styles.threatTitle, { color: '#4CAF50' }]}>LOW (Green)</Text>
-                  <Text style={styles.threatDescription}>Minimal risk - standard precautions</Text>
+                  <HighlightText text="Minimal risk - standard precautions" highlight={searchQuery} style={styles.threatDescription} highlightStyle={styles.highlightedWord}/>
                   <View style={styles.bulletList}>
-                    <Text style={styles.bulletPoint}>• No obvious threats detected</Text>
-                    <Text style={styles.bulletPoint}>• Standard communication patterns</Text>
-                    <Text style={styles.bulletPoint}>• Familiar senders and contexts</Text>
-                    <Text style={styles.bulletPoint}>• No suspicious requests or links</Text>
+                    <HighlightText text="• No obvious threats detected" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Standard communication patterns" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Familiar senders and contexts" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• No suspicious requests or links" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
                   </View>
                 </View>
               </View>
@@ -448,11 +513,11 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
                 </View>
                 <View style={styles.threatContent}>
                   <Text style={[styles.threatTitle, { color: '#9E9E9E' }]}>NONE (White)</Text>
-                  <Text style={styles.threatDescription}>No threats detected</Text>
+                  <HighlightText text="No threats detected" highlight={searchQuery} style={styles.threatDescription} highlightStyle={styles.highlightedWord}/>
                   <View style={styles.bulletList}>
-                    <Text style={styles.bulletPoint}>• Clean, legitimate content</Text>
-                    <Text style={styles.bulletPoint}>• Normal communication patterns</Text>
-                    <Text style={styles.bulletPoint}>• No suspicious elements identified</Text>
+                    <HighlightText text="• Clean, legitimate content" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• Normal communication patterns" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
+                    <HighlightText text="• No suspicious elements identified" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/>
                   </View>
                 </View>
               </View>
@@ -464,24 +529,24 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
               <View style={getSectionStyle('red-flags')} ref={(ref) => { sectionRefs.current['red-flags'] = ref; }}>
                 <Text style={styles.subsectionTitle}>Red Flags & Indicators</Text>
                 <View style={styles.bulletList}>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Urgency Tactics</Text>: "Act now," "Limited time," "Immediate action required"</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Authority Impersonation</Text>: Claims to be from banks, government agencies, tech support</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Sensitive Data Requests</Text>: Passwords, credit card numbers, Social Security numbers</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Suspicious URLs</Text>: Slightly misspelled domains, unusual TLDs, redirect chains</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Unusual Language</Text>: Grammatical errors, inconsistent formatting, foreign language mixed in</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Too-Good-to-Be-True Offers</Text>: Free money, prizes, unexpected refunds</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pressure Tactics</Text>: Threats, deadlines, emotional manipulation</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Urgency Tactics</Text>: <HighlightText text='"Act now," "Limited time," "Immediate action required"' highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Authority Impersonation</Text>: <HighlightText text="Claims to be from banks, government agencies, tech support" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Sensitive Data Requests</Text>: <HighlightText text="Passwords, credit card numbers, Social Security numbers" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Suspicious URLs</Text>: <HighlightText text="Slightly misspelled domains, unusual TLDs, redirect chains" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Unusual Language</Text>: <HighlightText text="Grammatical errors, inconsistent formatting, foreign language mixed in" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Too-Good-to-Be-True Offers</Text>: <HighlightText text="Free money, prizes, unexpected refunds" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pressure Tactics</Text>: <HighlightText text="Threats, deadlines, emotional manipulation" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
                 </View>
               </View>
 
               <View style={getSectionStyle('technical-analysis')} ref={(ref) => { sectionRefs.current['technical-analysis'] = ref; }}>
                 <Text style={styles.subsectionTitle}>Technical Analysis</Text>
                 <View style={styles.bulletList}>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>URL Analysis</Text>: Checks against known malicious domains and phishing databases</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pattern Recognition</Text>: Identifies common scam templates and social engineering techniques</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Context Analysis</Text>: Evaluates the relationship between sender and recipient</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Temporal Analysis</Text>: Considers timing and frequency of communications</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Cross-Reference</Text>: Compares against known threat intelligence databases</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>URL Analysis</Text>: <HighlightText text="Checks against known malicious domains and phishing databases" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Pattern Recognition</Text>: <HighlightText text="Identifies common scam templates and social engineering techniques" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Context Analysis</Text>: <HighlightText text="Evaluates the relationship between sender and recipient" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Temporal Analysis</Text>: <HighlightText text="Considers timing and frequency of communications" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Cross-Reference</Text>: <HighlightText text="Compares against known threat intelligence databases" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
                 </View>
               </View>
             </View>
@@ -491,54 +556,69 @@ const KnowledgeBaseLiveTextAnalyzer = () => {
               
               <View style={getSectionStyle('privacy')} ref={(ref) => { sectionRefs.current['privacy'] = ref; }}>
                 <Text style={styles.subsectionTitle}>Privacy & Data Handling</Text>
-                <Text style={styles.bodyText}>
-                  Your privacy is paramount. The Live Text Analyzer is designed with privacy-first principles:
-                </Text>
+                <HighlightText 
+                  text="Your privacy is paramount. The Live Text Analyzer is designed with privacy-first principles:"
+                  highlight={searchQuery}
+                  style={styles.bodyText}
+                  highlightStyle={styles.highlightedWord}
+                />
                 <View style={styles.bulletList}>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>No Data Storage</Text>: Your text is not stored or saved anywhere</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Secure Processing</Text>: Analysis is performed through encrypted connections</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>No Third-Party Sharing</Text>: Your data is never shared with external parties</Text>
-                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Temporary Processing</Text>: Text is only processed for the duration of analysis</Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>No Data Storage</Text>: <HighlightText text="Your text is not stored or saved anywhere" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Secure Processing</Text>: <HighlightText text="Analysis is performed through encrypted connections" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>No Third-Party Sharing</Text>: <HighlightText text="Your data is never shared with external parties" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                  <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Temporary Processing</Text>: <HighlightText text="Text is only processed for the duration of analysis" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
                 </View>
               </View>
             </View>
 
             <View style={getSectionStyle('limitations')} ref={(ref) => { sectionRefs.current['limitations'] = ref; }}>
               <Text style={styles.sectionTitle}>Limitations & Considerations</Text>
-              <Text style={styles.bodyText}>
-                While the Live Text Analyzer is a powerful tool, it has certain limitations:
-              </Text>
+              <HighlightText 
+                text="While the Live Text Analyzer is a powerful tool, it has certain limitations:"
+                highlight={searchQuery}
+                style={styles.bodyText}
+                highlightStyle={styles.highlightedWord}
+              />
               <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>AI Limitations</Text>: May occasionally miss sophisticated or novel threats</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Context Dependency</Text>: Analysis quality depends on the clarity and completeness of input text</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>False Positives</Text>: Legitimate content may sometimes be flagged as suspicious</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Language Support</Text>: Currently optimized for English-language content</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Not a Replacement</Text>: Should be used alongside other security measures, not as a sole defense</Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>AI Limitations</Text>: <HighlightText text="May occasionally miss sophisticated or novel threats" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Context Dependency</Text>: <HighlightText text="Analysis quality depends on the clarity and completeness of input text" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>False Positives</Text>: <HighlightText text="Legitimate content may sometimes be flagged as suspicious" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Language Support</Text>: <HighlightText text="Currently optimized for English-language content" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Not a Replacement</Text>: <HighlightText text="Should be used alongside other security measures, not as a sole defense" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
               </View>
             </View>
 
             <View style={getSectionStyle('best-practices')} ref={(ref) => { sectionRefs.current['best-practices'] = ref; }}>
               <Text style={styles.sectionTitle}>Best Practices</Text>
-              <Text style={styles.bodyText}>
-                To get the most out of the Live Text Analyzer:
-              </Text>
+              <HighlightText 
+                text="To get the most out of the Live Text Analyzer:"
+                highlight={searchQuery}
+                style={styles.bodyText}
+                highlightStyle={styles.highlightedWord}
+              />
               <View style={styles.bulletList}>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Use Regularly</Text>: Scan suspicious messages, emails, and social media posts</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Provide Context</Text>: Include relevant details like sender information and context</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Verify Results</Text>: Don't rely solely on the analyzer - use your judgment</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Stay Updated</Text>: Keep the app updated for the latest threat detection capabilities</Text>
-                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Report Issues</Text>: Help improve the system by reporting false positives or missed threats</Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Use Regularly</Text>: <HighlightText text="Scan suspicious messages, emails, and social media posts" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Provide Context</Text>: <HighlightText text="Include relevant details like sender information and context" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Verify Results</Text>: <HighlightText text="Don't rely solely on the analyzer - use your judgment" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Stay Updated</Text>: <HighlightText text="Keep the app updated for the latest threat detection capabilities" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
+                <Text style={styles.bulletPoint}>• <Text style={styles.highlight}>Report Issues</Text>: <HighlightText text="Help improve the system by reporting false positives or missed threats" highlight={searchQuery} style={styles.bulletPoint} highlightStyle={styles.highlightedWord}/></Text>
               </View>
             </View>
 
             <View style={getSectionStyle('conclusion')} ref={(ref) => { sectionRefs.current['conclusion'] = ref; }}>
               <Text style={styles.sectionTitle}>Conclusion</Text>
-              <Text style={styles.bodyText}>
-                The Live Text Analyzer is a valuable tool in your digital security toolkit. By combining AI-powered analysis with your own judgment and other security measures, you can significantly reduce your risk of falling victim to online scams and threats.
-              </Text>
-              <Text style={styles.bodyText}>
-                Remember: The best defense is a layered approach. Use the analyzer as part of a comprehensive security strategy that includes strong passwords, two-factor authentication, regular software updates, and healthy skepticism about unsolicited communications.
-              </Text>
+              <HighlightText 
+                text="The Live Text Analyzer is a valuable tool in your digital security toolkit. By combining AI-powered analysis with your own judgment and other security measures, you can significantly reduce your risk of falling victim to online scams and threats."
+                highlight={searchQuery}
+                style={styles.bodyText}
+                highlightStyle={styles.highlightedWord}
+              />
+              <HighlightText 
+                text="Remember: The best defense is a layered approach. Use the analyzer as part of a comprehensive security strategy that includes strong passwords, two-factor authentication, regular software updates, and healthy skepticism about unsolicited communications."
+                highlight={searchQuery}
+                style={styles.bodyText}
+                highlightStyle={styles.highlightedWord}
+              />
             </View>
           </View>
         </ScrollView>
@@ -689,6 +769,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#00BCD4',
   },
+  searchResultTitleText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  searchResultSnippet: {
+    color: '#B0B0B0',
+    fontSize: 12,
+  },
+  searchResultHighlight: {
+    color: '#00BCD4',
+    fontWeight: 'bold',
+  },
   searchResultText: {
     color: '#FFFFFF',
     fontSize: 14,
@@ -729,6 +823,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#00BCD4',
   },
+  highlightedWord: {
+    backgroundColor: 'rgba(255, 235, 59, 0.3)',
+    color: '#FFF2A8'
+  },
   subsection: {
     marginBottom: 20,
   },
@@ -766,7 +864,7 @@ const styles = StyleSheet.create({
   },
   code: {
     fontFamily: 'monospace',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: '#333',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
