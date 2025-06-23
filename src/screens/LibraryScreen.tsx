@@ -15,7 +15,8 @@ type NavigableLibraryScreen =
   | 'KnowledgeBaseLogDetailsGeneral'
   | 'KnowledgeBaseLogDetailsSecurity'
   | 'KnowledgeBaseLogDetailsMetadata'
-  | 'KnowledgeBaseLogDetailsThreat';
+  | 'KnowledgeBaseLogDetailsThreat'
+  | 'KnowledgeBaseLiveTextAnalyzer';
 
 const LibraryScreen = () => {
   const navigation = useNavigation<LibraryScreenNavigationProp>();
@@ -23,10 +24,10 @@ const LibraryScreen = () => {
 
   const menuItems = [
     {
-      title: 'Knowledge Base',
-      subtitle: 'Browse all security articles and guides',
-      icon: 'library-outline',
-      screen: 'KnowledgeBase',
+      title: 'Live Text Analyzer',
+      subtitle: 'How our AI-powered threat detection works',
+      icon: 'scan-outline',
+      screen: 'KnowledgeBaseLiveTextAnalyzer',
     },
     {
       title: 'How Threat Levels Work',
