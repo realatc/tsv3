@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useRef, useState, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types/navigation';
@@ -21,6 +21,7 @@ type NavigableLibraryScreen =
 const LibraryScreen = () => {
   const navigation = useNavigation<LibraryScreenNavigationProp>();
   const { settingsSheetRef } = useApp();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const menuItems = [
     {
@@ -73,6 +74,19 @@ const LibraryScreen = () => {
     },
   ];
 
+  // Filter menu items based on search query
+  const filteredMenuItems = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return menuItems;
+    }
+    
+    const query = searchQuery.toLowerCase();
+    return menuItems.filter(item => 
+      item.title.toLowerCase().includes(query) ||
+      item.subtitle.toLowerCase().includes(query)
+    );
+  }, [menuItems, searchQuery]);
+
   const handlePress = (screen: string) => {
     navigation.navigate(screen as any);
   };
@@ -101,7 +115,40 @@ const LibraryScreen = () => {
           <Text style={styles.headerSubtitle}>
             Your hub for learning about digital security.
           </Text>
-          {menuItems.map((item, index) => (
+
+          {/* Search Input */}
+          <View style={styles.searchContainer}>
+            <View style={styles.searchInputContainer}>
+              <Icon name="search-outline" size={20} color="#666" style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search articles..."
+                placeholderTextColor="#666"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSearchQuery('')}
+                  style={styles.clearButton}
+                  accessibilityLabel="Clear search"
+                >
+                  <Icon name="close-circle" size={20} color="#666" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
+          {/* Results count */}
+          {searchQuery.length > 0 && (
+            <Text style={styles.resultsCount}>
+              {filteredMenuItems.length} result{filteredMenuItems.length !== 1 ? 's' : ''} found
+            </Text>
+          )}
+
+          {filteredMenuItems.map((item, index) => (
             <TouchableOpacity 
               key={index} 
               style={styles.menuItem}
@@ -117,6 +164,17 @@ const LibraryScreen = () => {
               <Icon name="chevron-forward-outline" size={22} color="#555" />
             </TouchableOpacity>
           ))}
+
+          {/* No results message */}
+          {searchQuery.length > 0 && filteredMenuItems.length === 0 && (
+            <View style={styles.noResultsContainer}>
+              <Icon name="search-outline" size={48} color="#666" />
+              <Text style={styles.noResultsText}>No articles found</Text>
+              <Text style={styles.noResultsSubtext}>
+                Try searching with different keywords
+              </Text>
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -216,6 +274,53 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#A070F2',
     marginRight: 8,
+  },
+  searchContainer: {
+    marginBottom: 20,
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2C2C2E',
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#444',
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 16,
+    paddingVertical: 0,
+  },
+  clearButton: {
+    padding: 5,
+  },
+  resultsCount: {
+    color: '#aaa',
+    fontSize: 14,
+    marginBottom: 15,
+    fontStyle: 'italic',
+  },
+  noResultsContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  noResultsText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 15,
+    marginBottom: 8,
+  },
+  noResultsSubtext: {
+    color: '#999',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
 
