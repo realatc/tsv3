@@ -93,16 +93,18 @@ const withThreat = (log: Omit<LogEntry, 'threat'>): LogEntry => ({
 const STORAGE_KEY = '@threatsense/logs';
 const BLOCKED_SENDERS_KEY = '@threatsense/blocked_senders';
 
-const LogContext = createContext<{
+export type LogContextType = {
   logs: LogEntry[];
   blockedSenders: BlockedSender[];
   addLog: (log: Omit<LogEntry, 'threat'>) => void;
-  clearLogs: () => void;
+  clearAllLogs: () => void;
   blockSender: (sender: string, reason: string, category: string) => void;
   unblockSender: (sender: string) => void;
   isSenderBlocked: (sender: string) => boolean;
   getBlockedSendersCount: () => number;
-} | undefined>(undefined);
+};
+
+const LogContext = createContext<LogContextType | undefined>(undefined);
 
 // Mock contacts list (replace with real contacts integration as needed)
 const contacts = [
@@ -207,7 +209,7 @@ export const LogProvider = ({ children }: { children: ReactNode }) => {
     setLogs(prev => [withThreat({ ...log, nlpAnalysis, behavioralAnalysis, sender: normalizedSender }), ...prev]);
   };
 
-  const clearLogs = () => setLogs([]);
+  const clearAllLogs = () => setLogs([]);
 
   const blockSender = (sender: string, reason: string, category: string) => {
     const newBlockedSender: BlockedSender = {
@@ -236,16 +238,18 @@ export const LogProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <LogContext.Provider value={{ 
-      logs, 
-      blockedSenders,
-      addLog, 
-      clearLogs,
-      blockSender,
-      unblockSender,
-      isSenderBlocked,
-      getBlockedSendersCount
-    }}>
+    <LogContext.Provider
+      value={{
+        logs,
+        blockedSenders,
+        addLog,
+        clearAllLogs,
+        blockSender,
+        unblockSender,
+        isSenderBlocked,
+        getBlockedSendersCount,
+      }}
+    >
       {children}
     </LogContext.Provider>
   );
@@ -253,6 +257,8 @@ export const LogProvider = ({ children }: { children: ReactNode }) => {
 
 export const useLogs = () => {
   const context = useContext(LogContext);
-  if (!context) throw new Error('useLogs must be used within a LogProvider');
+  if (context === undefined) {
+    throw new Error('useLogs must be used within a LogProvider');
+  }
   return context;
 }; 

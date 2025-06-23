@@ -18,6 +18,7 @@ export type BrowseStackParamList = {
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseLogDetailsOverview: { log?: any };
   LogDetail: { log: LogEntry };
+  ThreatAnalysis: undefined;
 };
 
 export type LibraryStackParamList = {

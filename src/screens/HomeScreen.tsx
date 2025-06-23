@@ -179,7 +179,7 @@ const HomeScreen = () => {
     });
   };
   const recentActivity = getRecentActivity();
-  const hasUnreadHighThreat = recentActivity.some(a => a.title === 'High threat detected' && !a.read);
+  const hasUnreadHighThreat = recentActivity.some(a => a.title.includes('High-threat') && !a.read);
 
   // Mark as read
   const markAsRead = (id: string) => {
@@ -215,7 +215,7 @@ const HomeScreen = () => {
               Security Overview
             </AccessibleText>
             <View style={styles.statsGrid}>
-              {renderStatCard('Threats Detected', stats.threatsDetected, 'warning', '#FF6B6B', handleViewThreats)}
+              {renderStatCard('High Threats', stats.threatsDetected, 'warning', '#FF6B6B', handleViewThreats)}
               {renderStatCard('Safe Messages', stats.safeMessages, 'shield-checkmark', '#43A047', handleViewSafeMessages)}
               {renderStatCard('Blocked Senders', stats.blockedSenders, 'ban', '#FFB300', handleViewBlockedSenders)}
               {renderStatCard('Latest Scams', 'View', 'flame', '#A070F2', handleViewLatestScams)}
@@ -223,18 +223,18 @@ const HomeScreen = () => {
           </View>
 
           {/* Recent Activity */}
-          {recentActivity.length > 0 && (
-            <View style={styles.recentActivitySection}>
-              <View style={styles.sectionHeader}>
-                <AccessibleText variant="subtitle" style={styles.sectionTitle}>
-                  Recent Activity
-                </AccessibleText>
-                {hasUnreadHighThreat && (
-                  <View style={styles.unreadBadge}>
-                    <AccessibleText variant="caption" style={styles.unreadText}>!</AccessibleText>
-                  </View>
-                )}
-              </View>
+          <View style={styles.recentActivitySection}>
+            <View style={styles.sectionHeader}>
+              <AccessibleText variant="subtitle" style={styles.sectionTitle}>
+                Recent Activity
+              </AccessibleText>
+              {hasUnreadHighThreat && (
+                <View style={styles.unreadBadge}>
+                  <AccessibleText variant="caption" style={styles.unreadText}>!</AccessibleText>
+                </View>
+              )}
+            </View>
+            {recentActivity.length > 0 ? (
               <View style={styles.recentActivityList}>
                 {recentActivity.map((activity, index) => (
                   <TouchableOpacity
@@ -250,7 +250,7 @@ const HomeScreen = () => {
                     ]}
                     onPress={() => {
                       markAsRead(activity.id);
-                      navigation.navigate('LogDetail', { logId: activity.log.id });
+                      navigation.navigate('LogDetail', { log: activity.log });
                     }}
                     accessible={true}
                     accessibilityLabel={`${activity.title} from ${activity.category}`}
@@ -286,8 +286,25 @@ const HomeScreen = () => {
                   </TouchableOpacity>
                 ))}
               </View>
-            </View>
-          )}
+            ) : (
+              <View style={[
+                styles.noActivityContainer,
+                { 
+                  backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
+                  padding: padding,
+                  borderRadius: borderRadius,
+                }
+              ]}>
+                <Icon name="checkmark-circle-outline" size={32} color="#43A047" style={styles.noActivityIcon} />
+                <AccessibleText variant="body" style={styles.noActivityTitle}>
+                  No Recent Activity
+                </AccessibleText>
+                <AccessibleText variant="caption" style={styles.noActivitySubtitle}>
+                  All caught up! No new threats or messages to review.
+                </AccessibleText>
+              </View>
+            )}
+          </View>
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -400,24 +417,25 @@ const styles = StyleSheet.create({
   activityHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 8,
   },
   activityIconContainer: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: 12,
   },
   activityInfo: {
     flex: 1,
   },
   activityTitle: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
   },
   activityCategory: {
     color: '#B0B0B0',
@@ -425,14 +443,34 @@ const styles = StyleSheet.create({
   },
   activityActions: {
     flexDirection: 'row',
+    alignItems: 'center',
   },
   dismissButton: {
-    padding: 5,
+    padding: 4,
   },
   activityTime: {
-    color: '#666',
+    color: '#888',
     fontSize: 11,
-    marginLeft: 40,
+    marginLeft: 44,
+  },
+  noActivityContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  noActivityIcon: {
+    marginBottom: 10,
+  },
+  noActivityTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  noActivitySubtitle: {
+    color: '#B0B0B0',
+    fontSize: 12,
+    textAlign: 'center',
   },
 });
 

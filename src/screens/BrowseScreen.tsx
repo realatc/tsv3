@@ -1,16 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, FlatList, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BrowseStackParamList } from '../types/navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useApp } from '../context/AppContext';
+import { useLogs } from '../context/LogContext';
+import { addSampleLogs, addHighThreatLog, clearAllLogs, addPhishingEmail, addScamTexts, addGeorgiaMVCFraud } from '../utils/dev/devUtils';
 
 type BrowseScreenNavigationProp = StackNavigationProp<BrowseStackParamList, 'Browse'>;
 
 const BrowseScreen = () => {
   const navigation = useNavigation<BrowseScreenNavigationProp>();
   const { settingsSheetRef } = useApp();
+  const logContext = useLogs();
 
   const logViews = [
     { title: 'All Logs', filter: 'All', icon: 'archive-outline' },
@@ -25,10 +28,31 @@ const BrowseScreen = () => {
     { title: 'Phone Calls', category: 'Phone Call', icon: 'call-outline', color: '#A070F2' },
   ];
   
-  const knowledgeBaseItems = [
-    { title: 'Common Scams', screen: 'KnowledgeBaseScamsArticle', icon: 'document-text-outline', color: '#4A90E2' },
-    { title: 'Threat Levels Explained', screen: 'KnowledgeBaseThreatLevelArticle', icon: 'analytics-outline', color: '#A070F2' },
-    { title: 'Understanding Log Details', screen: 'KnowledgeBaseLogDetailsOverview', icon: 'book-outline', color: '#50E3C2' }
+  const showConfirmation = (title: string, message: string) => {
+    Alert.alert(title, message);
+  };
+
+  const labItems = [
+    { title: 'Add Sample Logs', icon: 'document-text-outline', color: '#4A90E2', action: () => { addSampleLogs(logContext); showConfirmation('Success', 'Sample logs added.'); } },
+    { title: 'Add Scam Texts', icon: 'chatbubbles-outline', color: '#FFD166', action: () => { addScamTexts(logContext); showConfirmation('Success', 'Scam texts added.'); } },
+    { title: 'Add Phishing Email', icon: 'mail-unread-outline', color: '#FF6B6B', action: () => { addPhishingEmail(logContext); showConfirmation('Success', 'Phishing email added.'); } },
+    { title: 'Add Georgia MVC Scam', icon: 'car-sport-outline', color: '#FF8C00', action: () => { addGeorgiaMVCFraud(logContext); showConfirmation('Success', 'Georgia MVC scam added.'); } },
+    { title: 'Add High-Threat Log', icon: 'alert-circle-outline', color: '#FF6B6B', action: () => { addHighThreatLog(logContext); showConfirmation('Success', 'High-threat log added.'); } },
+    { title: 'Clear All Logs', icon: 'trash-outline', color: '#999999', action: () => {
+        Alert.alert(
+          'Confirm Clear',
+          'Are you sure you want to delete all logs?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Clear', style: 'destructive', onPress: () => {
+                clearAllLogs(logContext);
+                showConfirmation('Success', 'All logs have been cleared.');
+              } 
+            },
+          ]
+        );
+      } 
+    },
   ];
 
   const handleOpenSettings = () => {
@@ -45,16 +69,13 @@ const BrowseScreen = () => {
     </TouchableOpacity>
   );
   
-  const renderKnowledgeBaseItem = ({ item }: { item: typeof knowledgeBaseItems[0] }) => (
+  const renderLabCard = ({ item }: { item: typeof labItems[0] }) => (
     <TouchableOpacity
-      style={styles.kbItem}
-      onPress={() => navigation.navigate(item.screen as any)}
+      style={styles.labCard}
+      onPress={item.action}
     >
-      <View style={[styles.kbIconContainer, { backgroundColor: `${item.color}20` }]}>
-        <Icon name={item.icon} size={24} color={item.color} />
-      </View>
-      <Text style={styles.kbItemTitle}>{item.title}</Text>
-      <Icon name="chevron-forward-outline" size={22} color="#555" />
+      <Icon name={item.icon} size={28} color={item.color || '#fff'} />
+      <Text style={styles.labCardTitle}>{item.title}</Text>
     </TouchableOpacity>
   );
 
@@ -109,11 +130,17 @@ const BrowseScreen = () => {
         </View>
         
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Knowledge Base</Text>
-          <Text style={styles.sectionSubtitle}>Learn more about digital threats.</Text>
-          <View style={styles.kbContainer}>
-            {knowledgeBaseItems.map((item) => renderKnowledgeBaseItem({ item }))}
-          </View>
+          <Text style={styles.sectionTitle}>Lab & Experimental</Text>
+          <Text style={styles.sectionSubtitle}>Test new and upcoming features.</Text>
+          <FlatList
+            horizontal
+            data={labItems}
+            renderItem={renderLabCard}
+            keyExtractor={(item) => item.title}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingLeft: 20, paddingRight: 10 }}
+            style={{ marginHorizontal: -20 }}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -214,6 +241,117 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  unreadBadge: {
+    backgroundColor: '#FF6B6B',
+    borderRadius: 10,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    marginLeft: 8,
+  },
+  unreadText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  recentActivityContainer: {
+    backgroundColor: '#1C1C1E',
+    borderRadius: 15,
+    marginHorizontal: 20,
+    overflow: 'hidden',
+  },
+  recentActivityItem: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    marginBottom: 1,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+  },
+  activityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  activityIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  activityInfo: {
+    flex: 1,
+  },
+  activityTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 2,
+  },
+  activityCategory: {
+    fontSize: 14,
+    color: '#aaa',
+  },
+  activityActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dismissButton: {
+    padding: 8,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  activityTime: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 55,
+  },
+  labCard: {
+    width: 140,
+    height: 120,
+    backgroundColor: '#1C1C1E',
+    borderRadius: 15,
+    padding: 15,
+    justifyContent: 'space-between',
+    marginRight: 15,
+  },
+  labCardTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  labContainer: {
+    backgroundColor: '#1C1C1E',
+    borderRadius: 15,
+    marginHorizontal: 20,
+    overflow: 'hidden',
+  },
+  labItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  labIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  labItemTitle: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 16,
   },
 });
 
