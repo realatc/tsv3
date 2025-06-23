@@ -23,6 +23,12 @@ const LibraryScreen = () => {
 
   const menuItems = [
     {
+      title: 'Knowledge Base',
+      subtitle: 'Browse all security articles and guides',
+      icon: 'library-outline',
+      screen: 'KnowledgeBase',
+    },
+    {
       title: 'How Threat Levels Work',
       subtitle: 'Understand our rating system',
       icon: 'analytics-outline',
