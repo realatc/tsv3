@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity, Alert, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Switch, TouchableOpacity, Alert, ScrollView, SafeAreaView, ActionSheetIOS, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -98,6 +98,48 @@ const SentryModeScreen = () => {
       // Also explicitly close the settings sheet in case it's still open
       settingsSheetRef.current?.close();
     }, 50); 
+  };
+
+  const handlePreviewAlert = () => {
+    const sampleMessage = `🚨 THREAT ALERT 🚨\n\nJohn Doe, your trusted contact has been notified of a HIGH level threat.\n\nThreat: Phishing Attempt\nDetails: A suspicious message was detected.\nTime: 2024-06-15 12:00 PM\nLocation: 123 Main St, Springfield\n\nPlease check on them immediately.\n\nReply with:\n- "OK" to acknowledge\n- "CALL" to call them\n- "TEXT" to send a message\n- "IGNORE" if this is a false alarm\n\nStay safe!`;
+    Alert.alert('Preview: Contact Alert (SMS)', sampleMessage, [{ text: 'OK' }]);
+  };
+
+  const handleSimulateContactResponse = () => {
+    const options = [
+      'Acknowledge',
+      'Call',
+      'Text',
+      'Ignore',
+      'Cancel',
+    ];
+    const responseTypes = ['acknowledged', 'calling', 'texting', 'ignored'];
+
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options,
+          cancelButtonIndex: 4,
+        },
+        (buttonIndex) => {
+          if (buttonIndex < 4) {
+            notificationService.simulateContactResponse(settings, responseTypes[buttonIndex]);
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        'Simulate Contact Response',
+        'Choose a response type:',
+        [
+          { text: 'Acknowledge', onPress: () => notificationService.simulateContactResponse(settings, 'acknowledged') },
+          { text: 'Call', onPress: () => notificationService.simulateContactResponse(settings, 'calling') },
+          { text: 'Text', onPress: () => notificationService.simulateContactResponse(settings, 'texting') },
+          { text: 'Ignore', onPress: () => notificationService.simulateContactResponse(settings, 'ignored') },
+          { text: 'Cancel', style: 'cancel' },
+        ]
+      );
+    }
   };
 
   if (isLoading) {
@@ -211,10 +253,30 @@ const SentryModeScreen = () => {
               </Text>
             </View>
 
+            {/* Demo/Live Mode Note */}
+            <View style={[styles.infoCard, { backgroundColor: '#222', borderColor: '#A070F2', borderWidth: 1 }]}> 
+              <Text style={{ color: '#A070F2', fontWeight: 'bold', marginBottom: 4 }}>Demo Mode Limitation</Text>
+              <Text style={{ color: '#B0B0B0', fontSize: 13 }}>
+                In development/demo mode, notifications are simulated and not actually sent. In a live environment, your trusted contact will receive real SMS, email, and (if they have the app) push notifications with your alert details.
+              </Text>
+            </View>
+
             {/* Test Notification Button */}
             <TouchableOpacity style={styles.testButton} onPress={handleTestNotification}>
               <Icon name="notifications-outline" size={20} color="#4CAF50" />
               <Text style={styles.testButtonText}>Test Notification</Text>
+            </TouchableOpacity>
+
+            {/* Preview Alert Button */}
+            <TouchableOpacity style={[styles.testButton, { backgroundColor: '#A070F2', marginBottom: 10 }]} onPress={handlePreviewAlert}>
+              <Icon name="eye-outline" size={20} color="#fff" />
+              <Text style={[styles.testButtonText, { color: '#fff' }]}>Preview Alert</Text>
+            </TouchableOpacity>
+
+            {/* Simulate Contact Response Button */}
+            <TouchableOpacity style={[styles.testButton, { backgroundColor: '#4A90E2', marginBottom: 10 }]} onPress={handleSimulateContactResponse}>
+              <Icon name="chatbubbles-outline" size={20} color="#fff" />
+              <Text style={[styles.testButtonText, { color: '#fff' }]}>Simulate Contact Response</Text>
             </TouchableOpacity>
 
             {/* Demo Component */}
