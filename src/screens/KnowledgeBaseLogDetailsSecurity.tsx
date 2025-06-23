@@ -1,133 +1,102 @@
 import React from 'react';
-import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
+import Icon from 'react-native-vector-icons/Ionicons';
+import KnowledgeBaseArticleTemplate from '../components/KnowledgeBaseArticleTemplate';
 
-const content = `
-This tab provides a detailed breakdown of the security analysis.
+const tableOfContents = [
+  { id: 'overview', title: 'Overview', level: 1 },
+  { id: 'nlp-analysis', title: 'NLP Analysis', level: 1 },
+  { id: 'behavioral-analysis', title: 'Behavioral Analysis', level: 1 },
+  { id: 'url-safety', title: 'URL Safety Check', level: 1 },
+  { id: 'how-analysis-works', title: 'How This Analysis Works', level: 1 },
+  { id: 'ai-detection', title: 'AI-Powered Detection', level: 2 },
+  { id: 'real-time-db', title: 'Real-Time Database Checks', level: 2 },
+  { id: 'pattern-recognition', title: 'Behavioral Pattern Recognition', level: 2 },
+  { id: 'understanding-results', title: 'Understanding the Results', level: 1 },
+  { id: 'high-risk', title: 'High-Risk Indicators', level: 2 },
+  { id: 'false-positives', title: 'False Positives', level: 2 },
+  { id: 'what-to-do', title: 'What to Do Based on Analysis', level: 1 },
+  { id: 'high-risk-messages', title: 'High-Risk Messages', level: 2 },
+  { id: 'medium-risk-messages', title: 'Medium-Risk Messages', level: 2 },
+  { id: 'low-risk-messages', title: 'Low-Risk Messages', level: 2 },
+  { id: 'tips', title: 'Tips for Using This Tab', level: 1 },
+];
 
-### Key Information
-- **URL Safety Check**: Results from checking URLs against safe browsing databases.
-
-## What You'll See
-
-### NLP Analysis
-**What it shows:** Artificial Intelligence analysis of the message content
-**How it's collected:** AI-powered Natural Language Processing analyzes the text for suspicious patterns
-**What it looks for:**
-- **Urgent language:** "Act now," "Immediate action required," "24 hours to respond"
-- **Authority impersonation:** Claims to be from banks, government agencies, tech support
-- **Pressure tactics:** Threats of account suspension, legal action, or missed opportunities
-- **Suspicious requests:** Asking for passwords, personal information, or money
-- **Emotional manipulation:** Creating fear, excitement, or urgency
-
-**Example analysis:** *"High risk phishing attempt. Contains urgent language, impersonates PayPal, requests immediate action, and includes suspicious verification link."*
-
-### Behavioral Analysis
-**What it shows:** Analysis of sender behavior and communication patterns
-**How it's collected:** Compares the sender and message against known threat patterns and your contact history
-**What it analyzes:**
-- **Sender reputation:** Is this sender in your contacts? Have they contacted you before?
-- **Domain analysis:** Does the email domain match the claimed organization?
-- **Pattern matching:** Does this match known scam patterns?
-- **Timing analysis:** Is this communication unusual for the time or context?
-
-**Example analysis:** *"Sender domain does not match official PayPal domain. Similar to known phishing patterns. Account verification requests via email are unusual for PayPal."*
-
-### URL Safety Check
-**What it shows:** Real-time analysis of any links found in the message
-**How it's collected:** Each URL is checked against Google Safe Browsing API's database of known malicious sites
-**Safety levels:**
-- 🟢 **Safe:** URL is not flagged as dangerous
-- 🟡 **Uncommon:** URL is not widely known but not necessarily dangerous
-- 🟠 **Phishing:** URL is designed to steal personal information
-- 🔴 **Malware:** URL contains or distributes malicious software
-- ⚫ **Unknown:** URL couldn't be verified (proceed with caution)
-
-**What happens when you click a link:**
-- **Safe links:** Open normally
-- **Unsafe links:** Show a warning before opening
-- **Unknown links:** Show a warning with option to proceed or cancel
-
-## How This Analysis Works
-
-### AI-Powered Detection
-ThreatSense uses advanced AI models trained on millions of scam examples to:
-- Recognize suspicious language patterns
-- Identify impersonation attempts
-- Detect emotional manipulation tactics
-- Flag unusual requests
-
-### Real-Time Database Checks
-Every URL is instantly checked against:
-- Google's Safe Browsing database (updated continuously)
-- Known phishing site databases
-- Malware distribution networks
-- Suspicious domain registrations
-
-### Behavioral Pattern Recognition
-The system learns from:
-- Your personal contact history
-- Known scam patterns
-- Community threat reports
-- Security research databases
-
-## Understanding the Results
-
-### High-Risk Indicators
-- **Multiple red flags:** When several analysis methods flag the same threat
-- **Pattern matches:** When the message matches known scam templates
-- **Unusual behavior:** When the sender acts differently than expected
-- **Suspicious timing:** When the communication happens at unusual times
-
-### False Positives
-Sometimes legitimate messages may be flagged as suspicious because they:
-- Contain urgent language for legitimate reasons
-- Come from new or unknown senders
-- Include links to new websites
-- Use similar language to scams
-
-### What to Do Based on Analysis
-
-#### High-Risk Messages
-- **Don't click any links**
-- **Don't provide personal information**
-- **Block the sender**
-- **Report the threat**
-- **Delete the message**
-
-#### Medium-Risk Messages
-- **Verify the sender independently**
-- **Check links before clicking**
-- **Be cautious with personal information**
-- **Monitor for similar threats**
-
-#### Low-Risk Messages
-- **Still be cautious**
-- **Verify unusual requests**
-- **Report if suspicious**
-
-## Tips for Using This Tab
-
-1. **Read both analyses** - NLP and behavioral analysis together provide the full picture
-2. **Check URL safety** - Always verify links before clicking
-3. **Look for patterns** - Multiple red flags indicate higher risk
-4. **Trust your instincts** - If something feels wrong, it probably is
-5. **Report threats** - Help protect others by reporting suspicious activity
-
----
-
-*ThreatSense continuously updates its threat detection capabilities to protect you from the latest scams and attacks.*`;
-
-const CREATED_DATE = '2024-12-15';
-const UPDATED_DATE = new Date().toISOString().split('T')[0];
-
-const KnowledgeBaseLogDetailsSecurity = () => {
-  return (
-    <KnowledgeBaseArticle
-      title="Log Details: Security Tab"
-      subtitle="AI-powered security analysis and safety checks"
-      content={content}
-    />
-  );
+const articleContent = {
+  overview: {
+    title: 'Overview',
+    content: `This tab provides a detailed breakdown of the security analysis.`
+  },
+  'nlp-analysis': {
+    title: 'NLP Analysis',
+    content: `AI-powered Natural Language Processing analyzes the text for suspicious patterns: urgent language, authority impersonation, pressure tactics, suspicious requests, emotional manipulation.`
+  },
+  'behavioral-analysis': {
+    title: 'Behavioral Analysis',
+    content: `Compares the sender and message against known threat patterns and your contact history: sender reputation, domain analysis, pattern matching, timing analysis.`
+  },
+  'url-safety': {
+    title: 'URL Safety Check',
+    content: `Real-time analysis of any links found in the message. Each URL is checked against Google Safe Browsing API's database of known malicious sites. Safety levels: Safe, Uncommon, Phishing, Malware, Unknown.`
+  },
+  'how-analysis-works': {
+    title: 'How This Analysis Works',
+    content: `ThreatSense uses advanced AI models trained on millions of scam examples to recognize suspicious language, identify impersonation, detect manipulation, and flag unusual requests.`
+  },
+  'ai-detection': {
+    title: 'AI-Powered Detection',
+    content: `Recognizes suspicious language patterns, identifies impersonation attempts, detects emotional manipulation, flags unusual requests.`
+  },
+  'real-time-db': {
+    title: 'Real-Time Database Checks',
+    content: `Every URL is checked against Google's Safe Browsing, phishing site databases, malware networks, and suspicious domain registrations.`
+  },
+  'pattern-recognition': {
+    title: 'Behavioral Pattern Recognition',
+    content: `Learns from your contact history, known scam patterns, community reports, and security research.`
+  },
+  'understanding-results': {
+    title: 'Understanding the Results',
+    content: `High-risk indicators: multiple red flags, pattern matches, unusual behavior, suspicious timing. False positives: legitimate messages flagged due to urgent language, new senders, new websites, or similar language to scams.`
+  },
+  'high-risk': {
+    title: 'High-Risk Indicators',
+    content: `Multiple red flags, pattern matches, unusual behavior, suspicious timing.`
+  },
+  'false-positives': {
+    title: 'False Positives',
+    content: `Legitimate messages may be flagged as suspicious for various reasons.`
+  },
+  'what-to-do': {
+    title: 'What to Do Based on Analysis',
+    content: `Guidance for high, medium, and low-risk messages.`
+  },
+  'high-risk-messages': {
+    title: 'High-Risk Messages',
+    content: `Don't click links, don't provide info, block sender, report, delete.`
+  },
+  'medium-risk-messages': {
+    title: 'Medium-Risk Messages',
+    content: `Verify sender, check links, be cautious, monitor for similar threats.`
+  },
+  'low-risk-messages': {
+    title: 'Low-Risk Messages',
+    content: `Still be cautious, verify unusual requests, report if suspicious.`
+  },
+  tips: {
+    title: 'Tips for Using This Tab',
+    content: `1. Read both analyses. 2. Check URL safety. 3. Look for patterns. 4. Trust your instincts. 5. Report threats.`
+  },
 };
+
+const KnowledgeBaseLogDetailsSecurity = () => (
+  <KnowledgeBaseArticleTemplate
+    pageTitle="Knowledge Base"
+    articleTitle="Log Details: Security Tab"
+    IconComponent={<Icon name="shield-checkmark-outline" size={40} color="#FF9800" />}
+    tableOfContents={tableOfContents}
+    articleContent={articleContent}
+    themeColor="#FF9800"
+  />
+);
 
 export default KnowledgeBaseLogDetailsSecurity; 

@@ -1,117 +1,127 @@
 import React from 'react';
-import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
+import Icon from 'react-native-vector-icons/Ionicons';
+import KnowledgeBaseArticleTemplate from '../components/KnowledgeBaseArticleTemplate';
 
-const content = `
-This tab provides a detailed breakdown of the detected threats.
+const tableOfContents = [
+  { id: 'overview', title: 'Overview', level: 1 },
+  { id: 'threat-levels', title: 'Threat Levels', level: 1 },
+  { id: 'high-threat', title: 'High Threat', level: 2 },
+  { id: 'medium-threat', title: 'Medium Threat', level: 2 },
+  { id: 'low-threat', title: 'Low Threat', level: 2 },
+  { id: 'safe', title: 'Safe', level: 2 },
+  { id: 'threat-categories', title: 'Threat Categories', level: 1 },
+  { id: 'phishing', title: 'Phishing', level: 2 },
+  { id: 'malware', title: 'Malware', level: 2 },
+  { id: 'scam', title: 'Scam', level: 2 },
+  { id: 'spam', title: 'Spam', level: 2 },
+  { id: 'suspicious', title: 'Suspicious', level: 2 },
+  { id: 'understanding-analysis', title: 'Understanding the Analysis', level: 1 },
+  { id: 'ai-detection', title: 'AI Detection', level: 2 },
+  { id: 'pattern-matching', title: 'Pattern Matching', level: 2 },
+  { id: 'behavioral-analysis', title: 'Behavioral Analysis', level: 2 },
+  { id: 'what-to-do', title: 'What to Do', level: 1 },
+  { id: 'high-risk-actions', title: 'High Risk Actions', level: 2 },
+  { id: 'medium-risk-actions', title: 'Medium Risk Actions', level: 2 },
+  { id: 'low-risk-actions', title: 'Low Risk Actions', level: 2 },
+  { id: 'tips', title: 'Tips', level: 1 },
+];
 
-### Key Information
-- **Threat Score**: The calculated risk score.
-
-## Overview
-
-The Threat Tab provides comprehensive AI-powered threat analysis for each log entry. This tab displays threat levels, confidence scores, categories, and detailed breakdowns to help you understand the security implications of detected communications.
-
-## Threat Assessment Section
-
-### Threat Level
-- **Visual Indicator**: Color-coded badge showing threat severity
-- **Score Display**: Numerical score (0-100) indicating overall threat level
-- **Level Categories**: Low, Medium, High, Critical
-
-### Confidence Score
-- **Percentage Display**: Shows AI confidence in the threat assessment
-- **Reliability Indicator**: Higher confidence means more reliable analysis
-
-### Threat Categories
-The system identifies specific threat types using visual icons:
-
-::threat_categories::
-
-### Summary
-- **AI-Generated Summary**: Concise explanation of the threat
-- **Key Points**: Highlights the most important security concerns
-- **Action Items**: Suggested next steps for threat response
-
-## Score Breakdown Section
-
-### Detailed Analysis
-- **Component Scores**: Individual factors contributing to the threat level
-- **Point System**: Each factor adds points to the overall score
-- **Transparency**: Clear explanation of how the score was calculated
-
-### Common Factors
-- **Sender Reputation**: Historical behavior and trustworthiness
-- **Content Analysis**: Suspicious patterns in message content
-- **URL Safety**: Links to malicious or suspicious websites
-- **Timing Patterns**: Unusual communication timing
-- **Language Analysis**: Deceptive or manipulative language
-
-## Understanding the Analysis
-
-### Threat Level Interpretation
-- **Low (0-25)**: Minimal risk, routine monitoring
-- **Medium (26-50)**: Moderate concern, increased vigilance
-- **High (51-75)**: Significant threat, immediate attention
-- **Critical (76-100)**: Severe threat, urgent response required
-
-### Confidence Score Meaning
-- **90-100%**: Very high confidence in analysis
-- **70-89%**: High confidence with minor uncertainty
-- **50-69%**: Moderate confidence, consider additional factors
-- **Below 50%**: Low confidence, manual review recommended
-
-### Category Combinations
-Multiple categories may be assigned to a single threat:
-- **Phishing + Impersonation**: Fake entity trying to steal credentials
-- **Scam + Urgent**: Time-sensitive fraudulent scheme
-- **Unsolicited + Suspicious**: Unwanted communication with concerning elements
-
-## Best Practices
-
-### For High Threat Levels
-1. **Immediate Action**: Review and respond quickly
-2. **Documentation**: Record all details for incident response
-3. **Reporting**: Report to appropriate security teams
-4. **Blocking**: Consider blocking sender if appropriate
-
-### For Medium Threat Levels
-1. **Vigilance**: Monitor for escalation
-2. **Verification**: Verify sender identity through other channels
-3. **Caution**: Exercise caution with any links or attachments
-
-### For Low Threat Levels
-1. **Monitoring**: Continue routine monitoring
-2. **Education**: Use as training examples
-3. **Baseline**: Establish normal communication patterns
-
-## Technical Details
-
-### AI Analysis Process
-1. **Content Scanning**: Analyzes message text and metadata
-2. **Pattern Recognition**: Identifies known threat patterns
-3. **Risk Assessment**: Calculates threat probability and severity
-4. **Classification**: Assigns appropriate categories
-5. **Scoring**: Generates numerical threat score
-
-### Data Sources
-- **Internal Database**: Historical threat patterns
-- **External APIs**: Real-time threat intelligence
-- **Machine Learning**: Continuously improving models
-- **User Feedback**: Learning from user actions
-
-### Update Frequency
-- **Real-time**: Immediate analysis of new messages
-- **Continuous**: Ongoing model improvements
-- **Periodic**: Regular threat intelligence updates`;
-
-const KnowledgeBaseLogDetailsThreat = () => {
-  return (
-    <KnowledgeBaseArticle
-      title="Log Details: Threat Tab"
-      subtitle="AI analysis and threat assessment"
-      content={content}
-    />
-  );
+const articleContent = {
+  overview: {
+    title: 'Overview',
+    content: `This tab shows the threat analysis results for the message.`
+  },
+  'threat-levels': {
+    title: 'Threat Levels',
+    content: `ThreatSense categorizes threats into different levels based on risk assessment.`
+  },
+  'high-threat': {
+    title: 'High Threat',
+    content: `Immediate danger. Multiple red flags detected. Do not interact with the message or sender.`
+  },
+  'medium-threat': {
+    title: 'Medium Threat',
+    content: `Suspicious activity detected. Exercise caution and verify before proceeding.`
+  },
+  'low-threat': {
+    title: 'Low Threat',
+    content: `Minor concerns detected. Proceed with normal caution.`
+  },
+  safe: {
+    title: 'Safe',
+    content: `No threats detected. Message appears to be legitimate.`
+  },
+  'threat-categories': {
+    title: 'Threat Categories',
+    content: `ThreatSense identifies specific types of threats in messages.`
+  },
+  phishing: {
+    title: 'Phishing',
+    content: `Attempts to steal personal information by impersonating legitimate organizations.`
+  },
+  malware: {
+    title: 'Malware',
+    content: `Contains or links to malicious software designed to harm your device.`
+  },
+  scam: {
+    title: 'Scam',
+    content: `Fraudulent schemes designed to trick you into losing money or information.`
+  },
+  spam: {
+    title: 'Spam',
+    content: `Unwanted bulk messages, often commercial in nature.`
+  },
+  suspicious: {
+    title: 'Suspicious',
+    content: `Unusual or potentially dangerous content that doesn't fit other categories.`
+  },
+  'understanding-analysis': {
+    title: 'Understanding the Analysis',
+    content: `How ThreatSense determines threat levels and categories.`
+  },
+  'ai-detection': {
+    title: 'AI Detection',
+    content: `Advanced AI models analyze message content for suspicious patterns and language.`
+  },
+  'pattern-matching': {
+    title: 'Pattern Matching',
+    content: `Compares against known threat patterns and scam templates.`
+  },
+  'behavioral-analysis': {
+    title: 'Behavioral Analysis',
+    content: `Analyzes sender behavior and communication patterns for anomalies.`
+  },
+  'what-to-do': {
+    title: 'What to Do',
+    content: `Recommended actions based on the threat level detected.`
+  },
+  'high-risk-actions': {
+    title: 'High Risk Actions',
+    content: `Block sender, delete message, report threat, do not click any links or provide information.`
+  },
+  'medium-risk-actions': {
+    title: 'Medium Risk Actions',
+    content: `Verify sender independently, check links before clicking, be cautious with personal information.`
+  },
+  'low-risk-actions': {
+    title: 'Low Risk Actions',
+    content: `Proceed with normal caution, verify unusual requests, report if suspicious.`
+  },
+  tips: {
+    title: 'Tips',
+    content: `1. Always check threat level before interacting. 2. High threat means immediate danger. 3. Medium threat requires verification. 4. Low threat still needs caution. 5. Report threats to help others.`
+  },
 };
+
+const KnowledgeBaseLogDetailsThreat = () => (
+  <KnowledgeBaseArticleTemplate
+    pageTitle="Knowledge Base"
+    articleTitle="Log Details: Threat Tab"
+    IconComponent={<Icon name="warning-outline" size={40} color="#FF5722" />}
+    tableOfContents={tableOfContents}
+    articleContent={articleContent}
+    themeColor="#FF5722"
+  />
+);
 
 export default KnowledgeBaseLogDetailsThreat; 

@@ -1,223 +1,157 @@
 import React from 'react';
-import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
+import Icon from 'react-native-vector-icons/Ionicons';
+import KnowledgeBaseArticleTemplate from '../components/KnowledgeBaseArticleTemplate';
 
-const content = `
-This tab provides a high-level summary of the threat analysis.
+const tableOfContents = [
+  { id: 'overview', title: 'Overview', level: 1 },
+  { id: 'tabs', title: 'Tabs Overview', level: 1 },
+  { id: 'general-tab', title: 'General Tab', level: 2 },
+  { id: 'security-tab', title: 'Security Tab', level: 2 },
+  { id: 'metadata-tab', title: 'Metadata Tab', level: 2 },
+  { id: 'threat-tab', title: 'Threat Tab', level: 2 },
+  { id: 'analysis', title: 'How the Analysis Works', level: 1 },
+  { id: 'multi-layer', title: 'Multi-Layer Detection', level: 2 },
+  { id: 'real-vs-historical', title: 'Real-Time vs. Historical Data', level: 2 },
+  { id: 'how-to-use', title: 'How to Use the Log Details Screen', level: 1 },
+  { id: 'step-general', title: 'Step 1: General Tab', level: 2 },
+  { id: 'step-security', title: 'Step 2: Security Tab', level: 2 },
+  { id: 'step-metadata', title: 'Step 3: Metadata Tab', level: 2 },
+  { id: 'step-threat', title: 'Step 4: Threat Tab', level: 2 },
+  { id: 'decisions', title: 'Making Informed Decisions', level: 1 },
+  { id: 'high-risk', title: 'High-Risk Threats', level: 2 },
+  { id: 'medium-risk', title: 'Medium-Risk Threats', level: 2 },
+  { id: 'low-risk', title: 'Low-Risk Threats', level: 2 },
+  { id: 'false-positives', title: 'Understanding False Positives', level: 1 },
+  { id: 'privacy', title: 'Privacy and Security', level: 1 },
+  { id: 'data-collection', title: 'Data Collection', level: 2 },
+  { id: 'tips', title: 'Tips for Effective Use', level: 1 },
+  { id: 'pattern-recognition', title: 'Pattern Recognition', level: 2 },
+  { id: 'continuous-learning', title: 'Continuous Learning', level: 2 },
+  { id: 'help', title: 'Getting Help', level: 1 },
+  { id: 'when-to-seek', title: 'When to Seek Additional Help', level: 2 },
+  { id: 'resources', title: 'Available Resources', level: 2 },
+];
 
-### Key Information
-- **Threat Level**: The overall risk assessment.
-
-# Understanding the Log Details Screen
-
-The **Log Details Screen** is your comprehensive threat analysis dashboard. When ThreatSense detects a potential threat, this screen provides you with complete information about what was detected, how it was analyzed, and what you should do about it.
-
-## Overview of the Tabs
-
-The Log Details Screen is organized into four main tabs, each providing different perspectives on the threat:
-
-### 🔍 **General Tab** - The Basics
-**Purpose:** Essential facts about the threat
-**What you'll find:** Date, sender information, message content, and category
-**Best for:** Quick understanding of what happened and who was involved
-
-### 🛡️ **Security Tab** - Technical Analysis  
-**Purpose:** AI and security system analysis
-**What you'll find:** NLP analysis, behavioral analysis, and URL safety checks
-**Best for:** Understanding why the message was flagged as suspicious
-
-### 📊 **Metadata Tab** - Technical Details
-**Purpose:** Context and detection information
-**What you'll find:** Device info, location, timing, and detection methods
-**Best for:** Understanding the technical context of the threat
-
-### ⚠️ **Threat Tab** - Risk Assessment
-**Purpose:** Overall threat evaluation and scoring
-**What you'll find:** Threat level, risk score, and detailed breakdown
-**Best for:** Making informed decisions about how to respond
-
-## How the Analysis Works
-
-### Multi-Layer Detection
-ThreatSense uses multiple analysis methods to evaluate threats:
-
-1. **Content Analysis (NLP)**
-   - AI-powered text analysis
-   - Identifies suspicious language patterns
-   - Detects impersonation attempts
-   - Flags emotional manipulation tactics
-
-2. **Behavioral Analysis**
-   - Compares sender against your contact history
-   - Analyzes communication patterns
-   - Matches against known threat templates
-   - Evaluates timing and context
-
-3. **Technical Analysis**
-   - URL safety checks via Google Safe Browsing
-   - Domain reputation analysis
-   - Attachment and link analysis
-   - Network and device context
-
-4. **Risk Scoring**
-   - Combines all analysis results
-   - Assigns numerical risk scores
-   - Provides actionable recommendations
-   - Tracks threat patterns over time
-
-### Real-Time vs. Historical Data
-The screen shows both current and historical information:
-
-**Real-Time Analysis:**
-- Current URL extraction and safety checks
-- Live threat assessment
-- Up-to-date sender information
-- Current message analysis
-
-**Historical Data:**
-- Original detection metadata
-- Stored analysis results
-- Historical sender patterns
-- Detection method records
-
-## How to Use the Log Details Screen
-
-### Step 1: Start with the General Tab
-Begin by understanding the basic facts:
-- **When** did this happen?
-- **Who** sent the message?
-- **What** type of communication?
-- **What** did they say?
-
-### Step 2: Check the Security Tab
-Review the technical analysis:
-- **Why** was this flagged as suspicious?
-- **What** specific patterns were detected?
-- **Are** any links dangerous?
-- **How** sophisticated is the threat?
-
-### Step 3: Review the Metadata Tab
-Understand the context:
-- **Where** was this detected?
-- **What** device was targeted?
-- **How** was it detected?
-- **What** detection methods were used?
-
-### Step 4: Evaluate the Threat Tab
-Make your decision:
-- **What** is the overall risk level?
-- **How** was the score calculated?
-- **What** should you do next?
-- **How** should you respond?
-
-## Making Informed Decisions
-
-### High-Risk Threats (Red)
-**Characteristics:** Multiple red flags, clear scam indicators, dangerous content
-**Actions:**
-- ✅ Block the sender immediately
-- ✅ Do not click any links
-- ✅ Do not provide personal information
-- ✅ Report the threat
-- ✅ Delete the message
-- ✅ Warn others about similar threats
-
-### Medium-Risk Threats (Yellow)
-**Characteristics:** Some suspicious elements, unknown sender, mixed signals
-**Actions:**
-- ⚠️ Verify the sender independently
-- ⚠️ Be cautious with any links
-- ⚠️ Don't provide sensitive information
-- ⚠️ Monitor for similar threats
-- ⚠️ Consider blocking if suspicious
-
-### Low-Risk Threats (Green)
-**Characteristics:** Minimal indicators, known sender, clean analysis
-**Actions:**
-- ✅ Still exercise caution
-- ✅ Verify unusual requests
-- ✅ Report if something feels wrong
-- ✅ Monitor for changes in behavior
-
-## Understanding False Positives
-
-### What Are False Positives?
-False positives occur when legitimate messages are incorrectly flagged as threats. This can happen when:
-- **Urgent language** is used for legitimate reasons
-- **New senders** contact you for valid purposes
-- **Links** point to new but legitimate websites
-- **Language patterns** resemble scams but are legitimate
-
-### How to Handle False Positives
-1. **Check the breakdown** - See which factors triggered the alert
-2. **Verify independently** - Contact the sender through known channels
-3. **Consider context** - Is the urgent language justified?
-4. **Trust your instincts** - If something feels wrong, investigate
-5. **Report if needed** - Help improve the system
-
-## Privacy and Security
-
-### Your Data Protection
-- **Local processing** - Most analysis happens on your device
-- **Minimal sharing** - Only essential data is shared for threat detection
-- **Your control** - You control what data is collected and stored
-- **Transparency** - You can see exactly what information is stored
-
-### Data Collection
-The system collects only the information necessary for threat detection:
-- **Message content** - For analysis
-- **Sender information** - For reputation checking
-- **Device context** - For threat patterns
-- **Timing information** - For behavioral analysis
-
-## Tips for Effective Use
-
-### Regular Review
-- **Check new threats** as they're detected
-- **Review patterns** across multiple threats
-- **Update your security** based on trends
-- **Report issues** to help improve detection
-
-### Pattern Recognition
-- **Note common tactics** used against you
-- **Identify vulnerable times** or contexts
-- **Track sender patterns** and behaviors
-- **Monitor threat evolution** over time
-
-### Continuous Learning
-- **Stay informed** about new threat types
-- **Learn from each threat** you encounter
-- **Share knowledge** with others
-- **Contribute to improvement** through feedback
-
-## Getting Help
-
-### When to Seek Additional Help
-- **Complex threats** that you're unsure about
-- **Repeated attacks** from the same source
-- **Sophisticated scams** that seem legitimate
-- **Financial threats** or identity theft attempts
-
-### Available Resources
-- **Knowledge Base** - Detailed information about threats
-- **Community Reports** - Shared threat intelligence
-- **Security Updates** - Latest threat information
-- **Support Team** - Expert assistance when needed
-
----
-
-*The Log Details Screen is designed to give you complete visibility into threats while providing actionable guidance for your response. Use all four tabs together for the most comprehensive understanding of each threat.*`;
-
-const CREATED_DATE = '2024-12-15';
-const UPDATED_DATE = new Date().toISOString().split('T')[0];
-
-const KnowledgeBaseLogDetailsOverview = () => {
-  return (
-    <KnowledgeBaseArticle
-      title="Log Details: Overview"
-      subtitle="Understanding the threat analysis dashboard"
-      content={content}
-    />
-  );
+const articleContent = {
+  overview: {
+    title: 'Overview',
+    content: `The Log Details Screen is your comprehensive threat analysis dashboard. When ThreatSense detects a potential threat, this screen provides you with complete information about what was detected, how it was analyzed, and what you should do about it.`
+  },
+  tabs: {
+    title: 'Tabs Overview',
+    content: `The Log Details Screen is organized into four main tabs, each providing different perspectives on the threat.`
+  },
+  'general-tab': {
+    title: 'General Tab',
+    content: `Essential facts about the threat: date, sender information, message content, and category.`
+  },
+  'security-tab': {
+    title: 'Security Tab',
+    content: `AI and security system analysis: NLP analysis, behavioral analysis, and URL safety checks.`
+  },
+  'metadata-tab': {
+    title: 'Metadata Tab',
+    content: `Technical details: device info, location, timing, and detection methods.`
+  },
+  'threat-tab': {
+    title: 'Threat Tab',
+    content: `Overall threat evaluation and scoring: threat level, risk score, and detailed breakdown.`
+  },
+  analysis: {
+    title: 'How the Analysis Works',
+    content: `ThreatSense uses multiple analysis methods to evaluate threats.`
+  },
+  'multi-layer': {
+    title: 'Multi-Layer Detection',
+    content: `1. Content Analysis (NLP): AI-powered text analysis, identifies suspicious language patterns, detects impersonation attempts, flags emotional manipulation tactics.\n2. Behavioral Analysis: Compares sender against your contact history, analyzes communication patterns, matches against known threat templates, evaluates timing and context.\n3. Technical Analysis: URL safety checks via Google Safe Browsing, domain reputation analysis, attachment and link analysis, network and device context.\n4. Risk Scoring: Combines all analysis results, assigns numerical risk scores, provides actionable recommendations, tracks threat patterns over time.`
+  },
+  'real-vs-historical': {
+    title: 'Real-Time vs. Historical Data',
+    content: `The screen shows both current and historical information.\nReal-Time Analysis: Current URL extraction and safety checks, live threat assessment, up-to-date sender information, current message analysis.\nHistorical Data: Original detection metadata, stored analysis results, historical sender patterns, detection method records.`
+  },
+  'how-to-use': {
+    title: 'How to Use the Log Details Screen',
+    content: `Step-by-step guide to using the Log Details Screen effectively.`
+  },
+  'step-general': {
+    title: 'Step 1: General Tab',
+    content: `Begin by understanding the basic facts: when, who, what type, and what was said.`
+  },
+  'step-security': {
+    title: 'Step 2: Security Tab',
+    content: `Review the technical analysis: why flagged, what patterns, dangerous links, sophistication.`
+  },
+  'step-metadata': {
+    title: 'Step 3: Metadata Tab',
+    content: `Understand the context: where, what device, how detected, detection methods.`
+  },
+  'step-threat': {
+    title: 'Step 4: Threat Tab',
+    content: `Make your decision: overall risk level, score calculation, next steps, response.`
+  },
+  decisions: {
+    title: 'Making Informed Decisions',
+    content: `How to interpret risk levels and take appropriate action.`
+  },
+  'high-risk': {
+    title: 'High-Risk Threats',
+    content: `Multiple red flags, clear scam indicators, dangerous content. Actions: block sender, do not click links, do not provide info, report, delete, warn others.`
+  },
+  'medium-risk': {
+    title: 'Medium-Risk Threats',
+    content: `Some suspicious elements, unknown sender, mixed signals. Actions: verify sender, be cautious, don't provide info, monitor, consider blocking.`
+  },
+  'low-risk': {
+    title: 'Low-Risk Threats',
+    content: `Minimal indicators, known sender, clean analysis. Actions: exercise caution, verify requests, report if wrong, monitor for changes.`
+  },
+  'false-positives': {
+    title: 'Understanding False Positives',
+    content: `False positives occur when legitimate messages are incorrectly flagged as threats. How to handle: check breakdown, verify independently, consider context, trust instincts, report if needed.`
+  },
+  privacy: {
+    title: 'Privacy and Security',
+    content: `Local processing, minimal sharing, your control, transparency.`
+  },
+  'data-collection': {
+    title: 'Data Collection',
+    content: `Only necessary information is collected: message content, sender info, device context, timing.`
+  },
+  tips: {
+    title: 'Tips for Effective Use',
+    content: `Regular review, check new threats, review patterns, update security, report issues.`
+  },
+  'pattern-recognition': {
+    title: 'Pattern Recognition',
+    content: `Note common tactics, identify vulnerable times, track sender patterns, monitor threat evolution.`
+  },
+  'continuous-learning': {
+    title: 'Continuous Learning',
+    content: `Stay informed, learn from each threat, share knowledge, contribute feedback.`
+  },
+  help: {
+    title: 'Getting Help',
+    content: `When to seek additional help and available resources.`
+  },
+  'when-to-seek': {
+    title: 'When to Seek Additional Help',
+    content: `Complex threats, repeated attacks, sophisticated scams, financial threats.`
+  },
+  resources: {
+    title: 'Available Resources',
+    content: `Knowledge Base, community reports, security updates, support team.`
+  },
 };
+
+const KnowledgeBaseLogDetailsOverview = () => (
+  <KnowledgeBaseArticleTemplate
+    pageTitle="Knowledge Base"
+    articleTitle="Log Details: Overview"
+    IconComponent={<Icon name="document-text-outline" size={40} color="#4CAF50" />}
+    tableOfContents={tableOfContents}
+    articleContent={articleContent}
+    themeColor="#4CAF50"
+  />
+);
 
 export default KnowledgeBaseLogDetailsOverview; 

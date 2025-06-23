@@ -1,85 +1,87 @@
 import React from 'react';
-import KnowledgeBaseArticle from '../components/KnowledgeBaseArticle';
+import Icon from 'react-native-vector-icons/Ionicons';
+import KnowledgeBaseArticleTemplate from '../components/KnowledgeBaseArticleTemplate';
 
-const content = `
-# How Threat Levels Are Calculated
+const tableOfContents = [
+  { id: 'overview', title: 'Overview', level: 1 },
+  { id: 'categories', title: 'Threat Level Categories', level: 1 },
+  { id: 'low-risk', title: 'Low Risk', level: 2 },
+  { id: 'medium-risk', title: 'Medium Risk', level: 2 },
+  { id: 'high-risk', title: 'High Risk', level: 2 },
+  { id: 'critical-risk', title: 'Critical Risk', level: 2 },
+  { id: 'analysis-factors', title: 'Analysis Factors', level: 1 },
+  { id: 'sender-analysis', title: 'Sender Analysis', level: 2 },
+  { id: 'content-analysis', title: 'Content Analysis', level: 2 },
+  { id: 'link-analysis', title: 'Link Analysis', level: 2 },
+  { id: 'behavioral-analysis', title: 'Behavioral Analysis', level: 2 },
+  { id: 'real-time-updates', title: 'Real-Time Updates', level: 1 },
+  { id: 'privacy-protection', title: 'Privacy Protection', level: 1 },
+];
 
-ThreatSense uses a sophisticated algorithm to determine the risk level of incoming messages and communications. Here's how our threat assessment works:
-
-## Threat Level Categories
-
-### 🟢 Low Risk
-- Messages from known, trusted contacts
-- No suspicious patterns detected
-- Safe content and links
-- Normal communication patterns
-
-### 🟡 Medium Risk
-- Messages from unknown senders
-- Contains links to external websites
-- Requests for personal information
-- Unusual timing or frequency
-
-### 🟠 High Risk
-- Suspicious link patterns
-- Requests for financial information
-- Urgent or threatening language
-- Impersonation attempts detected
-
-### 🔴 Critical Risk
-- Confirmed phishing attempts
-- Malicious links or attachments
-- Financial scam indicators
-- Immediate action required
-
-## Analysis Factors
-
-Our system evaluates multiple factors:
-
-### 1. Sender Analysis
-- Known vs unknown sender
-- Sender reputation score
-- Previous interaction history
-- Domain authenticity
-
-### 2. Content Analysis
-- Keyword detection
-- Language patterns
-- Urgency indicators
-- Request types
-
-### 3. Link Analysis
-- URL safety checks
-- Domain reputation
-- Redirect patterns
-- SSL certificate validation
-
-### 4. Behavioral Analysis
-- Message timing
-- Frequency patterns
-- Response urgency
-- Social engineering indicators
-
-## Real-Time Updates
-
-Threat levels are updated in real-time as new information becomes available. Our system continuously learns from:
-- User feedback
-- New threat patterns
-- Security research
-- Community reports
-
-## Privacy Protection
-
-All analysis is performed locally on your device when possible, ensuring your privacy is protected while maintaining security.`;
-
-const KnowledgeBaseThreatLevelArticle = () => {
-  return (
-    <KnowledgeBaseArticle
-      title="How Threat Levels Are Calculated"
-      subtitle="Understanding our risk assessment system"
-      content={content}
-    />
-  );
+const articleContent = {
+  overview: {
+    title: 'Overview',
+    content: `ThreatSense uses a sophisticated algorithm to determine the risk level of incoming messages and communications. Here's how our threat assessment works:`
+  },
+  categories: {
+    title: 'Threat Level Categories',
+    content: 'Threat levels are divided into four main categories: Low, Medium, High, and Critical. Each category is based on specific risk factors.'
+  },
+  'low-risk': {
+    title: 'Low Risk',
+    content: `🟢 Low Risk\n- Messages from known, trusted contacts\n- No suspicious patterns detected\n- Safe content and links\n- Normal communication patterns`
+  },
+  'medium-risk': {
+    title: 'Medium Risk',
+    content: `🟡 Medium Risk\n- Messages from unknown senders\n- Contains links to external websites\n- Requests for personal information\n- Unusual timing or frequency`
+  },
+  'high-risk': {
+    title: 'High Risk',
+    content: `🟠 High Risk\n- Suspicious link patterns\n- Requests for financial information\n- Urgent or threatening language\n- Impersonation attempts detected`
+  },
+  'critical-risk': {
+    title: 'Critical Risk',
+    content: `🔴 Critical Risk\n- Confirmed phishing attempts\n- Malicious links or attachments\n- Financial scam indicators\n- Immediate action required`
+  },
+  'analysis-factors': {
+    title: 'Analysis Factors',
+    content: 'Our system evaluates multiple factors to determine the threat level.'
+  },
+  'sender-analysis': {
+    title: 'Sender Analysis',
+    content: `- Known vs unknown sender\n- Sender reputation score\n- Previous interaction history\n- Domain authenticity`
+  },
+  'content-analysis': {
+    title: 'Content Analysis',
+    content: `- Keyword detection\n- Language patterns\n- Urgency indicators\n- Request types`
+  },
+  'link-analysis': {
+    title: 'Link Analysis',
+    content: `- URL safety checks\n- Domain reputation\n- Redirect patterns\n- SSL certificate validation`
+  },
+  'behavioral-analysis': {
+    title: 'Behavioral Analysis',
+    content: `- Message timing\n- Frequency patterns\n- Response urgency\n- Social engineering indicators`
+  },
+  'real-time-updates': {
+    title: 'Real-Time Updates',
+    content: `Threat levels are updated in real-time as new information becomes available. Our system continuously learns from:\n- User feedback\n- New threat patterns\n- Security research\n- Community reports`
+  },
+  'privacy-protection': {
+    title: 'Privacy Protection',
+    content: `All analysis is performed locally on your device when possible, ensuring your privacy is protected while maintaining security.`
+  },
 };
+
+const KnowledgeBaseThreatLevelArticle = () => (
+  <KnowledgeBaseArticleTemplate
+    pageTitle="Knowledge Base"
+    articleTitle="How Threat Levels Are Calculated"
+    IconComponent={<Icon name="analytics-outline" size={40} color="#4A90E2" />}
+    tableOfContents={tableOfContents}
+    articleContent={articleContent}
+    themeColor="#4A90E2"
+  />
+);
 
 export default KnowledgeBaseThreatLevelArticle; 
