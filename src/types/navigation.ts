@@ -25,6 +25,7 @@ export type LibraryStackParamList = {
   Library: undefined;
   KnowledgeBase: undefined;
   KnowledgeBaseLiveTextAnalyzer: undefined;
+  KnowledgeBaseSentryMode: undefined;
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseScamsArticle: undefined;
   KnowledgeBaseLogDetailsOverview: { log?: any };
@@ -50,13 +51,18 @@ export type TabParamList = {
 // Defines the parameters for the screens in the main stack navigator
 export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<TabParamList>; // The nested tab navigator
+  Settings: undefined;
+  SentryMode: undefined;
+  About: undefined;
   AccessibilitySettings: undefined;
   HelpAndSupport: undefined;
+  BlockedSenders: undefined;
   SearchResults: { query: string }; // Assuming search results might be global
   Browse: undefined;
-  Library: undefined;
+  Library: NavigatorScreenParams<LibraryStackParamList>;
   ScamDetail: { scam: ScamAlert };
   KnowledgeBaseLiveTextAnalyzer: undefined;
+  KnowledgeBaseSentryMode: undefined;
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseScamsArticle: undefined;
   KnowledgeBaseLogDetailsOverview: { log?: any };

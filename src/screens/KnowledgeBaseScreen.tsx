@@ -29,6 +29,15 @@ const articles: KnowledgeBaseArticle[] = [
     updated: '2024-12-22',
   },
   {
+    title: 'Sentry Mode: Emergency Notifications',
+    screen: 'KnowledgeBaseSentryMode',
+    description: 'Learn how Sentry Mode automatically notifies trusted contacts when threats are detected.',
+    icon: 'shield-checkmark-outline',
+    color: '#A070F2',
+    created: '2024-12-22',
+    updated: '2024-12-22',
+  },
+  {
     title: 'How Threat Levels Are Calculated',
     screen: 'KnowledgeBaseThreatLevelArticle',
     description: 'Learn how the app determines the risk of each log.',

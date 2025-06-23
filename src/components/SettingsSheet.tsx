@@ -63,6 +63,20 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
               </View>
             </View>
 
+            {/* Security Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Security</Text>
+              <View style={styles.settingsGroup}>
+                <TouchableOpacity style={[styles.settingItem, {borderBottomWidth: 0}]} onPress={() => handleNavigation('SentryMode')}>
+                  <View style={styles.settingLeft}>
+                    <Icon name="shield-checkmark-outline" size={20} color="#A070F2" />
+                    <Text style={styles.settingText}>Sentry Mode</Text>
+                  </View>
+                  <Icon name="chevron-forward" size={20} color="#555" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
             {/* App Settings Section */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>App Settings</Text>

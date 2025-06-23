@@ -16,7 +16,8 @@ type NavigableLibraryScreen =
   | 'KnowledgeBaseLogDetailsSecurity'
   | 'KnowledgeBaseLogDetailsMetadata'
   | 'KnowledgeBaseLogDetailsThreat'
-  | 'KnowledgeBaseLiveTextAnalyzer';
+  | 'KnowledgeBaseLiveTextAnalyzer'
+  | 'KnowledgeBaseSentryMode';
 
 const LibraryScreen = () => {
   const navigation = useNavigation<LibraryScreenNavigationProp>();
@@ -29,6 +30,12 @@ const LibraryScreen = () => {
       subtitle: 'How our AI-powered threat detection works',
       icon: 'scan-outline',
       screen: 'KnowledgeBaseLiveTextAnalyzer',
+    },
+    {
+      title: 'Sentry Mode: Emergency Notifications',
+      subtitle: 'Learn how Sentry Mode automatically notifies trusted contacts',
+      icon: 'shield-checkmark-outline',
+      screen: 'KnowledgeBaseSentryMode',
     },
     {
       title: 'How Threat Levels Work',

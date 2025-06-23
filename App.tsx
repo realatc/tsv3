@@ -30,6 +30,7 @@ import KnowledgeBaseLogDetailsSecurity from './src/screens/KnowledgeBaseLogDetai
 import KnowledgeBaseLogDetailsThreat from './src/screens/KnowledgeBaseLogDetailsThreat';
 import KnowledgeBaseScamsArticle from './src/screens/KnowledgeBaseScamsArticle';
 import KnowledgeBaseScreen from './src/screens/KnowledgeBaseScreen';
+import KnowledgeBaseSentryMode from './src/screens/KnowledgeBaseSentryMode';
 import KnowledgeBaseThreatLevelArticle from './src/screens/KnowledgeBaseThreatLevelArticle';
 import LatestScamsScreen from './src/screens/LatestScamsScreen';
 import LibraryScreen from './src/screens/LibraryScreen';
@@ -37,6 +38,7 @@ import LogDetailScreen from './src/screens/LogDetailScreen';
 import LogHistoryScreen from './src/screens/LogHistoryScreen';
 import ScamDetailScreen from './src/screens/ScamDetailScreen';
 import SearchResultsScreen from './src/screens/SearchResultsScreen';
+import SentryModeScreen from './src/screens/SentryModeScreen';
 import ThreatAnalysisScreen from './src/screens/ThreatAnalysisScreen';
 
 // Components
@@ -46,6 +48,7 @@ import SettingsSheet from './src/components/SettingsSheet';
 import { LogProvider } from './src/context/LogContext';
 import { AccessibilityProvider } from './src/context/AccessibilityContext';
 import { AppProvider, useApp } from './src/context/AppContext';
+import { SentryModeProvider } from './src/context/SentryModeContext';
 import { navigationRef } from './src/services/navigationService';
 
 import { 
@@ -95,6 +98,7 @@ function LibraryStackNavigator() {
       <LibraryStack.Screen name="Library" component={LibraryScreen} />
       <LibraryStack.Screen name="KnowledgeBase" component={KnowledgeBaseScreen} />
       <LibraryStack.Screen name="KnowledgeBaseLiveTextAnalyzer" component={KnowledgeBaseLiveTextAnalyzer} />
+      <LibraryStack.Screen name="KnowledgeBaseSentryMode" component={KnowledgeBaseSentryMode} />
       <LibraryStack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} />
       <LibraryStack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} />
       <LibraryStack.Screen name="KnowledgeBaseLogDetailsOverview" component={KnowledgeBaseLogDetailsOverview} />
@@ -227,9 +231,11 @@ const AppContent = () => {
           {/* Add screens that should appear over the tabs here */}
           <Stack.Screen name="AccessibilitySettings" component={AccessibilitySettingsScreen} />
           <Stack.Screen name="HelpAndSupport" component={HelpAndSupportScreen} />
+          <Stack.Screen name="About" component={AboutScreen} />
+          <Stack.Screen name="SentryMode" component={SentryModeScreen} />
         </Stack.Navigator>
+        <SettingsSheet ref={settingsSheetRef} />
       </NavigationContainer>
-      <SettingsSheet ref={settingsSheetRef} />
     </>
   );
 }
@@ -241,7 +247,9 @@ const App = () => {
         <LogProvider>
           <AccessibilityProvider>
             <AppProvider>
-              <AppContent />
+              <SentryModeProvider>
+                <AppContent />
+              </SentryModeProvider>
             </AppProvider>
           </AccessibilityProvider>
         </LogProvider>

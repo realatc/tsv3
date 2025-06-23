@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
+  Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -35,7 +36,7 @@ interface ArticleContent {
   };
 }
 
-interface KnowledgeBaseArticleProps {
+interface KnowledgeBaseArticleTemplateProps {
   pageTitle: string;
   articleTitle: string;
   IconComponent: React.ReactNode;
@@ -43,6 +44,8 @@ interface KnowledgeBaseArticleProps {
   articleContent: ArticleContent;
   themeColor: string;
 }
+
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 const HighlightText = ({ text, highlight, style, highlightStyle }: { text: string, highlight: string, style: any, highlightStyle: any }) => {
   if (!highlight.trim() || !text) {
@@ -64,7 +67,7 @@ const HighlightText = ({ text, highlight, style, highlightStyle }: { text: strin
   );
 };
 
-const KnowledgeBaseArticle: React.FC<KnowledgeBaseArticleProps> = ({
+const KnowledgeBaseArticleTemplate: React.FC<KnowledgeBaseArticleTemplateProps> = ({
   pageTitle,
   articleTitle,
   IconComponent,
@@ -216,29 +219,36 @@ const KnowledgeBaseArticle: React.FC<KnowledgeBaseArticleProps> = ({
                     </TouchableOpacity>
                   </View>
                 </View>
-                {searchResults.map((result, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[styles.searchResultItem, index === currentSearchIndex && { ...styles.activeSearchResult, borderColor: themeColor, backgroundColor: `${themeColor}22` }]}
-                    onPress={() => {
-                      setCurrentSearchIndex(index);
-                      setHighlightedSection(result.sectionId);
-                      setTimeout(() => setHighlightedSection(null), 2000);
-                      scrollToSection(result.sectionId);
-                    }}
-                  >
-                    <Icon name="document-text-outline" size={20} color={themeColor} style={{marginRight: 8}}/>
-                    <View>
-                      <Text style={styles.searchResultTitleText}>{result.sectionTitle}</Text>
-                      <HighlightText
-                        text={result.snippet}
-                        highlight={searchQuery}
-                        style={styles.searchResultSnippet}
-                        highlightStyle={{ ...styles.searchResultHighlight, color: themeColor }}
-                      />
-                    </View>
-                  </TouchableOpacity>
-                ))}
+                <ScrollView
+                  style={styles.searchResultsScroll}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={{ paddingBottom: 24 }}
+                >
+                  {searchResults.map((result, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={[styles.searchResultItem, index === currentSearchIndex && { ...styles.activeSearchResult, borderColor: themeColor, backgroundColor: `${themeColor}22` }]}
+                      onPress={() => {
+                        setCurrentSearchIndex(index);
+                        setHighlightedSection(result.sectionId);
+                        setTimeout(() => setHighlightedSection(null), 2000);
+                        scrollToSection(result.sectionId);
+                        setShowSearch(false);
+                      }}
+                    >
+                      <Icon name="document-text-outline" size={20} color={themeColor} style={{marginRight: 8}}/>
+                      <View>
+                        <Text style={styles.searchResultTitleText}>{result.sectionTitle}</Text>
+                        <HighlightText
+                          text={result.snippet}
+                          highlight={searchQuery}
+                          style={styles.searchResultSnippet}
+                          highlightStyle={{ ...styles.searchResultHighlight, color: themeColor }}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
             )}
           </View>
@@ -340,6 +350,9 @@ const styles = StyleSheet.create({
   tocItemText: { fontSize: 16, color: '#FFFFFF' },
   tocMainItem: { fontWeight: '600' },
   tocSubItem: { fontWeight: '400', color: '#B0B0B0' },
+  searchResultsScroll: {
+    maxHeight: SCREEN_HEIGHT * 0.6,
+  },
 });
 
-export default KnowledgeBaseArticle; 
+export default KnowledgeBaseArticleTemplate; 
