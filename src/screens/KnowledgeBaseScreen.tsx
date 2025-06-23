@@ -20,6 +20,15 @@ type KnowledgeBaseArticle = {
 
 const articles: KnowledgeBaseArticle[] = [
   {
+    title: 'Live Text Analyzer: How It Works',
+    screen: 'KnowledgeBaseLiveTextAnalyzer',
+    description: 'Complete guide to how the live text analyzer works, its grading system, and data sources.',
+    icon: 'scan-outline',
+    color: '#00BCD4',
+    created: '2024-12-22',
+    updated: '2024-12-22',
+  },
+  {
     title: 'How Threat Levels Are Calculated',
     screen: 'KnowledgeBaseThreatLevelArticle',
     description: 'Learn how the app determines the risk of each log.',

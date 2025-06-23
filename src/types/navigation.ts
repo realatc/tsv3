@@ -23,6 +23,7 @@ export type BrowseStackParamList = {
 export type LibraryStackParamList = {
   Library: undefined;
   KnowledgeBase: undefined;
+  KnowledgeBaseLiveTextAnalyzer: undefined;
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseScamsArticle: undefined;
   KnowledgeBaseLogDetailsOverview: { log?: any };
@@ -54,6 +55,7 @@ export type RootStackParamList = {
   Browse: undefined;
   Library: undefined;
   ScamDetail: { scam: ScamAlert };
+  KnowledgeBaseLiveTextAnalyzer: undefined;
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseScamsArticle: undefined;
   KnowledgeBaseLogDetailsOverview: { log?: any };

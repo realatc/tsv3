@@ -21,6 +21,7 @@ import BlockedSendersScreen from './src/screens/BlockedSendersScreen';
 import BrowseScreen from './src/screens/BrowseScreen';
 import HelpAndSupportScreen from './src/screens/HelpAndSupportScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import KnowledgeBaseLiveTextAnalyzer from './src/screens/KnowledgeBaseLiveTextAnalyzer';
 import KnowledgeBaseLogDetailsGeneral from './src/screens/KnowledgeBaseLogDetailsGeneral';
 import KnowledgeBaseLogDetailsMetadata from './src/screens/KnowledgeBaseLogDetailsMetadata';
 import KnowledgeBaseLogDetailsOverview from './src/screens/KnowledgeBaseLogDetailsOverview';
@@ -92,6 +93,7 @@ function LibraryStackNavigator() {
     <LibraryStack.Navigator screenOptions={{ headerShown: false }}>
       <LibraryStack.Screen name="Library" component={LibraryScreen} />
       <LibraryStack.Screen name="KnowledgeBase" component={KnowledgeBaseScreen} />
+      <LibraryStack.Screen name="KnowledgeBaseLiveTextAnalyzer" component={KnowledgeBaseLiveTextAnalyzer} />
       <LibraryStack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} />
       <LibraryStack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} />
       <LibraryStack.Screen name="KnowledgeBaseLogDetailsOverview" component={KnowledgeBaseLogDetailsOverview} />
