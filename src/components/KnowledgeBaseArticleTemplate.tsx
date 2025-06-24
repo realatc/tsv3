@@ -43,6 +43,7 @@ interface KnowledgeBaseArticleTemplateProps {
   tableOfContents: TableOfContentsItem[];
   articleContent: ArticleContent;
   themeColor: string;
+  demoCard?: React.ReactNode;
 }
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -74,6 +75,7 @@ const KnowledgeBaseArticleTemplate: React.FC<KnowledgeBaseArticleTemplateProps> 
   tableOfContents,
   articleContent,
   themeColor,
+  demoCard,
 }) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [searchQuery, setSearchQuery] = useState('');
@@ -262,6 +264,7 @@ const KnowledgeBaseArticleTemplate: React.FC<KnowledgeBaseArticleTemplateProps> 
               </View>
               <Text style={styles.title}>{articleTitle}</Text>
             </View>
+            {demoCard}
 
             {Object.entries(articleContent).map(([id, section]) => (
               <View key={id} style={getSectionStyle(id)} ref={(ref) => { sectionRefs.current[id] = ref; }}>

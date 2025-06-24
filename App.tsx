@@ -40,6 +40,7 @@ import ScamDetailScreen from './src/screens/ScamDetailScreen';
 import SearchResultsScreen from './src/screens/SearchResultsScreen';
 import SentryModeScreen from './src/screens/SentryModeScreen';
 import ThreatAnalysisScreen from './src/screens/ThreatAnalysisScreen';
+import SentryModeGuidedDemo from './src/screens/SentryModeGuidedDemo';
 
 // Components
 import SettingsSheet from './src/components/SettingsSheet';
@@ -233,6 +234,7 @@ const AppContent = () => {
           <Stack.Screen name="HelpAndSupport" component={HelpAndSupportScreen} />
           <Stack.Screen name="About" component={AboutScreen} />
           <Stack.Screen name="SentryMode" component={SentryModeScreen} />
+          <Stack.Screen name="SentryModeGuidedDemo" component={SentryModeGuidedDemo} />
         </Stack.Navigator>
         <SettingsSheet ref={settingsSheetRef} />
       </NavigationContainer>

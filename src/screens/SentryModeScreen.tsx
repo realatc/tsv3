@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity, Alert, ScrollView, SafeAreaView, ActionSheetIOS, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
@@ -7,7 +7,6 @@ import { RootStackParamList } from '../types/navigation';
 import { useSentryMode } from '../context/SentryModeContext';
 import ContactPicker from '../components/ContactPicker';
 import ThreatLevelPicker from '../components/ThreatLevelPicker';
-import SentryModeDemo from '../components/SentryModeDemo';
 import { notificationService } from '../services/notificationService';
 import { navigate, goBack } from '../services/navigationService';
 import { useApp } from '../context/AppContext';
@@ -18,6 +17,12 @@ const SentryModeScreen = () => {
   const navigation = useNavigation<SentryModeScreenNavigationProp>();
   const { settings, updateSettings, isLoading } = useSentryMode();
   const { settingsSheetRef } = useApp();
+  const threatButtonsRef = useRef(null);
+  const contactInfoRef = useRef(null);
+  const testNotificationRef = useRef(null);
+  const enableCardRef = useRef(null);
+  const trustedContactRef = useRef(null);
+  const [showDemoInfo, setShowDemoInfo] = useState(false);
 
   const handleToggleSentryMode = (isEnabled: boolean) => {
     updateSettings({ isEnabled });
@@ -153,17 +158,20 @@ const SentryModeScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#18181A' }}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Sentry Mode</Text>
-          <Text style={styles.description}>
-            When enabled, a trusted contact will be notified if a threat meets your selected criteria.
-          </Text>
+        <View style={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={styles.headerTitle}>Sentry Mode</Text>
+          <TouchableOpacity onPress={() => setShowDemoInfo(true)} style={styles.demoInfoIcon}>
+            <Icon name="help-circle-outline" size={24} color="#A070F2" />
+          </TouchableOpacity>
         </View>
+        <Text style={styles.headerDescription}>
+          When enabled, a trusted contact will be notified if a threat meets your selected criteria.
+        </Text>
 
         {/* Main Toggle */}
-        <View style={styles.card}>
+        <View ref={enableCardRef} style={styles.card}>
           <View style={styles.row}>
             <View style={styles.leftSection}>
               <Icon name="shield-checkmark-outline" size={24} color="#A070F2" />
@@ -202,17 +210,21 @@ const SentryModeScreen = () => {
 
         {settings.isEnabled && (
           <>
-            {/* Threat Level Picker */}
-            <ThreatLevelPicker
-              selectedLevel={settings.threatLevel}
-              onLevelSelect={handleThreatLevelChange}
-            />
+            {/* Threat Level Buttons */}
+            <View ref={threatButtonsRef} style={styles.threatLevelRow}>
+              <ThreatLevelPicker
+                selectedLevel={settings.threatLevel}
+                onLevelSelect={handleThreatLevelChange}
+              />
+            </View>
 
-            {/* Contact Picker */}
-            <ContactPicker
-              selectedContact={settings.trustedContact}
-              onContactSelect={handleContactSelect}
-            />
+            {/* Contact Info */}
+            <View ref={contactInfoRef} style={styles.contactInfoRow}>
+              <ContactPicker
+                selectedContact={settings.trustedContact}
+                onContactSelect={handleContactSelect}
+              />
+            </View>
 
             {/* Status Card */}
             <View style={styles.statusCard}>
@@ -251,20 +263,27 @@ const SentryModeScreen = () => {
                 it will automatically send a notification to your trusted contact 
                 with details about the threat and your location.
               </Text>
+              <TouchableOpacity
+                style={styles.demoLinkCentered}
+                onPress={() => navigation.navigate('SentryModeGuidedDemo')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.demoLinkCenteredText}>See Guided Demo</Text>
+              </TouchableOpacity>
             </View>
 
-            {/* Demo/Live Mode Note */}
-            <View style={[styles.infoCard, { backgroundColor: '#222', borderColor: '#A070F2', borderWidth: 1 }]}> 
-              <Text style={{ color: '#A070F2', fontWeight: 'bold', marginBottom: 4 }}>Demo Mode Limitation</Text>
-              <Text style={{ color: '#B0B0B0', fontSize: 13 }}>
-                In development/demo mode, notifications are simulated and not actually sent. In a live environment, your trusted contact will receive real SMS, email, and (if they have the app) push notifications with your alert details.
-              </Text>
+            {/* Trusted Contact Card */}
+            <View ref={trustedContactRef} style={styles.card}>
+              {/* ... trusted contact content ... */}
             </View>
 
             {/* Test Notification Button */}
-            <TouchableOpacity style={styles.testButton} onPress={handleTestNotification}>
-              <Icon name="notifications-outline" size={20} color="#4CAF50" />
-              <Text style={styles.testButtonText}>Test Notification</Text>
+            <TouchableOpacity
+              ref={testNotificationRef}
+              style={styles.testButton}
+              onPress={handleTestNotification}
+            >
+              <Text style={[styles.testButtonText, { color: '#fff' }]}>Test Notification</Text>
             </TouchableOpacity>
 
             {/* Preview Alert Button */}
@@ -278,9 +297,6 @@ const SentryModeScreen = () => {
               <Icon name="chatbubbles-outline" size={20} color="#fff" />
               <Text style={[styles.testButtonText, { color: '#fff' }]}>Simulate Contact Response</Text>
             </TouchableOpacity>
-
-            {/* Demo Component */}
-            <SentryModeDemo />
           </>
         )}
 
@@ -292,6 +308,19 @@ const SentryModeScreen = () => {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+      {showDemoInfo && (
+        <View style={styles.demoInfoModalOverlay}>
+          <View style={styles.demoInfoModal}>
+            <Text style={styles.demoInfoTitle}>Demo Mode Limitation</Text>
+            <Text style={styles.demoInfoText}>
+              In development/demo mode, notifications are simulated and not actually sent. In a live environment, your trusted contact will receive real SMS, email, and (if they have the app) push notifications with your alert details.
+            </Text>
+            <TouchableOpacity style={styles.demoInfoClose} onPress={() => setShowDemoInfo(false)}>
+              <Text style={styles.demoInfoCloseText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -314,17 +343,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  header: {
-    paddingTop: 20,
-    paddingBottom: 30,
-  },
-  title: {
+  headerTitle: {
     fontSize: 34,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 10,
   },
-  description: {
+  headerDescription: {
     fontSize: 16,
     color: '#B0B0B0',
     lineHeight: 22,
@@ -471,6 +496,75 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     paddingLeft: 28,
+  },
+  threatLevelRow: {
+    marginBottom: 15,
+  },
+  contactInfoRow: {
+    marginBottom: 15,
+  },
+  demoLinkCentered: {
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: -6,
+    paddingHorizontal: 2,
+    paddingVertical: 6,
+  },
+  demoLinkCenteredText: {
+    color: '#A070F2',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  demoInfoIcon: {
+    marginLeft: 10,
+    padding: 4,
+  },
+  demoInfoModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  demoInfoModal: {
+    backgroundColor: '#23232A',
+    borderRadius: 16,
+    padding: 28,
+    maxWidth: 340,
+    width: '85%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  demoInfoTitle: {
+    color: '#A070F2',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  demoInfoText: {
+    color: '#fff',
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 18,
+  },
+  demoInfoClose: {
+    backgroundColor: '#A070F2',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 22,
+  },
+  demoInfoCloseText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 15,
   },
 });
 

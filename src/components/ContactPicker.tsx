@@ -144,6 +144,8 @@ const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContac
               phoneNumber: '+1 (555) 123-4567'
             };
             onContactSelect(mockContact);
+            setIsModalVisible(false);
+            setSearchQuery('');
           }},
           { text: 'Cancel', style: 'cancel' }
         ]
@@ -183,6 +185,8 @@ const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContac
                       phoneNumber: '+1 (555) 123-4567'
                     };
                     onContactSelect(mockContact);
+                    setIsModalVisible(false);
+                    setSearchQuery('');
                   }},
                   { text: 'Cancel', style: 'cancel' }
                 ]
@@ -199,6 +203,8 @@ const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContac
               phoneNumber: '+1 (555) 123-4567'
             };
             onContactSelect(mockContact);
+            setIsModalVisible(false);
+            setSearchQuery('');
           }
         },
         {

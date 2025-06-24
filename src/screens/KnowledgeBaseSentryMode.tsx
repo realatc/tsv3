@@ -1,8 +1,12 @@
 import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import KnowledgeBaseArticleTemplate from '../components/KnowledgeBaseArticleTemplate';
+import { useNavigation } from '@react-navigation/native';
 
 const KnowledgeBaseSentryMode = () => {
+  const navigation = useNavigation();
+
   const tableOfContents = [
     { id: 'overview', title: 'What is Sentry Mode?', level: 1 },
     { id: 'how-it-works', title: 'How It Works', level: 1 },
@@ -85,15 +89,59 @@ const KnowledgeBaseSentryMode = () => {
   };
 
   return (
-    <KnowledgeBaseArticleTemplate
-      pageTitle="Knowledge Base"
-      articleTitle="Sentry Mode: Emergency Notifications"
-      IconComponent={<Icon name="shield-checkmark-outline" size={40} color="#A070F2" />}
-      tableOfContents={tableOfContents}
-      articleContent={articleContent}
-      themeColor="#A070F2"
-    />
+    <>
+      <KnowledgeBaseArticleTemplate
+        pageTitle="Knowledge Base"
+        articleTitle="Sentry Mode: Emergency Notifications"
+        IconComponent={<Icon name="shield-checkmark-outline" size={40} color="#A070F2" />}
+        tableOfContents={tableOfContents}
+        articleContent={articleContent}
+        themeColor="#A070F2"
+        demoCard={
+          <View style={styles.demoLinkWrapper}>
+            <TouchableOpacity
+              style={styles.demoLinkButton}
+              onPress={() => navigation.navigate('SentryModeGuidedDemo')}
+              activeOpacity={0.7}
+            >
+              <Icon name="play-circle-outline" size={18} color="#A070F2" style={{ marginRight: 6 }} />
+              <Text style={styles.demoLinkButtonText}>View the Sentry Mode Guided Demo</Text>
+            </TouchableOpacity>
+            <Text style={styles.demoLinkHelpText}>
+              See a step-by-step visual walkthrough of how Sentry Mode works.
+            </Text>
+          </View>
+        }
+      />
+    </>
   );
 };
+
+const styles = StyleSheet.create({
+  demoLinkWrapper: {
+    alignItems: 'center',
+    marginTop: 4,
+    marginBottom: 10,
+  },
+  demoLinkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 8,
+  },
+  demoLinkButtonText: {
+    color: '#A070F2',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  demoLinkHelpText: {
+    color: '#B0BEC5',
+    fontSize: 12,
+    marginTop: 2,
+    textAlign: 'center',
+    marginHorizontal: 10,
+  },
+});
 
 export default KnowledgeBaseSentryMode; 
