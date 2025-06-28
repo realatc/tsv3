@@ -6,7 +6,7 @@ import { BrowseStackParamList } from '../types/navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useApp } from '../context/AppContext';
 import { useLogs } from '../context/LogContext';
-import { addSampleLogs, addHighThreatLog, clearAllLogs, addPhishingEmail, addScamTexts, addGeorgiaMVCFraud } from '../utils/dev/devUtils';
+import { addSampleLogs, addHighThreatLog, clearAllLogs, addPhishingEmail, addScamTexts, addGeorgiaMVCFraud, addSentryDemoLogs } from '../utils/dev/devUtils';
 
 type BrowseScreenNavigationProp = StackNavigationProp<BrowseStackParamList, 'Browse'>;
 
@@ -38,6 +38,7 @@ const BrowseScreen = () => {
     { title: 'Add Phishing Email', icon: 'mail-unread-outline', color: '#FF6B6B', action: () => { addPhishingEmail(logContext); showConfirmation('Success', 'Phishing email added.'); } },
     { title: 'Add Georgia MVC Scam', icon: 'car-sport-outline', color: '#FF8C00', action: () => { addGeorgiaMVCFraud(logContext); showConfirmation('Success', 'Georgia MVC scam added.'); } },
     { title: 'Add High-Threat Log', icon: 'alert-circle-outline', color: '#FF6B6B', action: () => { addHighThreatLog(logContext); showConfirmation('Success', 'High-threat log added.'); } },
+    { title: 'Sentry Demo', icon: 'shield-half-outline', color: '#06D6A0', action: async () => { await addSentryDemoLogs(logContext); } },
     { title: 'Clear All Logs', icon: 'trash-outline', color: '#999999', action: () => {
         Alert.alert(
           'Confirm Clear',

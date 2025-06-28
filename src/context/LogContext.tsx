@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { calculateThreatLevel } from '../utils/threatLevel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Sentiment from 'sentiment';
+import { addAuditLogEntry } from '../utils/auditLog';
+import { threatAnalysisService } from '../services/threatAnalysisService';
 
 export type LogEntry = {
   id: string;
@@ -18,6 +20,11 @@ export type LogEntry = {
     receivedAt: string;
     messageLength: number;
   };
+  // Sentry Demo support
+  demoType?: 'sentry';
+  sentryDemoJohnResponse?: string;
+  sentryDemoThreatType?: string;
+  forceThreatLevel?: 'High' | 'Critical' | 'Medium' | 'Low';
 };
 
 export type BlockedSender = {
@@ -87,7 +94,7 @@ const initialLogs: LogEntry[] = [
 
 const withThreat = (log: Omit<LogEntry, 'threat'>): LogEntry => ({
   ...log,
-  threat: calculateThreatLevel(log),
+  threat: (log as any).forceThreatLevel || calculateThreatLevel(log),
 });
 
 const STORAGE_KEY = '@threatsense/logs';
@@ -202,12 +209,39 @@ export const LogProvider = ({ children }: { children: ReactNode }) => {
     AsyncStorage.setItem(BLOCKED_SENDERS_KEY, JSON.stringify(blockedSenders));
   }, [blockedSenders]);
 
-  const addLog = (log: Omit<LogEntry, 'threat'>) => {
+  const addLog = async (log: Omit<LogEntry, 'threat'>) => {
     // If nlpAnalysis or behavioralAnalysis are missing, generate them
     const nlpAnalysis = log.nlpAnalysis || runNlpAnalysis(log.message);
     const behavioralAnalysis = log.behavioralAnalysis || runBehavioralAnalysis(log.sender, logs);
-    const normalizedSender = normalizeSender(log.category, log.sender);
-    setLogs(prev => [withThreat({ ...log, nlpAnalysis, behavioralAnalysis, sender: normalizedSender }), ...prev]);
+    const normalizedSender = (log as any).demoType === 'sentry' ? log.sender : normalizeSender(log.category, log.sender);
+    const newLog = withThreat({ ...log, nlpAnalysis, behavioralAnalysis, sender: normalizedSender });
+    console.log('[addLog] Created log:', { id: newLog.id, threat: newLog.threat, forceThreatLevel: newLog.forceThreatLevel });
+    
+    // Add log to state and persist to AsyncStorage before analysis
+    let updatedLogs: LogEntry[] = [];
+    setLogs(prev => {
+      updatedLogs = [newLog, ...prev];
+      return updatedLogs;
+    });
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify([newLog, ...logs]));
+    
+    // Add audit log entry for creation
+    try {
+      await addAuditLogEntry(newLog.id, {
+        action: 'created',
+        actor: 'system',
+        details: `Event created: ${newLog.category} from ${newLog.sender}`
+      });
+    } catch (error) {
+      console.error('[LogContext] Error creating audit log entry:', error);
+    }
+
+    // Trigger threat analysis for Sentry Mode notifications
+    try {
+      await threatAnalysisService.analyzeText(newLog.message, newLog.sender, newLog.id, newLog);
+    } catch (error) {
+      console.error('[LogContext] Error in threat analysis:', error);
+    }
   };
 
   const deleteLog = (id: string) => {

@@ -8,7 +8,6 @@ const tableOfContents = [
   { id: 'low-risk', title: 'Low Risk', level: 2 },
   { id: 'medium-risk', title: 'Medium Risk', level: 2 },
   { id: 'high-risk', title: 'High Risk', level: 2 },
-  { id: 'critical-risk', title: 'Critical Risk', level: 2 },
   { id: 'analysis-factors', title: 'Analysis Factors', level: 1 },
   { id: 'sender-analysis', title: 'Sender Analysis', level: 2 },
   { id: 'content-analysis', title: 'Content Analysis', level: 2 },
@@ -25,7 +24,7 @@ const articleContent = {
   },
   categories: {
     title: 'Threat Level Categories',
-    content: 'Threat levels are divided into four main categories: Low, Medium, High, and Critical. Each category is based on specific risk factors.'
+    content: 'Threat levels are divided into three main categories: Low, Medium, and High. Each category is based on specific risk factors.'
   },
   'low-risk': {
     title: 'Low Risk',
@@ -37,11 +36,7 @@ const articleContent = {
   },
   'high-risk': {
     title: 'High Risk',
-    content: `🟠 High Risk\n- Suspicious link patterns\n- Requests for financial information\n- Urgent or threatening language\n- Impersonation attempts detected`
-  },
-  'critical-risk': {
-    title: 'Critical Risk',
-    content: `🔴 Critical Risk\n- Confirmed phishing attempts\n- Malicious links or attachments\n- Financial scam indicators\n- Immediate action required`
+    content: `🟠 High Risk\n- Suspicious link patterns\n- Requests for financial information\n- Urgent or threatening language\n- Impersonation attempts detected\n- Confirmed phishing attempts\n- Malicious links or attachments\n- Financial scam indicators\n- Immediate action required`
   },
   'analysis-factors': {
     title: 'Analysis Factors',

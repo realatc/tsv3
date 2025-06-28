@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity, Alert, ScrollView, SafeAreaView, ActionSheetIOS, Platform } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Switch, TouchableOpacity, Alert, ScrollView, SafeAreaView, ActionSheetIOS, Platform, FlatList, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -7,28 +7,66 @@ import { RootStackParamList } from '../types/navigation';
 import { useSentryMode } from '../context/SentryModeContext';
 import ContactPicker from '../components/ContactPicker';
 import ThreatLevelPicker from '../components/ThreatLevelPicker';
-import { notificationService } from '../services/notificationService';
+import { notificationService, SentryModeAlert } from '../services/notificationService';
 import { navigate, goBack } from '../services/navigationService';
 import { useApp } from '../context/AppContext';
+import { getThreatColor } from '../utils/threatLevel';
 
 type SentryModeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'SentryMode'>;
+
+const getStatusColor = (status: SentryModeAlert['status']) => {
+  switch (status) {
+    case 'acknowledged': return '#4CAF50';
+    case 'contacted': return '#2196F3';
+    case 'emergency': return '#F44336';
+    case 'no_response': return '#FF9800';
+    default: return '#8A8A8E';
+  }
+};
+
+const getStatusText = (status: SentryModeAlert['status']) => {
+  switch (status) {
+    case 'sent': return 'Alert Sent';
+    case 'acknowledged': return 'Acknowledged';
+    case 'contacted': return 'Contacted';
+    case 'emergency': return 'Emergency';
+    case 'no_response': return 'No Response';
+    default: return 'Unknown';
+  }
+};
 
 const SentryModeScreen = () => {
   const navigation = useNavigation<SentryModeScreenNavigationProp>();
   const { settings, updateSettings, isLoading } = useSentryMode();
-  const { settingsSheetRef } = useApp();
+  const { settingsSheetRef, contactResponseModal, setContactResponseModal } = useApp();
   const threatButtonsRef = useRef(null);
   const contactInfoRef = useRef(null);
   const testNotificationRef = useRef(null);
   const enableCardRef = useRef(null);
   const trustedContactRef = useRef(null);
   const [showDemoInfo, setShowDemoInfo] = useState(false);
+  const [notificationHistory, setNotificationHistory] = useState<SentryModeAlert[]>([]);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertModalContent, setAlertModalContent] = useState<any>(null);
+
+  useEffect(() => {
+    loadNotificationHistory();
+  }, []);
+
+  const loadNotificationHistory = async () => {
+    try {
+      const history = await notificationService.getNotificationHistory();
+      setNotificationHistory(history);
+    } catch (error) {
+      console.error('Error loading notification history:', error);
+    }
+  };
 
   const handleToggleSentryMode = (isEnabled: boolean) => {
     updateSettings({ isEnabled });
   };
 
-  const handleThreatLevelChange = (threatLevel: 'Low' | 'Medium' | 'High' | 'Critical') => {
+  const handleThreatLevelChange = (threatLevel: 'Low' | 'Medium' | 'High') => {
     updateSettings({ threatLevel });
   };
 
@@ -110,42 +148,50 @@ const SentryModeScreen = () => {
     Alert.alert('Preview: Contact Alert (SMS)', sampleMessage, [{ text: 'OK' }]);
   };
 
-  const handleSimulateContactResponse = () => {
-    const options = [
-      'Acknowledge',
-      'Call',
-      'Text',
-      'Ignore',
-      'Cancel',
-    ];
-    const responseTypes = ['acknowledged', 'calling', 'texting', 'ignored'];
-
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options,
-          cancelButtonIndex: 4,
-        },
-        (buttonIndex) => {
-          if (buttonIndex < 4) {
-            notificationService.simulateContactResponse(settings, responseTypes[buttonIndex]);
-          }
-        }
-      );
-    } else {
-      Alert.alert(
-        'Simulate Contact Response',
-        'Choose a response type:',
-        [
-          { text: 'Acknowledge', onPress: () => notificationService.simulateContactResponse(settings, 'acknowledged') },
-          { text: 'Call', onPress: () => notificationService.simulateContactResponse(settings, 'calling') },
-          { text: 'Text', onPress: () => notificationService.simulateContactResponse(settings, 'texting') },
-          { text: 'Ignore', onPress: () => notificationService.simulateContactResponse(settings, 'ignored') },
-          { text: 'Cancel', style: 'cancel' },
-        ]
-      );
+  const handleSimulateResponse = () => {
+    if (!settings.isEnabled) {
+      Alert.alert('Sentry Mode Disabled', 'Please enable Sentry Mode first to simulate responses.');
+      return;
     }
+
+    if (!settings.trustedContact) {
+      Alert.alert('No Trusted Contact', 'Please select a trusted contact first to simulate responses.');
+      return;
+    }
+
+    Alert.alert(
+      'Simulate Contact Response',
+      'Choose how your trusted contact responds to the alert:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Acknowledged (OK)', 
+          onPress: () => notificationService.simulateContactResponse(settings, 'acknowledged')
+        },
+        { 
+          text: 'Contacted (Calling)', 
+          onPress: () => notificationService.simulateContactResponse(settings, 'contacted')
+        },
+        { 
+          text: 'Emergency', 
+          onPress: () => notificationService.simulateContactResponse(settings, 'emergency')
+        },
+        { 
+          text: 'No Response', 
+          onPress: () => notificationService.simulateContactResponse(settings, 'no_response')
+        }
+      ]
+    );
   };
+
+  // Replace the Alert.alert for high threat detected with a custom modal
+  const triggerHighThreatAlert = (details: any) => {
+    setAlertModalContent(details);
+    setShowAlertModal(true);
+  };
+
+  // Example usage: triggerHighThreatAlert({ ... })
+  // You should call this instead of Alert.alert when a high threat is detected
 
   if (isLoading) {
     return (
@@ -293,10 +339,55 @@ const SentryModeScreen = () => {
             </TouchableOpacity>
 
             {/* Simulate Contact Response Button */}
-            <TouchableOpacity style={[styles.testButton, { backgroundColor: '#4A90E2', marginBottom: 10 }]} onPress={handleSimulateContactResponse}>
-              <Icon name="chatbubbles-outline" size={20} color="#fff" />
+            <TouchableOpacity style={[styles.testButton, { backgroundColor: '#FF9800', marginBottom: 10 }]} onPress={handleSimulateResponse}>
+              <Icon name="chatbubble-outline" size={20} color="#fff" />
               <Text style={[styles.testButtonText, { color: '#fff' }]}>Simulate Contact Response</Text>
             </TouchableOpacity>
+
+            {/* Notification History */}
+            {notificationHistory.length > 0 && (
+              <View style={styles.historySection}>
+                <View style={styles.historyHeader}>
+                  <Icon name="time-outline" size={20} color="#A070F2" />
+                  <Text style={styles.historyTitle}>Recent Alerts</Text>
+                  <TouchableOpacity onPress={loadNotificationHistory} style={styles.refreshButton}>
+                    <Icon name="refresh" size={18} color="#A070F2" />
+                  </TouchableOpacity>
+                </View>
+                <FlatList
+                  data={notificationHistory.slice(0, 5)} // Show last 5 alerts
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => (
+                    <View style={styles.historyItem}>
+                      <View style={styles.historyItemHeader}>
+                        <View style={[styles.threatLevelBadge, { backgroundColor: getThreatColor(item.threatLevel) }]}>
+                          <Text style={styles.threatLevelText}>{item.threatLevel}</Text>
+                        </View>
+                        <Text style={styles.historyTime}>
+                          {new Date(item.timestamp).toLocaleTimeString()}
+                        </Text>
+                      </View>
+                      <Text style={styles.historyDescription}>{item.description}</Text>
+                      {item.sender && (
+                        <Text style={styles.historySender}>From: {item.sender}</Text>
+                      )}
+                      <View style={styles.statusRow}>
+                        <Text style={styles.statusLabel}>Status:</Text>
+                        <Text style={[styles.statusValue, { color: getStatusColor(item.status) }]}>
+                          {getStatusText(item.status)}
+                        </Text>
+                      </View>
+                      {item.responseTime && (
+                        <Text style={styles.responseTime}>
+                          Response: {new Date(item.responseTime).toLocaleTimeString()}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                  scrollEnabled={false}
+                />
+              </View>
+            )}
           </>
         )}
 
@@ -321,6 +412,86 @@ const SentryModeScreen = () => {
           </View>
         </View>
       )}
+      {/* Contact Response Modal */}
+      <Modal
+        visible={!!contactResponseModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setContactResponseModal(null)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: '#23232A', borderRadius: 16, padding: 28, minWidth: 270, maxWidth: 340, alignItems: 'center' }}>
+            <Icon name="chatbubble-ellipses-outline" size={40} color="#A070F2" style={{ marginBottom: 12 }} />
+            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>Contact Response</Text>
+            <Text style={{ color: '#B0BEC5', fontSize: 16, marginBottom: 16, textAlign: 'center' }}>{contactResponseModal?.message}</Text>
+            {contactResponseModal?.threatType && (
+              <Text style={{ color: '#FFD700', fontSize: 15, marginBottom: 8 }}>Threat Type: {contactResponseModal.threatType}</Text>
+            )}
+            {contactResponseModal?.timestamp && (
+              <Text style={{ color: '#8A8A8E', fontSize: 13, marginBottom: 8 }}>Received: {new Date(contactResponseModal.timestamp).toLocaleTimeString()}</Text>
+            )}
+            <TouchableOpacity style={{ backgroundColor: '#A070F2', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 10 }} onPress={() => setContactResponseModal(null)}>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      {/* Sentry Mode Alert Modal */}
+      <Modal
+        visible={showAlertModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowAlertModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: '#23232A', borderRadius: 16, padding: 28, minWidth: 270, maxWidth: 340, alignItems: 'center' }}>
+            <Icon name="shield-checkmark-outline" size={40} color="#A070F2" style={{ marginBottom: 12 }} />
+            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>Sentry Mode: High Threat Detected</Text>
+            <Text style={{ color: '#FFD700', fontSize: 15, marginBottom: 8, textAlign: 'center' }}>SENTRY MODE ALERT TRIGGERED</Text>
+            <Text style={{ color: '#B0BEC5', fontSize: 16, marginBottom: 16, textAlign: 'center' }}>{alertModalContent?.message}</Text>
+            {alertModalContent?.details && (
+              <View style={{ marginBottom: 12 }}>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>THREAT DETAILS:</Text>
+                <Text style={{ color: '#fff', fontSize: 14 }}>• Level: {alertModalContent.details.level}</Text>
+                <Text style={{ color: '#fff', fontSize: 14 }}>• Type: {alertModalContent.details.type}</Text>
+                <Text style={{ color: '#fff', fontSize: 14 }}>• Description: {alertModalContent.details.description}</Text>
+                <Text style={{ color: '#fff', fontSize: 14 }}>• Time: {alertModalContent.details.time}</Text>
+                <Text style={{ color: '#fff', fontSize: 14 }}>• Location: {alertModalContent.details.location}</Text>
+              </View>
+            )}
+            {alertModalContent?.notification && (
+              <View style={{ marginBottom: 12 }}>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>NOTIFICATION SENT:</Text>
+                {alertModalContent.notification.map((n: string, i: number) => (
+                  <Text key={i} style={{ color: '#fff', fontSize: 14 }}>• {n}</Text>
+                ))}
+              </View>
+            )}
+            {alertModalContent?.responses && (
+              <View style={{ marginBottom: 12 }}>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>EXPECTED RESPONSES:</Text>
+                {alertModalContent.responses.map((r: string, i: number) => (
+                  <Text key={i} style={{ color: '#fff', fontSize: 14 }}>• {r}</Text>
+                ))}
+              </View>
+            )}
+            <Text style={{ color: '#B0BEC5', fontSize: 14, marginBottom: 16, textAlign: 'center' }}>{alertModalContent?.footer}</Text>
+            <TouchableOpacity style={{ backgroundColor: '#A070F2', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 10, marginBottom: 6 }} onPress={() => setShowAlertModal(false)}>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>OK</Text>
+            </TouchableOpacity>
+            {alertModalContent?.onCall && (
+              <TouchableOpacity style={{ backgroundColor: '#23232A', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 6, borderWidth: 1, borderColor: '#A070F2' }} onPress={alertModalContent.onCall}>
+                <Text style={{ color: '#A070F2', fontWeight: 'bold', fontSize: 16 }}>Call Contact</Text>
+              </TouchableOpacity>
+            )}
+            {alertModalContent?.onText && (
+              <TouchableOpacity style={{ backgroundColor: '#23232A', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 6, borderWidth: 1, borderColor: '#A070F2' }} onPress={alertModalContent.onText}>
+                <Text style={{ color: '#A070F2', fontWeight: 'bold', fontSize: 16 }}>Text Contact</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -565,6 +736,60 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 15,
+  },
+  historySection: {
+    backgroundColor: '#1C1C1E',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 15,
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  historyTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  refreshButton: {
+    marginLeft: 'auto',
+  },
+  historyItem: {
+    marginBottom: 12,
+  },
+  historyItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  threatLevelBadge: {
+    padding: 4,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  threatLevelText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  historyTime: {
+    color: '#8A8A8E',
+    fontSize: 14,
+  },
+  historyDescription: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  historySender: {
+    color: '#8A8A8E',
+    fontSize: 14,
+  },
+  responseTime: {
+    color: '#8A8A8E',
+    fontSize: 14,
   },
 });
 

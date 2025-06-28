@@ -40,6 +40,9 @@ const LogHistoryScreen = () => {
   const categoryItems = ['All', 'Mail', 'Text', 'Phone Call'];
   const threatItems = ['All', 'High', 'Medium', 'Low'];
 
+  // Debug: print all log threat levels
+  console.log('All log threat levels:', logs.map(log => (typeof log.threat === 'object' && log.threat.level) ? log.threat.level : log.threat));
+
   const filteredLogs = logs.filter((log: LogEntry) => {
     const matchesSearch =
       log.sender.toLowerCase().includes(search.toLowerCase()) ||
@@ -53,7 +56,9 @@ const LogHistoryScreen = () => {
     } else {
       threatLevel = 'Low';
     }
-    const matchesThreat = threatFilter === 'All' || threatLevel === threatFilter;
+    const matchesThreat =
+      threatFilter === 'All' ||
+      threatLevel === threatFilter;
     return matchesSearch && matchesCategory && matchesThreat;
   });
 

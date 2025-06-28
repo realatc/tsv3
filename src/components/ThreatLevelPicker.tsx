@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-export type ThreatLevel = 'Low' | 'Medium' | 'High' | 'Critical';
+export type ThreatLevel = 'Low' | 'Medium' | 'High';
 
 interface ThreatLevelPickerProps {
   selectedLevel: ThreatLevel;
@@ -30,13 +30,6 @@ const threatLevels: { level: ThreatLevel; label: string; color: string; icon: st
     color: '#F44336',
     icon: 'shield',
     description: 'Significant threats'
-  },
-  {
-    level: 'Critical',
-    label: 'Critical',
-    color: '#9C27B0',
-    icon: 'shield-checkmark',
-    description: 'Severe threats only'
   }
 ];
 

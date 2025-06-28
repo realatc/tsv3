@@ -4,7 +4,7 @@ import { threatAnalysisService } from '../services/threatAnalysisService';
 
 export interface SentryModeSettings {
   isEnabled: boolean;
-  threatLevel: 'Low' | 'Medium' | 'High' | 'Critical';
+  threatLevel: 'Low' | 'Medium' | 'High';
   trustedContact: {
     name: string;
     phoneNumber: string;
@@ -16,6 +16,8 @@ interface SentryModeContextType {
   updateSettings: (newSettings: Partial<SentryModeSettings>) => Promise<void>;
   resetSettings: () => Promise<void>;
   isLoading: boolean;
+  contactResponseModal: null | { message: string; threatType?: string; responseType?: string; timestamp?: string };
+  setContactResponseModal: React.Dispatch<React.SetStateAction<null | { message: string; threatType?: string; responseType?: string; timestamp?: string }>>;
 }
 
 const SentryModeContext = createContext<SentryModeContextType | undefined>(undefined);

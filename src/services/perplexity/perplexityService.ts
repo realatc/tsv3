@@ -287,7 +287,7 @@ async function mockAnalyzeText(text: string): Promise<any> {
 
   if (text.toLowerCase().includes('dds.gov-faciav.works')) {
     return {
-      threatLevel: 'critical',
+      threatLevel: 'high',
       summary: 'This is a phishing attempt impersonating the Georgia Motor Vehicle Division (DMV/DDS). The URL is fraudulent.',
       recommendation: 'Do not click the link or provide any information. This is a known scam targeting Georgia residents. Block the sender immediately.',
     };
@@ -295,7 +295,7 @@ async function mockAnalyzeText(text: string): Promise<any> {
 
   if (text.toLowerCase().includes('password') || text.toLowerCase().includes('bank')) {
     return {
-      threatLevel: 'critical',
+      threatLevel: 'high',
       summary: 'The message contains highly sensitive keywords like "password" or "bank" and appears to be a targeted phishing attempt.',
       recommendation: 'Do not reply, click any links, or provide any information. Block the sender immediately and delete the message.',
     };

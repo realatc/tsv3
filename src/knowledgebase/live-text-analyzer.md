@@ -28,44 +28,35 @@ The system leverages real-time threat intelligence from:
 
 ## Threat Level Grading System
 
-The analyzer uses a 5-tier threat assessment system:
+The analyzer uses a 3-tier threat assessment system:
 
-### 🔴 **CRITICAL** (Red)
-**Immediate action required**
+### 🟠 **HIGH** (Orange)
+**High risk - proceed with extreme caution**
 - Confirmed phishing attempts
 - Known scam patterns
 - Requests for sensitive information (passwords, SSN, bank details)
 - Suspicious payment requests
 - Impersonation of official entities
-
-### 🟠 **HIGH** (Orange)
-**High risk - proceed with extreme caution**
 - Strong indicators of malicious intent
 - Urgency tactics and pressure techniques
 - Suspicious URLs or attachments
 - Unusual requests from known contacts
-- Offers that seem too good to be true
+- Immediate action required
 
 ### 🟡 **MEDIUM** (Yellow)
-**Moderate risk - exercise caution**
-- Some suspicious elements present
-- Unusual language or formatting
+**Medium risk - be cautious**
+- Messages from unknown senders
+- Contains links to external websites
 - Requests for personal information
-- Links to unfamiliar websites
-- Unusual timing or context
+- Unusual timing or frequency
+- Some indicators of suspicious activity
 
 ### 🟢 **LOW** (Green)
-**Minimal risk - standard precautions**
-- No obvious threats detected
-- Standard communication patterns
-- Familiar senders and contexts
-- No suspicious requests or links
-
-### ⚪ **NONE** (White)
-**No threats detected**
-- Clean, legitimate content
+**Low risk - safe**
+- Messages from known, trusted contacts
+- No suspicious patterns detected
+- Safe content and links
 - Normal communication patterns
-- No suspicious elements identified
 
 ## What the Analyzer Looks For
 

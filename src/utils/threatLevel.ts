@@ -86,8 +86,6 @@ export function calculateThreatLevel({
 export const getThreatColor = (level: string) => {
   const lowerLevel = level.toLowerCase();
   switch (lowerLevel) {
-    case 'critical':
-      return '#ff4d4d';
     case 'high':
       return '#ff8c00';
     case 'medium':
@@ -105,8 +103,6 @@ export const getThreatColor = (level: string) => {
 export const getThreatIcon = (level: string) => {
   const lowerLevel = level.toLowerCase();
   switch (lowerLevel) {
-    case 'critical':
-      return 'skull';
     case 'high':
       return 'flame';
     case 'medium':

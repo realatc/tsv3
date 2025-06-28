@@ -9,6 +9,7 @@ import { checkUrlSafety } from '../services/threatReader/safeBrowsing';
 import { getRelatedSearchResults } from '../services/threatReader/relatedSearch';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { LogEntry, useLogs } from '../context/LogContext';
+import { getAuditLogEntries, AuditLogEntry } from '../utils/auditLog';
 
 type ThreatInfo = {
   level: 'High' | 'Medium' | 'Low' | '';
@@ -146,10 +147,21 @@ const LogDetailScreen = () => {
   const [urlSafety, setUrlSafety] = useState<{ [url: string]: string }>({});
   const [relatedContent, setRelatedContent] = useState<any[]>([]);
   const [loadingRelated, setLoadingRelated] = useState(true);
+  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
   
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['40%'], []);
   
+  // Determine the threat level to display
+  let displayThreatLevel = 'Low';
+  if (log.forceThreatLevel) {
+    displayThreatLevel = log.forceThreatLevel;
+  } else if (typeof log.threat === 'object' && log.threat.level) {
+    displayThreatLevel = log.threat.level;
+  } else if (typeof log.threat === 'string') {
+    displayThreatLevel = log.threat;
+  }
+
   // Threat Calculation
   useEffect(() => {
     const info = calculateThreatLevel(log);
@@ -184,6 +196,16 @@ const LogDetailScreen = () => {
       .catch(console.error)
       .finally(() => setLoadingRelated(false));
   }, [log.message]);
+
+  useEffect(() => {
+    console.log('[LogDetailScreen] Loading audit logs for log.id:', log.id);
+    getAuditLogEntries(log.id).then(entries => {
+      console.log('[LogDetailScreen] Retrieved audit log entries:', entries);
+      setAuditLog(entries);
+    }).catch(error => {
+      console.error('[LogDetailScreen] Error loading audit logs:', error);
+    });
+  }, [log.id]);
 
   const handleUrlPress = (url: string) => {
     const status = urlSafety[url];
@@ -235,6 +257,19 @@ const LogDetailScreen = () => {
 
   const TABS = ['Details', 'Analysis', 'Metadata', 'Threat'];
 
+  const refreshAuditLog = () => {
+    console.log('[LogDetailScreen] Refreshing audit logs for log.id:', log.id);
+    getAuditLogEntries(log.id).then(entries => {
+      console.log('[LogDetailScreen] Refreshed audit log entries:', entries);
+      setAuditLog(entries);
+    }).catch(error => {
+      console.error('[LogDetailScreen] Error refreshing audit logs:', error);
+    });
+  };
+
+  // Sort audit log entries by timestamp descending
+  const sortedAuditLog = [...auditLog].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -276,7 +311,7 @@ const LogDetailScreen = () => {
         {/* Threat Level */}
         <View style={styles.threatSection}>
             <View style={{flex: 1}}>
-                <Text style={[styles.threatLevelTitle, { color: getThreatColor(threatInfo.level) }]}>{threatInfo.level} Threat</Text>
+                <Text style={[styles.threatLevelTitle, { color: getThreatColor(displayThreatLevel) }]}>{displayThreatLevel} Threat</Text>
                 <Text style={styles.threatScore}>Score: {threatInfo.score}/9</Text>
             </View>
             <TouchableOpacity onPress={showHelpAlert}>
@@ -302,6 +337,26 @@ const LogDetailScreen = () => {
         
         {/* Tab Content */}
         {renderTabContent()}
+
+        <View style={styles.auditLogSection}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <Text style={styles.auditLogTitle}>Audit Log</Text>
+            <TouchableOpacity onPress={refreshAuditLog} style={styles.auditLogRefreshBtn}>
+              <Icon name="refresh" size={18} color="#A070F2" />
+            </TouchableOpacity>
+          </View>
+          {sortedAuditLog.length === 0 ? (
+            <Text style={styles.auditLogEmpty}>No audit log entries yet.</Text>
+          ) : (
+            sortedAuditLog.map(entry => (
+              <View key={entry.id} style={styles.auditLogEntry}>
+                <Text style={styles.auditLogTimestamp}>{new Date(entry.timestamp).toLocaleString()}</Text>
+                <Text style={styles.auditLogAction}>{entry.action} <Text style={styles.auditLogActor}>({entry.actor})</Text></Text>
+                {entry.details ? <Text style={styles.auditLogDetails}>{entry.details}</Text> : null}
+              </View>
+            ))
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -360,6 +415,55 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     padding: 10,
+  },
+  auditLogSection: {
+    marginTop: 24,
+    marginBottom: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    backgroundColor: '#222',
+    borderRadius: 12,
+  },
+  auditLogTitle: {
+    color: '#A070F2',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 8,
+  },
+  auditLogEmpty: {
+    color: '#B0BEC5',
+    fontSize: 15,
+    fontStyle: 'italic',
+  },
+  auditLogEntry: {
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+    paddingBottom: 6,
+  },
+  auditLogTimestamp: {
+    color: '#B0BEC5',
+    fontSize: 13,
+    marginBottom: 2,
+  },
+  auditLogAction: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  auditLogActor: {
+    color: '#A070F2',
+    fontWeight: '400',
+    fontSize: 14,
+  },
+  auditLogDetails: {
+    color: '#B0BEC5',
+    fontSize: 14,
+    marginTop: 2,
+  },
+  auditLogRefreshBtn: {
+    marginLeft: 8,
+    padding: 4,
   },
 });
 
