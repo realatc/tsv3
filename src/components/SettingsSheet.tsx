@@ -1,10 +1,11 @@
 import React, { forwardRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, SafeAreaView, Switch } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAccessibility } from '../context/AccessibilityContext';
 import { navigate } from '../services/navigationService';
 import { RootStackParamList } from '../types/navigation';
+import { useApp } from '../context/AppContext';
 
 type SettingsSheetProps = {};
 
@@ -12,6 +13,7 @@ type Ref = BottomSheet;
 
 const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
   const { resetToDefaults } = useAccessibility();
+  const { ezModeEnabled, setEzModeEnabled } = useApp();
 
   const handleResetSettings = () => {
     Alert.alert(
@@ -81,6 +83,18 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>App Settings</Text>
               <View style={styles.settingsGroup}>
+                <View style={styles.settingItem}>
+                  <View style={styles.settingLeft}>
+                    <Icon name="flash" size={20} color="#A070F2" />
+                    <Text style={styles.settingText}>Enable EZ-Mode (Simple Mode)</Text>
+                  </View>
+                  <Switch
+                    value={ezModeEnabled}
+                    onValueChange={setEzModeEnabled}
+                    thumbColor={ezModeEnabled ? '#A070F2' : '#888'}
+                    trackColor={{ false: '#444', true: '#A070F2' }}
+                  />
+                </View>
                 <TouchableOpacity style={styles.settingItem} onPress={() => handleNavigation('HelpAndSupport')}>
                   <View style={styles.settingLeft}>
                     <Icon name="help-circle-outline" size={20} color="#A070F2" />

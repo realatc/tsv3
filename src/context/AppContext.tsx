@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useRef, useState, RefObject, useEffect } from 'react';
 import BottomSheet from '@gorhom/bottom-sheet';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type AppContextType = {
   settingsSheetRef: RefObject<BottomSheet>;
@@ -7,6 +8,8 @@ type AppContextType = {
   setContactResponseModal: React.Dispatch<React.SetStateAction<null | { message: string; threatType?: string; responseType?: string; timestamp?: string; alertId?: string }>>;
   sentryAlertModal: any;
   setSentryAlertModal: React.Dispatch<React.SetStateAction<any>>;
+  ezModeEnabled: boolean;
+  setEzModeEnabled: (enabled: boolean) => void;
 };
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -41,6 +44,20 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const settingsSheetRef = useRef<BottomSheet>(null);
   const [contactResponseModal, setContactResponseModal] = useState<null | { message: string; threatType?: string; responseType?: string; timestamp?: string; alertId?: string }>(null);
   const [sentryAlertModal, setSentryAlertModal] = useState<any>(null);
+  const [ezModeEnabled, setEzModeEnabledState] = useState<boolean>(false);
+
+  // Load ezModeEnabled from AsyncStorage on mount
+  useEffect(() => {
+    AsyncStorage.getItem('ezModeEnabled').then(val => {
+      if (val !== null) setEzModeEnabledState(val === 'true');
+    });
+  }, []);
+
+  // Persist ezModeEnabled to AsyncStorage
+  const setEzModeEnabled = (enabled: boolean) => {
+    setEzModeEnabledState(enabled);
+    AsyncStorage.setItem('ezModeEnabled', enabled ? 'true' : 'false');
+  };
 
   useEffect(() => {
     globalSetContactResponseModal = setContactResponseModal;
@@ -48,7 +65,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   }, [setContactResponseModal, setSentryAlertModal]);
 
   // The value will be memoized and only re-created if the ref changes.
-  const value = React.useMemo(() => ({ settingsSheetRef, contactResponseModal, setContactResponseModal, sentryAlertModal, setSentryAlertModal }), [settingsSheetRef, contactResponseModal, sentryAlertModal]);
+  const value = React.useMemo(() => ({ settingsSheetRef, contactResponseModal, setContactResponseModal, sentryAlertModal, setSentryAlertModal, ezModeEnabled, setEzModeEnabled }), [settingsSheetRef, contactResponseModal, sentryAlertModal, ezModeEnabled]);
 
   return (
     <AppContext.Provider value={value as any}>

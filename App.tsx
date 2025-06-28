@@ -42,6 +42,7 @@ import SearchResultsScreen from './src/screens/SearchResultsScreen';
 import SentryModeScreen from './src/screens/SentryModeScreen';
 import ThreatAnalysisScreen from './src/screens/ThreatAnalysisScreen';
 import SentryModeGuidedDemo from './src/screens/SentryModeGuidedDemo';
+import SimpleHomeScreen from './src/screens/SimpleHomeScreen';
 
 // Components
 import SettingsSheet from './src/components/SettingsSheet';
@@ -123,6 +124,7 @@ function SearchStackNavigator() {
 }
 
 function TabNavigator() {
+  const { ezModeEnabled } = useApp();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -153,7 +155,7 @@ function TabNavigator() {
     >
       <Tab.Screen
         name="Home"
-        component={HomeStackNavigator}
+        component={ezModeEnabled ? SimpleHomeScreen : HomeStackNavigator}
         listeners={({ navigation }) => ({
           tabPress: e => {
             e.preventDefault();

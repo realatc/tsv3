@@ -241,11 +241,12 @@ const HomeScreen = () => {
                     key={activity.id}
                     style={[
                       styles.recentActivityItem,
-                      { 
+                      {
                         backgroundColor: settings.highContrastMode ? '#FFFFFF' : 'rgba(255,255,255,0.08)',
-                        padding: padding,
+                        paddingVertical: 10,
+                        paddingHorizontal: 12,
                         borderRadius: borderRadius,
-                        marginBottom: spacing,
+                        marginBottom: 8,
                       }
                     ]}
                     onPress={() => {
@@ -264,9 +265,6 @@ const HomeScreen = () => {
                         <AccessibleText variant="body" style={styles.activityTitle}>
                           {activity.title}
                         </AccessibleText>
-                        <AccessibleText variant="caption" style={styles.activityCategory}>
-                          {activity.category}
-                        </AccessibleText>
                       </View>
                       <View style={styles.activityActions}>
                         <TouchableOpacity
@@ -280,9 +278,10 @@ const HomeScreen = () => {
                         </TouchableOpacity>
                       </View>
                     </View>
-                    <AccessibleText variant="caption" style={styles.activityTime}>
-                      {new Date(activity.time).toLocaleDateString()}
-                    </AccessibleText>
+                    <View style={styles.activityMetaRow}>
+                      <AccessibleText variant="caption" style={styles.activityType}>{activity.category}</AccessibleText>
+                      <AccessibleText variant="caption" style={styles.activityDate}>{new Date(activity.time).toLocaleDateString()}</AccessibleText>
+                    </View>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -417,7 +416,7 @@ const styles = StyleSheet.create({
   activityHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 2,
   },
   activityIconContainer: {
     width: 32,
@@ -437,10 +436,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 2,
   },
-  activityCategory: {
-    color: '#B0B0B0',
-    fontSize: 12,
-  },
   activityActions: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -448,10 +443,25 @@ const styles = StyleSheet.create({
   dismissButton: {
     padding: 4,
   },
-  activityTime: {
-    color: '#888',
-    fontSize: 11,
+  activityMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
     marginLeft: 44,
+    marginRight: 4,
+  },
+  activityType: {
+    color: '#8A8A8E',
+    fontSize: 12,
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  activityDate: {
+    color: '#8A8A8E',
+    fontSize: 12,
+    fontWeight: '400',
+    textAlign: 'right',
   },
   noActivityContainer: {
     alignItems: 'center',
