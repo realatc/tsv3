@@ -28,11 +28,17 @@ const LatestScamsScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isUsingMockData, setIsUsingMockData] = useState(false);
 
   const fetchScams = async (isRefreshing = false) => {
     try {
       setError(null);
       const latestScams = await getLatestScams();
+      
+      // Check if we're using mock data by looking for mock IDs
+      const hasMockData = latestScams.some(scam => scam.id.startsWith('mock-'));
+      setIsUsingMockData(hasMockData);
+      
       setScams(latestScams);
       setLastUpdated(new Date());
     } catch (err) {
@@ -193,6 +199,9 @@ const LatestScamsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
         <Text style={styles.headerSubtitle}>Powered by Perplexity AI</Text>
+        {isUsingMockData && (
+          <Text style={styles.mockDataIndicator}>⚠️ Showing demo data (API unavailable)</Text>
+        )}
         {lastUpdated && (
           <Text style={styles.lastUpdatedText}>
             Updated {formatLastUpdated(lastUpdated)}
@@ -335,6 +344,13 @@ const styles = StyleSheet.create({
   liveIndicator: {
     color: '#34C759',
     fontWeight: 'bold',
+  },
+  mockDataIndicator: {
+    fontSize: 12,
+    color: '#FFAA00',
+    marginLeft: 15,
+    marginBottom: 4,
+    fontStyle: 'italic',
   },
 });
 

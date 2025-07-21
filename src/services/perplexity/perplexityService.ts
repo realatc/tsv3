@@ -2,8 +2,8 @@
 // You'll need to get an API key from https://www.perplexity.ai/settings/api
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PERPLEXITY_API_KEY } from '@env';
 
-const PERPLEXITY_API_KEY = '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'; // Replace 'YOUR_API_KEY_HERE' with your actual API key from Perplexity
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
 export interface PerplexityResponse {
@@ -25,7 +25,9 @@ export interface ScamAlert {
   severity: 'low' | 'medium' | 'high' | 'critical';
   category: string;
   date: string;
+  discoveredDate?: string; // When the vulnerability/scam was first discovered
   sources?: string[];
+  sourceDates?: string[]; // Dates when each source was published
 }
 
 const LATEST_SCAMS_CACHE_KEY = '@latestScams';
@@ -34,23 +36,26 @@ const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 hours
 export async function getLatestScams(): Promise<ScamAlert[]> {
   if (!PERPLEXITY_API_KEY) {
     console.warn('[PerplexityService] No API key provided, returning mock data for latest scams.');
-    return getMockScamData();
+    return await getMockScamData();
   }
 
-  try {
-    // Check cache first
-    const cachedData = await AsyncStorage.getItem(LATEST_SCAMS_CACHE_KEY);
-    if (cachedData) {
-      const { scams, timestamp } = JSON.parse(cachedData);
-      if (Date.now() - timestamp < CACHE_DURATION_MS) {
-        console.log('[getLatestScams] Returning fresh data from cache.');
-        return scams;
-      }
-      console.log('[getLatestScams] Cached data is stale.');
-    }
-  } catch (e) {
-    console.error('[getLatestScams] Error reading from cache:', e);
-  }
+  // Temporarily disable cache for testing date extraction
+  console.log('[getLatestScams] Cache disabled for testing - fetching fresh data.');
+  
+  // try {
+  //   // Check cache first
+  //   const cachedData = await AsyncStorage.getItem(LATEST_SCAMS_CACHE_KEY);
+  //   if (cachedData) {
+  //     const { scams, timestamp } = JSON.parse(cachedData);
+  //     if (Date.now() - timestamp < CACHE_DURATION_MS) {
+  //       console.log('[getLatestScams] Returning fresh data from cache.');
+  //       return scams;
+  //     }
+  //     console.log('[getLatestScams] Cached data is stale.');
+  //   }
+  // } catch (e) {
+  //   console.error('[getLatestScams] Error reading from cache:', e);
+  // }
 
   try {
     // Step 1: Get a list of trending threat topics
@@ -74,8 +79,29 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
     const scamPromises = trendingTopics.map(async (topic: string) => {
       const briefingPrompt = `
         You are a cybersecurity expert writing for a general audience. Explain the "${topic}" scam.
-        Provide a simple title, a clear description of how it works (2-3 sentences), a severity level ('low', 'medium', 'high', 'critical'), a category (e.g., 'phishing', 'malware'), and an array of 1-2 relevant source URLs.
-        Respond with only a single, valid JSON object with "title", "description", "severity", "category", and "sources" fields.`;
+        
+        IMPORTANT: For each source you find, extract the publication date from the article content, URL, or metadata. If no specific date is found, estimate based on the article's context and recency.
+        
+        Provide:
+        - A simple title
+        - A clear description (2-3 sentences)
+        - Severity level ('low', 'medium', 'high', 'critical')
+        - Category (e.g., 'phishing', 'malware', 'exploitation')
+        - Discovery date: When this threat was first identified (YYYY-MM-DD format)
+        - 1-2 relevant source URLs with their publication dates (YYYY-MM-DD format)
+        
+        Respond with only a single, valid JSON object with "title", "description", "severity", "category", "discoveredDate", "sources", and "sourceDates" fields.
+        
+        Example format:
+        {
+          "title": "Example Threat",
+          "description": "Description here",
+          "severity": "high",
+          "category": "phishing",
+          "discoveredDate": "2024-01-15",
+          "sources": ["https://example.com/article1", "https://example.com/article2"],
+          "sourceDates": ["2024-01-20", "2024-01-22"]
+        }`;
       
       const briefingContent = await callPerplexityAPI(briefingPrompt);
       const briefingMatch = briefingContent.match(/{[\s\S]*}/);
@@ -88,15 +114,30 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
     const results = await Promise.all(scamPromises);
     const scams = results
       .filter(scam => scam !== null) // Filter out any failed briefings
-      .map((scam: any, index: number) => ({
-        id: `scam-${Date.now()}-${index}`,
-        title: scam.title,
-        description: scam.description,
-        severity: scam.severity || 'medium',
-        category: scam.category || 'unknown',
-        date: new Date().toISOString(),
-        sources: scam.sources || [],
-      }));
+      .map((scam: any, index: number) => {
+        // Extract dates from sources using URL patterns only (faster and more reliable)
+        const sourceDates: string[] = [];
+        if (scam.sources && scam.sources.length > 0) {
+          console.log(`[getLatestScams] Processing sources for scam ${index}:`, scam.sources);
+          for (const source of scam.sources) {
+            const date = extractDateFromURL(source);
+            console.log(`[getLatestScams] Extracted date from ${source}:`, date);
+            sourceDates.push(date || new Date().toISOString().split('T')[0]);
+          }
+        }
+        
+        return {
+          id: `scam-${Date.now()}-${index}`,
+          title: scam.title,
+          description: scam.description,
+          severity: scam.severity || 'medium',
+          category: scam.category || 'unknown',
+          date: new Date().toISOString(),
+          discoveredDate: scam.discoveredDate || new Date().toISOString(),
+          sources: scam.sources || [],
+          sourceDates: sourceDates,
+        };
+      });
 
     if (scams.length === 0) {
       throw new Error('No valid scam briefings were generated.');
@@ -117,8 +158,14 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
 
   } catch (error) {
     console.error('[PerplexityService] Error in new getLatestScams flow:', error);
-    console.log('[PerplexityService] Falling back to mock data.');
-    return getMockScamData(); // Fallback to mock data on any error
+    console.log('[PerplexityService] Falling back to mock data due to API error.');
+    
+    // Check if it's an API key issue
+    if (error instanceof Error && error.message.includes('401')) {
+      console.warn('[PerplexityService] API key appears to be invalid or expired.');
+    }
+    
+    return await getMockScamData(); // Fallback to mock data on any error
   }
 }
 
@@ -171,7 +218,7 @@ function parseTextResponse(content: string): ScamAlert[] {
   return scams.slice(0, 5); // Limit to 5 scams
 }
 
-function getMockScamData(): ScamAlert[] {
+async function getMockScamData(): Promise<ScamAlert[]> {
   return [
     {
       id: 'mock-1',
@@ -180,7 +227,9 @@ function getMockScamData(): ScamAlert[] {
       severity: 'high',
       category: 'phishing',
       date: new Date().toISOString(),
-      sources: ['https://example.com/news1'],
+      discoveredDate: '2024-01-15',
+      sources: ['https://www.ftc.gov/news-events/topics/identity-theft-scams'],
+      sourceDates: ['2024-01-20'],
     },
     {
       id: 'mock-2',
@@ -189,7 +238,9 @@ function getMockScamData(): ScamAlert[] {
       severity: 'critical',
       category: 'impersonation',
       date: new Date().toISOString(),
-      sources: ['https://example.com/news2'],
+      discoveredDate: '2024-02-10',
+      sources: ['https://www.fbi.gov/news/press-releases/fbi-warns-public-of-ai-voice-cloning-scams'],
+      sourceDates: ['2024-02-15'],
     },
     {
       id: 'mock-3',
@@ -198,12 +249,14 @@ function getMockScamData(): ScamAlert[] {
       severity: 'medium',
       category: 'scam',
       date: new Date().toISOString(),
-      sources: ['https://example.com/news3'],
+      discoveredDate: '2024-03-05',
+      sources: ['https://www.consumer.ftc.gov/articles/job-scams'],
+      sourceDates: ['2024-03-10'],
     },
   ];
 }
 
-async function callPerplexityAPI(prompt: string, model: string = 'llama-3.1-sonar-small-128k-online') {
+async function callPerplexityAPI(prompt: string, model: string = 'sonar-pro') {
   console.log(`[callPerplexityAPI] Making API call with model: ${model}`);
   const response = await fetch(PERPLEXITY_API_URL, {
     method: 'POST',
@@ -389,4 +442,69 @@ async function mockGetRelatedThreatIntel(query: string): Promise<RelatedIntel[]>
   }
 
   return [];
+} 
+
+// Add date extraction utilities
+function extractDateFromURL(url: string): string | null {
+  // Common date patterns in URLs
+  const datePatterns = [
+    /(\d{4})\/(\d{1,2})\/(\d{1,2})/, // 2024/01/15
+    /(\d{4})-(\d{1,2})-(\d{1,2})/,   // 2024-01-15
+    /(\d{4})\.(\d{1,2})\.(\d{1,2})/, // 2024.01.15
+  ];
+  
+  for (const pattern of datePatterns) {
+    const match = url.match(pattern);
+    if (match) {
+      const [_, year, month, day] = match;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+  }
+  
+  return null;
+}
+
+async function extractDateFromArticle(url: string): Promise<string | null> {
+  try {
+    // Try to fetch the article and extract meta tags
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; ThreatSense/1.0)',
+      },
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) return null;
+    
+    const html = await response.text();
+    
+    // Look for common meta tag patterns
+    const metaPatterns = [
+      /<meta[^>]*property="article:published_time"[^>]*content="([^"]*)"/i,
+      /<meta[^>]*name="publish_date"[^>]*content="([^"]*)"/i,
+      /<meta[^>]*name="date"[^>]*content="([^"]*)"/i,
+      /<time[^>]*datetime="([^"]*)"/i,
+    ];
+    
+    for (const pattern of metaPatterns) {
+      const match = html.match(pattern);
+      if (match) {
+        const dateStr = match[1];
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString().split('T')[0]; // Return YYYY-MM-DD format
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn(`[extractDateFromArticle] Failed to extract date from ${url}:`, error);
+    return null;
+  }
 } 
