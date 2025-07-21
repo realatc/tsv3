@@ -83,36 +83,32 @@ export function calculateThreatLevel({
   return { level, percentage, score, breakdown, categories, summary };
 }
 
-export const getThreatColor = (level: string) => {
-  const lowerLevel = level.toLowerCase();
-  switch (lowerLevel) {
-    case 'high':
-      return '#ff8c00';
-    case 'medium':
-      return '#ffd700';
-    case 'low':
-      return '#32cd32';
-    case 'none':
-    case 'unknown':
-      return '#888';
-    default:
-      return '#888';
-  }
+// Standardized severity colors for consistency across the app
+export const SEVERITY_COLORS = {
+  critical: '#FF4444', // Bright red
+  high: '#FF8800',     // Orange
+  medium: '#FFAA00',   // Yellow
+  low: '#44AA44',      // Green
+  default: '#888888'   // Gray
+} as const;
+
+// Standardized severity icons for consistency
+export const SEVERITY_ICONS = {
+  critical: 'alert-octagon',
+  high: 'alert-circle',
+  medium: 'alert',
+  low: 'information',
+  default: 'help-circle'
+} as const;
+
+// Helper function to get consistent severity color
+export const getSeverityColor = (severity: string): string => {
+  const lowerSeverity = severity.toLowerCase() as keyof typeof SEVERITY_COLORS;
+  return SEVERITY_COLORS[lowerSeverity] || SEVERITY_COLORS.default;
 };
 
-export const getThreatIcon = (level: string) => {
-  const lowerLevel = level.toLowerCase();
-  switch (lowerLevel) {
-    case 'high':
-      return 'flame';
-    case 'medium':
-      return 'alert-circle';
-    case 'low':
-      return 'shield-checkmark';
-    case 'none':
-    case 'unknown':
-      return 'help-circle';
-    default:
-      return 'help-circle';
-  }
+// Helper function to get consistent severity icon
+export const getSeverityIcon = (severity: string): string => {
+  const lowerSeverity = severity.toLowerCase() as keyof typeof SEVERITY_ICONS;
+  return SEVERITY_ICONS[lowerSeverity] || SEVERITY_ICONS.default;
 };

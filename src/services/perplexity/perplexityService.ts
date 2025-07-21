@@ -33,29 +33,39 @@ export interface ScamAlert {
 const LATEST_SCAMS_CACHE_KEY = '@latestScams';
 const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 hours
 
+// Helper function to create a content hash for consistent caching
+function createContentHash(title: string, description: string): string {
+  const content = `${title} ${description}`.toLowerCase();
+  // Simple hash function for content consistency
+  let hash = 0;
+  for (let i = 0; i < content.length; i++) {
+    const char = content.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(36);
+}
+
 export async function getLatestScams(): Promise<ScamAlert[]> {
   if (!PERPLEXITY_API_KEY) {
     console.warn('[PerplexityService] No API key provided, returning mock data for latest scams.');
     return await getMockScamData();
   }
 
-  // Temporarily disable cache for testing date extraction
-  console.log('[getLatestScams] Cache disabled for testing - fetching fresh data.');
-  
-  // try {
-  //   // Check cache first
-  //   const cachedData = await AsyncStorage.getItem(LATEST_SCAMS_CACHE_KEY);
-  //   if (cachedData) {
-  //     const { scams, timestamp } = JSON.parse(cachedData);
-  //     if (Date.now() - timestamp < CACHE_DURATION_MS) {
-  //       console.log('[getLatestScams] Returning fresh data from cache.');
-  //       return scams;
-  //     }
-  //     console.log('[getLatestScams] Cached data is stale.');
-  //   }
-  // } catch (e) {
-  //   console.error('[getLatestScams] Error reading from cache:', e);
-  // }
+  try {
+    // Check cache first
+    const cachedData = await AsyncStorage.getItem(LATEST_SCAMS_CACHE_KEY);
+    if (cachedData) {
+      const { scams, timestamp } = JSON.parse(cachedData);
+      if (Date.now() - timestamp < CACHE_DURATION_MS) {
+        console.log('[getLatestScams] Returning fresh data from cache.');
+        return scams;
+      }
+      console.log('[getLatestScams] Cached data is stale.');
+    }
+  } catch (e) {
+    console.error('[getLatestScams] Error reading from cache:', e);
+  }
 
   try {
     // Step 1: Get a list of trending threat topics
@@ -82,11 +92,17 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
         
         IMPORTANT: For each source you find, extract the publication date from the article content, URL, or metadata. If no specific date is found, estimate based on the article's context and recency.
         
+        SEVERITY GUIDELINES:
+        - 'critical': Zero-day exploits, widespread ransomware, nation-state attacks, critical infrastructure threats
+        - 'high': Active exploitation campaigns, major data breaches, sophisticated phishing, malware distribution
+        - 'medium': Known vulnerabilities being exploited, targeted attacks, social engineering campaigns
+        - 'low': Minor scams, outdated threats, low-impact social engineering
+        
         Provide:
         - A simple title
         - A clear description (2-3 sentences)
-        - Severity level ('low', 'medium', 'high', 'critical')
-        - Category (e.g., 'phishing', 'malware', 'exploitation')
+        - Severity level (use the guidelines above: 'low', 'medium', 'high', 'critical')
+        - Category (e.g., 'phishing', 'malware', 'exploitation', 'social engineering')
         - Discovery date: When this threat was first identified (YYYY-MM-DD format)
         - 1-2 relevant source URLs with their publication dates (YYYY-MM-DD format)
         
@@ -126,11 +142,20 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
           }
         }
         
+        // Normalize severity based on content analysis for consistency
+        const normalizedSeverity = normalizeSeverityLevel(scam.title, scam.description, scam.severity);
+        const contentHash = createContentHash(scam.title, scam.description);
+        
+        // Log if severity was changed for transparency
+        if (normalizedSeverity !== scam.severity) {
+          console.log(`[getLatestScams] Severity normalized for "${scam.title}": ${scam.severity} → ${normalizedSeverity}`);
+        }
+        
         return {
-          id: `scam-${Date.now()}-${index}`,
+          id: `scam-${contentHash}-${index}`,
           title: scam.title,
           description: scam.description,
-          severity: scam.severity || 'medium',
+          severity: normalizedSeverity,
           category: scam.category || 'unknown',
           date: new Date().toISOString(),
           discoveredDate: scam.discoveredDate || new Date().toISOString(),
@@ -443,6 +468,51 @@ async function mockGetRelatedThreatIntel(query: string): Promise<RelatedIntel[]>
 
   return [];
 } 
+
+// Helper function to normalize severity levels for consistency
+function normalizeSeverityLevel(title: string, description: string, apiSeverity: string): 'low' | 'medium' | 'high' | 'critical' {
+  const content = `${title} ${description}`.toLowerCase();
+  
+  // Critical indicators
+  if (content.includes('zero-day') || 
+      content.includes('zero day') ||
+      content.includes('nation-state') ||
+      content.includes('nation state') ||
+      content.includes('critical infrastructure') ||
+      content.includes('widespread ransomware') ||
+      content.includes('cve-2025') ||
+      content.includes('citrixbleed') ||
+      content.includes('citrix bleed')) {
+    return 'critical';
+  }
+  
+  // High indicators
+  if (content.includes('active exploitation') ||
+      content.includes('major data breach') ||
+      content.includes('sophisticated phishing') ||
+      content.includes('malware distribution') ||
+      content.includes('apt') ||
+      content.includes('advanced persistent threat') ||
+      content.includes('state-sponsored')) {
+    return 'high';
+  }
+  
+  // Medium indicators
+  if (content.includes('known vulnerability') ||
+      content.includes('targeted attack') ||
+      content.includes('social engineering') ||
+      content.includes('phishing campaign')) {
+    return 'medium';
+  }
+  
+  // If API says critical/high, trust it unless we have strong indicators otherwise
+  if (apiSeverity === 'critical' || apiSeverity === 'high') {
+    return apiSeverity as 'critical' | 'high';
+  }
+  
+  // Default to medium for unknown cases
+  return 'medium';
+}
 
 // Add date extraction utilities
 function extractDateFromURL(url: string): string | null {

@@ -2,41 +2,14 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ScamAlert } from '../services/perplexity/perplexityService';
+import { getSeverityColor, getSeverityIcon } from '../utils/threatLevel';
 
 interface ScamAlertCardProps {
   scam: ScamAlert;
   onPress?: () => void;
 }
 
-const getSeverityColor = (severity: ScamAlert['severity']) => {
-  switch (severity) {
-    case 'critical':
-      return '#FF4444';
-    case 'high':
-      return '#FF8800';
-    case 'medium':
-      return '#FFAA00';
-    case 'low':
-      return '#44AA44';
-    default:
-      return '#888888';
-  }
-};
-
-const getSeverityIcon = (severity: ScamAlert['severity']) => {
-  switch (severity) {
-    case 'critical':
-      return 'alert-octagon';
-    case 'high':
-      return 'alert-circle';
-    case 'medium':
-      return 'alert';
-    case 'low':
-      return 'information';
-    default:
-      return 'help-circle';
-  }
-};
+// Removed local severity functions - now using standardized ones from threatLevel.ts
 
 const getCategoryIcon = (category: string) => {
   const categoryLower = category.toLowerCase();

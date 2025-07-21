@@ -17,6 +17,7 @@ import { ScamAlertCard } from '../components/ScamAlertCard';
 import { getLatestScams, ScamAlert } from '../services/perplexity/perplexityService';
 import { HomeStackParamList } from '../types/navigation';
 import { useApp } from '../context/AppContext';
+import { getSeverityColor, getSeverityIcon } from '../utils/threatLevel';
 
 type LatestScamsNavigationProp = StackNavigationProp<HomeStackParamList, 'LatestScams'>;
 
@@ -79,20 +80,7 @@ const LatestScamsScreen: React.FC = () => {
     return diffInMinutes < 5; // Consider data fresh if less than 5 minutes old
   };
 
-  const getSeverityColor = (severity: ScamAlert['severity']) => {
-    switch (severity) {
-      case 'critical':
-        return '#FF4444';
-      case 'high':
-        return '#FF8800';
-      case 'medium':
-        return '#FFAA00';
-      case 'low':
-        return '#44AA44';
-      default:
-        return '#888888';
-    }
-  };
+  // Removed local severity function - now using standardized one from threatLevel.ts
 
   const getCategoryIcon = (category: string) => {
     const categoryLower = category.toLowerCase();

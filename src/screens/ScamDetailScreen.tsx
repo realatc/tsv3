@@ -5,6 +5,7 @@ import { RootStackParamList } from '../types/navigation';
 import { ScamAlert } from '../services/perplexity/perplexityService';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
+import { getSeverityColor, getSeverityIcon } from '../utils/threatLevel';
 
 type ScamDetailScreenRouteProp = RouteProp<RootStackParamList, 'ScamDetail'>;
 
@@ -64,22 +65,8 @@ const ScamDetailScreen: React.FC<Props> = ({ route }) => {
     }
   };
 
-  const getSeverityStyle = (severity: ScamAlert['severity']) => {
-    switch (severity) {
-      case 'critical':
-        return { backgroundColor: '#990000', color: '#fff' };
-      case 'high':
-        return { backgroundColor: '#D9534F', color: '#fff' };
-      case 'medium':
-        return { backgroundColor: '#F0AD4E', color: '#fff' };
-      case 'low':
-        return { backgroundColor: '#5CB85C', color: '#fff' };
-      default:
-        return { backgroundColor: '#777', color: '#fff' };
-    }
-  };
-  
-  const severityStyle = getSeverityStyle(scam.severity);
+  const severityColor = getSeverityColor(scam.severity);
+  const severityIcon = getSeverityIcon(scam.severity);
 
   return (
     <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={styles.container}>
@@ -97,8 +84,8 @@ const ScamDetailScreen: React.FC<Props> = ({ route }) => {
             <Text style={styles.title}>{scam.title}</Text>
             
             <View style={styles.metadataContainer}>
-              <View style={[styles.badge, severityStyle]}>
-                <Icon name="warning" size={12} color="#fff" style={{ marginRight: 4 }} />
+              <View style={[styles.badge, { backgroundColor: severityColor }]}>
+                <Icon name={severityIcon} size={12} color="#fff" style={{ marginRight: 4 }} />
                 <Text style={styles.badgeText}>{scam.severity.toUpperCase()}</Text>
               </View>
               <View style={[styles.badge, styles.categoryBadge]}>
