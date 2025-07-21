@@ -128,6 +128,16 @@ const ScamDetailScreen: React.FC<Props> = ({ route }) => {
                 <Text style={styles.noSourcesText}>No external sources available for this alert.</Text>
               </View>
             )}
+
+            {scam.advice && (
+              <View style={styles.adviceContainer}>
+                <View style={styles.adviceHeader}>
+                  <Icon name="lightbulb-outline" size={20} color="#A070F2" />
+                  <Text style={styles.adviceTitle}>Actionable Advice</Text>
+                </View>
+                <Text style={styles.adviceText}>{scam.advice}</Text>
+              </View>
+            )}
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -270,6 +280,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
     fontStyle: 'italic',
+  },
+  adviceContainer: {
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+    paddingTop: 20,
+  },
+  adviceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  adviceTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#E5E5E7',
+    marginLeft: 8,
+  },
+  adviceText: {
+    fontSize: 15,
+    color: '#A070F2',
+    lineHeight: 22,
+    fontStyle: 'italic',
+    backgroundColor: '#1E1E1E',
+    padding: 16,
+    borderRadius: 8,
   },
 });
 

@@ -30,6 +30,7 @@ const LatestScamsScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isUsingMockData, setIsUsingMockData] = useState(false);
+  const [activeTab, setActiveTab] = useState<'personal' | 'all'>('personal');
 
   const fetchScams = async (isRefreshing = false) => {
     try {
@@ -98,6 +99,14 @@ const LatestScamsScreen: React.FC = () => {
     }
   };
 
+  // Filter scams based on active tab
+  const filteredScams = scams.filter(scam => {
+    if (activeTab === 'personal') {
+      return scam.audience === 'personal' || scam.audience === 'both';
+    }
+    return true; // Show all scams in 'all' tab
+  });
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -120,12 +129,19 @@ const LatestScamsScreen: React.FC = () => {
       );
     }
 
-    if (scams.length === 0) {
+    if (filteredScams.length === 0) {
       return (
         <View style={styles.centerContainer}>
           <Icon name="shield-checkmark" size={48} color="#44AA44" />
-          <Text style={styles.emptyText}>No new threats detected</Text>
-          <Text style={styles.emptySubtext}>Great news! No recent scams have been reported.</Text>
+          <Text style={styles.emptyText}>
+            {activeTab === 'personal' ? 'No personal threats detected' : 'No threats detected'}
+          </Text>
+          <Text style={styles.emptySubtext}>
+            {activeTab === 'personal' 
+              ? 'Great news! No recent personal threats have been reported.' 
+              : 'Great news! No recent threats have been reported.'
+            }
+          </Text>
         </View>
       );
     }
@@ -153,7 +169,7 @@ const LatestScamsScreen: React.FC = () => {
           </Text>
         </View>
         
-        {scams.map((scam) => (
+        {filteredScams.map((scam) => (
           <ScamAlertCard
             key={scam.id}
             scam={scam}
@@ -195,6 +211,37 @@ const LatestScamsScreen: React.FC = () => {
             Updated {formatLastUpdated(lastUpdated)}
           </Text>
         )}
+        
+        {/* Tab Navigation */}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'personal' && styles.activeTab]}
+            onPress={() => setActiveTab('personal')}
+          >
+            <Icon 
+              name="person" 
+              size={16} 
+              color={activeTab === 'personal' ? '#A070F2' : '#666'} 
+            />
+            <Text style={[styles.tabText, activeTab === 'personal' && styles.activeTabText]}>
+              Personal Threats
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'all' && styles.activeTab]}
+            onPress={() => setActiveTab('all')}
+          >
+            <Icon 
+              name="globe" 
+              size={16} 
+              color={activeTab === 'all' ? '#A070F2' : '#666'} 
+            />
+            <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>
+              All Threats
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
         {renderContent()}
       </SafeAreaView>
     </LinearGradient>
@@ -339,6 +386,35 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     marginBottom: 4,
     fontStyle: 'italic',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#2C2C2E',
+    marginHorizontal: 15,
+    marginBottom: 15,
+    borderRadius: 12,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  activeTab: {
+    backgroundColor: '#A070F2',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginLeft: 6,
+  },
+  activeTabText: {
+    color: '#fff',
   },
 });
 

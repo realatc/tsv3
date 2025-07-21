@@ -56,6 +56,15 @@ export const ScamAlertCard: React.FC<ScamAlertCardProps> = ({ scam, onPress }) =
         {scam.description}
       </Text>
       
+      {scam.advice && (
+        <View style={styles.adviceContainer}>
+          <Icon name="lightbulb-outline" size={16} color="#A070F2" style={styles.adviceIcon} />
+          <Text style={styles.adviceText} numberOfLines={2}>
+            {scam.advice}
+          </Text>
+        </View>
+      )}
+      
       <View style={styles.footer}>
         <Text style={styles.date}>{formatDate(scam.date)}</Text>
         {scam.sources && scam.sources.length > 0 && (
@@ -141,5 +150,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#888',
     marginLeft: 6,
+  },
+  adviceContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#1E1E1E',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  adviceIcon: {
+    marginRight: 8,
+    marginTop: 2,
+  },
+  adviceText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#A070F2',
+    lineHeight: 20,
+    fontStyle: 'italic',
   },
 }); 

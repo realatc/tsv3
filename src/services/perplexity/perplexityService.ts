@@ -28,6 +28,8 @@ export interface ScamAlert {
   discoveredDate?: string; // When the vulnerability/scam was first discovered
   sources?: string[];
   sourceDates?: string[]; // Dates when each source was published
+  advice?: string; // Actionable advice for end users
+  audience?: 'personal' | 'enterprise' | 'both'; // Who is affected
 }
 
 const LATEST_SCAMS_CACHE_KEY = '@latestScams';
@@ -72,6 +74,7 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
     console.log('[getLatestScams] Step 1: Fetching trending threat topics...');
     const trendingTopicsPrompt = `
       Scan recent articles (last 7 days) from reputable cybersecurity news sources like The Hacker News, Bleeping Computer, and WIRED Security. 
+      Focus on threats that could affect individual users and their personal devices (phishing, malware, social engineering, etc.).
       Identify the top 3-4 most frequently reported, distinct cybersecurity threat topics.
       Return these topics as a JSON array of strings. For example: ["QR Code Phishing", "AI Voice Impersonation Scams"].
       Provide only the JSON array in your response.`;
@@ -98,6 +101,11 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
         - 'medium': Known vulnerabilities being exploited, targeted attacks, social engineering campaigns
         - 'low': Minor scams, outdated threats, low-impact social engineering
         
+        AUDIENCE CLASSIFICATION:
+        - 'personal': Primarily affects individual users and their personal devices
+        - 'enterprise': Primarily affects businesses, organizations, or enterprise systems
+        - 'both': Affects both personal users and enterprise systems
+        
         Provide:
         - A simple title
         - A clear description (2-3 sentences)
@@ -105,8 +113,10 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
         - Category (e.g., 'phishing', 'malware', 'exploitation', 'social engineering')
         - Discovery date: When this threat was first identified (YYYY-MM-DD format)
         - 1-2 relevant source URLs with their publication dates (YYYY-MM-DD format)
+        - Audience: Who is primarily affected ('personal', 'enterprise', or 'both')
+        - Actionable advice: 2-3 specific steps users can take to protect themselves
         
-        Respond with only a single, valid JSON object with "title", "description", "severity", "category", "discoveredDate", "sources", and "sourceDates" fields.
+        Respond with only a single, valid JSON object with "title", "description", "severity", "category", "discoveredDate", "sources", "sourceDates", "audience", and "advice" fields.
         
         Example format:
         {
@@ -116,7 +126,9 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
           "category": "phishing",
           "discoveredDate": "2024-01-15",
           "sources": ["https://example.com/article1", "https://example.com/article2"],
-          "sourceDates": ["2024-01-20", "2024-01-22"]
+          "sourceDates": ["2024-01-20", "2024-01-22"],
+          "audience": "personal",
+          "advice": "1. Never click suspicious links in emails. 2. Enable two-factor authentication. 3. Keep software updated."
         }`;
       
       const briefingContent = await callPerplexityAPI(briefingPrompt);
@@ -161,6 +173,8 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
           discoveredDate: scam.discoveredDate || new Date().toISOString(),
           sources: scam.sources || [],
           sourceDates: sourceDates,
+          advice: scam.advice || 'Stay vigilant and keep your software updated.',
+          audience: scam.audience || 'both',
         };
       });
 
@@ -255,6 +269,8 @@ async function getMockScamData(): Promise<ScamAlert[]> {
       discoveredDate: '2024-01-15',
       sources: ['https://www.ftc.gov/news-events/topics/identity-theft-scams'],
       sourceDates: ['2024-01-20'],
+      advice: '1. Never click links in unexpected delivery notifications. 2. Verify delivery status directly on the official website. 3. Check your email for typos or suspicious sender addresses.',
+      audience: 'personal',
     },
     {
       id: 'mock-2',
@@ -266,6 +282,8 @@ async function getMockScamData(): Promise<ScamAlert[]> {
       discoveredDate: '2024-02-10',
       sources: ['https://www.fbi.gov/news/press-releases/fbi-warns-public-of-ai-voice-cloning-scams'],
       sourceDates: ['2024-02-15'],
+      advice: '1. Hang up immediately if someone claims to be a family member in distress. 2. Call the family member directly on their known number. 3. Never send money without verifying the situation.',
+      audience: 'personal',
     },
     {
       id: 'mock-3',
@@ -277,6 +295,8 @@ async function getMockScamData(): Promise<ScamAlert[]> {
       discoveredDate: '2024-03-05',
       sources: ['https://www.consumer.ftc.gov/articles/job-scams'],
       sourceDates: ['2024-03-10'],
+      advice: '1. Never pay for job applications or training materials. 2. Research the company thoroughly before providing personal information. 3. Be suspicious of job offers that seem too good to be true.',
+      audience: 'personal',
     },
   ];
 }
