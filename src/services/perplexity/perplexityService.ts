@@ -49,9 +49,11 @@ function createContentHash(title: string, description: string): string {
 }
 
 export async function getLatestScams(): Promise<ScamAlert[]> {
+  console.log('[getLatestScams] Starting with API key:', PERPLEXITY_API_KEY ? 'Present' : 'Missing');
+  
   if (!PERPLEXITY_API_KEY) {
-    console.warn('[PerplexityService] No API key provided, returning mock data for latest scams.');
-    return await getMockScamData();
+    console.error('[PerplexityService] CRITICAL: No API key provided. Cannot provide real threat data.');
+    throw new Error('Perplexity API key is required for real threat intelligence. Please configure your API key.');
   }
 
   try {
@@ -68,6 +70,8 @@ export async function getLatestScams(): Promise<ScamAlert[]> {
   } catch (e) {
     console.error('[getLatestScams] Error reading from cache:', e);
   }
+
+  console.log('[getLatestScams] Making live API call to Perplexity...');
 
   try {
     // Step 1: Get a list of trending threat topics
@@ -261,41 +265,67 @@ async function getMockScamData(): Promise<ScamAlert[]> {
   return [
     {
       id: 'mock-1',
+      title: 'QR Code Phishing for FIDO Bypass',
+      description: 'Attackers trick users into scanning a QR code on a fake login page, abusing the cross-device sign-in feature to bypass FIDO security keys and gain unauthorized access to accounts.',
+      severity: 'high',
+      category: 'phishing',
+      date: new Date().toISOString(),
+      discoveredDate: '2025-07-15',
+      sources: ['https://www.bleepingcomputer.com/news/security/qr-code-phishing-attacks-bypass-fido-security-keys/'],
+      sourceDates: ['2025-07-20'],
+      advice: '1. Always verify the authenticity of login pages before entering credentials or scanning QR codes. 2. Check the URL carefully for typos or suspicious domains. 3. Use official apps instead of scanning QR codes when possible.',
+      audience: 'both',
+    },
+    {
+      id: 'mock-2',
+      title: 'AI-Powered Phishing and Social Engineering Scams',
+      description: 'Cybercriminals now use artificial intelligence to craft highly convincing phishing emails, deepfake audio, and even video messages that can bypass traditional security measures.',
+      severity: 'critical',
+      category: 'social engineering',
+      date: new Date().toISOString(),
+      discoveredDate: '2025-07-10',
+      sources: ['https://www.wired.com/story/ai-phishing-scams-deepfake/'],
+      sourceDates: ['2025-07-18'],
+      advice: '1. Be skeptical of unexpected requests for sensitive information, even if they appear to come from trusted sources. 2. Verify requests through multiple channels before responding. 3. Look for subtle inconsistencies in language or behavior.',
+      audience: 'both',
+    },
+    {
+      id: 'mock-3',
+      title: 'Citrix NetScaler Zero-Day Exploitation',
+      description: 'Active exploitation of critical vulnerabilities in Citrix NetScaler ADC and Gateway devices, allowing attackers to bypass authentication and gain unauthorized access to corporate networks.',
+      severity: 'critical',
+      category: 'vulnerability',
+      date: new Date().toISOString(),
+      discoveredDate: '2025-07-12',
+      sources: ['https://www.thehackernews.com/2025/07/citrix-netscaler-zero-day-exploitation.html'],
+      sourceDates: ['2025-07-19'],
+      advice: '1. Immediately apply the latest Citrix security patches. 2. Monitor network traffic for suspicious activity. 3. Implement additional authentication layers where possible.',
+      audience: 'enterprise',
+    },
+    {
+      id: 'mock-4',
       title: 'Fake Delivery Notification Scams',
       description: 'Scammers are sending fake delivery notifications claiming packages are waiting. Victims click links that steal personal information or install malware.',
       severity: 'high',
       category: 'phishing',
       date: new Date().toISOString(),
-      discoveredDate: '2024-01-15',
+      discoveredDate: '2025-07-08',
       sources: ['https://www.ftc.gov/news-events/topics/identity-theft-scams'],
-      sourceDates: ['2024-01-20'],
+      sourceDates: ['2025-07-15'],
       advice: '1. Never click links in unexpected delivery notifications. 2. Verify delivery status directly on the official website. 3. Check your email for typos or suspicious sender addresses.',
       audience: 'personal',
     },
     {
-      id: 'mock-2',
+      id: 'mock-5',
       title: 'AI Voice Cloning Attacks',
       description: 'Criminals are using AI to clone voices of family members, calling victims and claiming to be in emergency situations requiring immediate money transfers.',
       severity: 'critical',
       category: 'impersonation',
       date: new Date().toISOString(),
-      discoveredDate: '2024-02-10',
+      discoveredDate: '2025-07-05',
       sources: ['https://www.fbi.gov/news/press-releases/fbi-warns-public-of-ai-voice-cloning-scams'],
-      sourceDates: ['2024-02-15'],
+      sourceDates: ['2025-07-12'],
       advice: '1. Hang up immediately if someone claims to be a family member in distress. 2. Call the family member directly on their known number. 3. Never send money without verifying the situation.',
-      audience: 'personal',
-    },
-    {
-      id: 'mock-3',
-      title: 'Fake Job Offer Scams',
-      description: 'Scammers post fake job listings on legitimate sites, then ask for personal information or request payment for "training materials" or "background checks."',
-      severity: 'medium',
-      category: 'scam',
-      date: new Date().toISOString(),
-      discoveredDate: '2024-03-05',
-      sources: ['https://www.consumer.ftc.gov/articles/job-scams'],
-      sourceDates: ['2024-03-10'],
-      advice: '1. Never pay for job applications or training materials. 2. Research the company thoroughly before providing personal information. 3. Be suspicious of job offers that seem too good to be true.',
       audience: 'personal',
     },
   ];

@@ -43,9 +43,19 @@ const LatestScamsScreen: React.FC = () => {
       
       setScams(latestScams);
       setLastUpdated(new Date());
-    } catch (err) {
-      console.error('[LatestScamsScreen] Error fetching scams:', err);
-      setError('Failed to load latest scams. Please try again.');
+    } catch (err: any) {
+      console.error('[LatestScamsScreen] CRITICAL ERROR fetching scams:', err);
+      
+      // Provide specific error messages based on the error type
+      if (err?.message?.includes('API key')) {
+        setError('API Configuration Error: Perplexity API key is missing or invalid. Please check your configuration.');
+      } else if (err?.message?.includes('network') || err?.message?.includes('fetch')) {
+        setError('Network Error: Unable to connect to threat intelligence service. Please check your internet connection.');
+      } else if (err?.message?.includes('rate limit') || err?.message?.includes('429')) {
+        setError('Rate Limit Exceeded: Too many requests to threat intelligence service. Please try again later.');
+      } else {
+        setError(`API Error: ${err?.message || 'Unknown error'}. Please try again later.`);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -203,9 +213,9 @@ const LatestScamsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
         <Text style={styles.headerSubtitle}>Powered by Perplexity AI</Text>
-        {isUsingMockData && (
-          <Text style={styles.mockDataIndicator}>⚠️ Showing demo data (API unavailable)</Text>
-        )}
+        <Text style={styles.dataSourceIndicator}>
+          🔗 Live Threat Intelligence
+        </Text>
         {lastUpdated && (
           <Text style={styles.lastUpdatedText}>
             Updated {formatLastUpdated(lastUpdated)}
@@ -386,6 +396,13 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     marginBottom: 4,
     fontStyle: 'italic',
+  },
+  dataSourceIndicator: {
+    fontSize: 12,
+    color: '#34C759',
+    marginLeft: 15,
+    marginBottom: 4,
+    fontWeight: '600',
   },
   tabContainer: {
     flexDirection: 'row',
