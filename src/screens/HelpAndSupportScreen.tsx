@@ -18,13 +18,13 @@ const HelpAndSupportScreen = () => {
           title: 'How to use EZ-Mode',
           description: 'Learn about the simplified interface for easier navigation',
           icon: 'flash',
-          onPress: () => navigation.goBack()
+          onPress: () => navigation.navigate('MainTabs', { screen: 'Home', params: { screen: 'HomeScreen' } })
         },
         {
           title: 'Setting up Sentry Mode',
           description: 'Configure trusted contacts and threat alerts',
           icon: 'shield-checkmark',
-          onPress: () => navigation.goBack()
+          onPress: () => navigation.navigate('SentryMode')
         },
         {
           title: 'Understanding Threat Levels',
@@ -41,7 +41,7 @@ const HelpAndSupportScreen = () => {
           title: 'Live Text Analyzer',
           description: 'Analyze any text for potential threats',
           icon: 'search',
-          onPress: () => navigation.navigate('MainTabs', { screen: 'Browse', params: { screen: 'ThreatAnalysis' } })
+          onPress: () => navigation.navigate('MainTabs', { screen: 'Browse', params: { screen: 'ThreatAnalysis', params: {} } })
         },
         {
           title: 'Latest Scams',

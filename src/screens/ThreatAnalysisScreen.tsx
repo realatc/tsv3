@@ -279,14 +279,14 @@ const ThreatAnalysisScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Live Text Analyzer</Text>
-        <Text style={styles.headerSubtitle}>Analyze any text for potential threats</Text>
+        <Text style={styles.headerSubtitle}>Check URLs, emails, messages, or any suspicious text</Text>
       </View>
 
       <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.textInput}
-            placeholder="Paste suspicious text, URLs, emails, or messages here..."
+            placeholder="Enter a URL, paste an email, message, or any text you want to check for threats..."
             placeholderTextColor="#666"
             value={text}
             onChangeText={setText}
@@ -308,6 +308,9 @@ const ThreatAnalysisScreen = () => {
               </>
             )}
           </TouchableOpacity>
+          <Text style={styles.inputHint}>
+            Examples: https://example.com, suspicious emails, text messages, social media posts
+          </Text>
         </View>
 
         <View style={styles.resultsContainer}>
@@ -535,6 +538,13 @@ const styles = StyleSheet.create({
     color: '#B0B0B0',
     fontSize: 14,
     marginTop: 8,
+  },
+  inputHint: {
+    color: '#888',
+    fontSize: 12,
+    marginTop: 8,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
 

@@ -239,6 +239,8 @@ const AppContent = () => {
           <Stack.Screen name="About" component={AboutScreen} />
           <Stack.Screen name="SentryMode" component={SentryModeScreen} />
           <Stack.Screen name="SentryModeGuidedDemo" component={SentryModeGuidedDemo} />
+          <Stack.Screen name="LogDetail" component={LogDetailScreen} />
+          <Stack.Screen name="LogHistory" component={LogHistoryScreen} />
         </Stack.Navigator>
         <SettingsSheet ref={settingsSheetRef} />
       </NavigationContainer>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, TextInput, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -24,12 +24,16 @@ const SimpleHomeScreen = () => {
     }
   };
 
-  const handleLatestScams = () => {
-    navigation.navigate('MainTabs', { screen: 'Home', params: { screen: 'LatestScams' } });
+
+
+  const handleLogDetail = (log: LogEntry) => {
+    // Navigate directly to LogDetail using root navigation
+    navigation.navigate('LogDetail', { log });
   };
 
-  const handleHelpSupport = () => {
-    navigation.navigate('HelpAndSupport');
+  const handleLogHistory = () => {
+    // Navigate directly to LogHistory using root navigation
+    navigation.navigate('LogHistory', {});
   };
 
   const handleContact = () => {
@@ -42,7 +46,7 @@ const SimpleHomeScreen = () => {
   const renderLogItem = ({ item }: { item: LogEntry }) => (
     <TouchableOpacity
       style={styles.logCard}
-      onPress={() => navigation.navigate('MainTabs', { screen: 'Home', params: { screen: 'LogDetail', params: { log: item } } })}
+      onPress={() => handleLogDetail(item)}
       activeOpacity={0.8}
     >
       <View style={styles.logIconWrap}>
@@ -65,7 +69,11 @@ const SimpleHomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Top Bar */}
         <View style={styles.topBar}>
           <View style={styles.titleRow}>
@@ -92,11 +100,11 @@ const SimpleHomeScreen = () => {
         {/* Live Text Analyzer Search Bar */}
         <View style={styles.searchSection}>
           <Text style={styles.searchTitle}>Live Text Analyzer</Text>
-          <Text style={styles.searchSubtitle}>Analyze any text for potential threats</Text>
+          <Text style={styles.searchSubtitle}>Check URLs, emails, messages, or any suspicious text</Text>
           <View style={styles.searchContainer}>
             <TextInput
               style={styles.searchInput}
-              placeholder="Paste suspicious text here..."
+              placeholder="Enter a URL, paste an email, message, or any text you want to check for threats..."
               placeholderTextColor="#666"
               value={searchText}
               onChangeText={setSearchText}
@@ -113,41 +121,33 @@ const SimpleHomeScreen = () => {
               <Text style={styles.analyzeButtonText}>Analyze</Text>
             </TouchableOpacity>
           </View>
+          <Text style={styles.searchHint}>
+            Examples: https://example.com, suspicious emails, text messages, social media posts
+          </Text>
         </View>
 
-        {/* Action Buttons - Now 3 instead of 4 for better symmetry */}
-        <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.actionBtn} onPress={handleLatestScams} activeOpacity={0.7}>
-            <Icon name="alert-circle" size={24} color="#A070F2" style={{ marginBottom: 6 }} />
-            <Text style={styles.actionText}>Latest Scams</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn} onPress={handleHelpSupport} activeOpacity={0.7}>
-            <Icon name="help-circle" size={24} color="#A070F2" style={{ marginBottom: 6 }} />
-            <Text style={styles.actionText}>Help & Support</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn} onPress={handleContact} activeOpacity={0.7}>
-            <Icon name="person-add" size={24} color="#A070F2" style={{ marginBottom: 6 }} />
-            <Text style={styles.actionText}>Setup Contact</Text>
-          </TouchableOpacity>
-        </View>
+        
 
         {/* Recent Events */}
         <Text style={styles.subtitle}>Recent Events</Text>
-        <FlatList
-          data={recentLogs}
-          renderItem={renderLogItem}
-          keyExtractor={item => item.id}
-          style={{ width: '100%' }}
-          contentContainerStyle={{ paddingBottom: 40 }}
-          ListEmptyComponent={<Text style={styles.emptyText}>No recent events.</Text>}
-        />
-        <TouchableOpacity 
-          style={styles.seeAllBtn} 
-          onPress={() => navigation.navigate('MainTabs', { screen: 'Home', params: { screen: 'LogHistory', params: {} } })}
-        >
+        <View style={styles.recentEventsContainer}>
+          <FlatList
+            data={recentLogs}
+            renderItem={renderLogItem}
+            keyExtractor={item => item.id}
+            style={{ width: '100%' }}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            ListEmptyComponent={<Text style={styles.emptyText}>No recent events.</Text>}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
+                          <TouchableOpacity
+                    style={styles.seeAllBtn}
+                    onPress={handleLogHistory}
+                  >
           <Text style={styles.seeAllText}>{`See All (${logs.length})`}</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -160,6 +160,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#18181C',
+  },
+  contentContainer: {
     alignItems: 'center',
     padding: 20,
   },
@@ -255,19 +257,18 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     width: '100%',
     marginBottom: 16,
     marginTop: 12,
-    paddingHorizontal: 4,
+    paddingHorizontal: 20,
   },
   actionBtn: {
-    flex: 1,
+    flex: 0.45,
     backgroundColor: '#23232A',
     borderRadius: 12,
     alignItems: 'center',
     paddingVertical: 16,
-    marginHorizontal: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -366,6 +367,18 @@ const styles = StyleSheet.create({
     color: '#A070F2',
     fontSize: 14,
     fontWeight: '600',
+  },
+  searchHint: {
+    color: '#888',
+    fontSize: 12,
+    marginTop: 8,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  recentEventsContainer: {
+    width: '100%',
+    height: 200,
+    marginBottom: 16,
   },
 });
 

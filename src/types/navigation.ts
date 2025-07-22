@@ -61,6 +61,8 @@ export type RootStackParamList = {
   Browse: undefined;
   Library: NavigatorScreenParams<LibraryStackParamList>;
   ScamDetail: { scam: ScamAlert };
+  LogDetail: { log: LogEntry };
+  LogHistory: { threatFilter?: string; categoryFilter?: string };
   KnowledgeBaseLiveTextAnalyzer: undefined;
   KnowledgeBaseSentryMode: undefined;
   KnowledgeBaseThreatLevelArticle: undefined;
