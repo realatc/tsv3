@@ -37,57 +37,57 @@ export type BlockedSender = {
 const initialLogs: LogEntry[] = [
   {
     id: '1',
-    date: '2024-06-01',
+    date: '2025-07-22',
     category: 'Mail',
     sender: 'scammer@example.com',
     message: 'You have won a prize! Click here to claim.',
     nlpAnalysis: 'Likely phishing. Contains urgent language and suspicious link.',
     behavioralAnalysis: 'Sender is not in contacts. Similar pattern to previous scams.',
-    metadata: { device: 'iPhone 15', location: 'Austin, TX', receivedAt: '2024-06-01T10:15:00Z', messageLength: 45 },
+    metadata: { device: 'iPhone 15', location: 'Austin, TX', receivedAt: '2025-07-22T10:15:00Z', messageLength: 45 },
     threat: '',
   },
   {
     id: '2',
-    date: '2024-06-02',
+    date: '2025-07-22',
     category: 'Text',
     sender: '+15551234567',
     message: 'Your account is locked. Reply to unlock.',
     nlpAnalysis: 'Urgency and threat detected. Possible scam.',
     behavioralAnalysis: 'Unusual sender. Similar to previous high-risk texts.',
-    metadata: { device: 'iPhone 15', location: 'Austin, TX', receivedAt: '2024-06-02T11:20:00Z', messageLength: 38 },
+    metadata: { device: 'iPhone 15', location: 'Austin, TX', receivedAt: '2025-07-22T11:20:00Z', messageLength: 38 },
     threat: '',
   },
   {
     id: '3',
-    date: '2024-06-03',
+    date: '2025-07-22',
     category: 'Phone Call',
     sender: '+1234567890',
     message: 'This is the IRS. Call us back immediately.',
     nlpAnalysis: 'Authority impersonation. Urgent callback.',
     behavioralAnalysis: 'Number not in contacts. Matches scam call patterns.',
-    metadata: { device: 'iPhone 15', location: 'Austin, TX', receivedAt: '2024-06-03T14:05:00Z', messageLength: 36 },
+    metadata: { device: 'iPhone 15', location: 'Austin, TX', receivedAt: '2025-07-22T14:05:00Z', messageLength: 36 },
     threat: '',
   },
   {
     id: '4',
-    date: '2024-06-04',
+    date: '2025-07-21',
     category: 'Mail',
     sender: 'unknown@random.com',
     message: 'Limited time offer just for you!',
     nlpAnalysis: 'Marketing language. Possible spam.',
     behavioralAnalysis: 'Sender not recognized. Similar to previous offers.',
-    metadata: { device: 'iPhone 15', location: 'Austin, TX', receivedAt: '2024-06-04T09:45:00Z', messageLength: 29 },
+    metadata: { device: 'iPhone 15', location: 'Austin, TX', receivedAt: '2025-07-21T09:45:00Z', messageLength: 29 },
     threat: '',
   },
   {
     id: '5',
-    date: '2024-06-05',
+    date: '2025-07-21',
     category: 'Text',
     sender: '+15557654321',
     message: 'Hey, are we still on for lunch?',
     nlpAnalysis: 'No threat detected.',
     behavioralAnalysis: 'Sender in contacts. Normal behavior.',
-    metadata: { device: 'iPhone 15', location: 'Austin, TX', receivedAt: '2024-06-05T13:30:00Z', messageLength: 28 },
+    metadata: { device: 'iPhone 15', location: 'Austin, TX', receivedAt: '2025-07-21T13:30:00Z', messageLength: 28 },
     threat: '',
   },
 ];
@@ -178,16 +178,8 @@ export const LogProvider = ({ children }: { children: ReactNode }) => {
           AsyncStorage.getItem(BLOCKED_SENDERS_KEY)
         ]);
         
-        if (storedLogs) {
-          const parsedLogs = JSON.parse(storedLogs);
-          if (parsedLogs.length > 0) {
-            setLogs(parsedLogs);
-          } else {
-            setLogs(initialLogs.map(withThreat));
-          }
-        } else {
-          setLogs(initialLogs.map(withThreat));
-        }
+        // Force use of new initialLogs for now to ensure updated dates
+        setLogs(initialLogs.map(withThreat));
         
         if (storedBlockedSenders) {
           setBlockedSenders(JSON.parse(storedBlockedSenders));

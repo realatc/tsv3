@@ -91,8 +91,9 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
                   <Switch
                     value={ezModeEnabled}
                     onValueChange={setEzModeEnabled}
-                    thumbColor={ezModeEnabled ? '#A070F2' : '#888'}
-                    trackColor={{ false: '#444', true: '#A070F2' }}
+                    thumbColor="#fff"
+                    trackColor={{ false: '#3A3A3C', true: '#34C759' }}
+                    ios_backgroundColor="#3A3A3C"
                   />
                 </View>
                 <TouchableOpacity style={styles.settingItem} onPress={() => handleNavigation('HelpAndSupport')}>
