@@ -17,7 +17,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useLogs } from '../context/LogContext';
 import { useApp } from '../context/AppContext';
 import { analyzeText, getRelatedThreatIntel, RelatedIntel } from '../services/perplexity/perplexityService';
-import { getThreatColor, getThreatIcon } from '../utils/threatLevel';
+import { getSeverityColor, getSeverityIcon } from '../utils/threatLevel';
 import { CategoryBadge } from '../components/CategoryBadge';
 import { ThreatBadgeCompact } from '../components/ThreatBadge';
 import { AccessibleText } from '../components/AccessibleText';
@@ -189,14 +189,14 @@ const SearchResultsScreen = () => {
     }
     
     return (
-      <View style={[styles.analysisResultCard, { borderColor: getThreatColor(analysisResult.threatLevel) }]}>
+      <View style={[styles.analysisResultCard, { borderColor: getSeverityColor(analysisResult.threatLevel) }]}>
         <View style={styles.analysisResultHeader}>
           <Icon 
-            name={getThreatIcon(analysisResult.threatLevel)} 
+            name={getSeverityIcon(analysisResult.threatLevel)} 
             size={24} 
-            color={getThreatColor(analysisResult.threatLevel)} 
+            color={getSeverityColor(analysisResult.threatLevel)} 
           />
-          <Text style={[styles.analysisResultTitle, { color: getThreatColor(analysisResult.threatLevel) }]}>
+          <Text style={[styles.analysisResultTitle, { color: getSeverityColor(analysisResult.threatLevel) }]}>
             {analysisResult.threatLevel.toUpperCase()} THREAT
           </Text>
         </View>

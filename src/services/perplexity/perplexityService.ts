@@ -345,12 +345,23 @@ export async function analyzeText(text: string): Promise<any> {
 
   console.log(`[analyzeText] Starting analysis for text: "${text.substring(0, 100)}..."`);
   
-  const prompt = `Analyze the following text for security threats. Respond with a JSON object containing three fields: 
-1. "threatLevel": A string, one of 'critical', 'high', 'medium', 'low', or 'none'.
-2. "summary": A concise, one-sentence summary of the potential threat.
-3. "recommendation": A clear, actionable recommendation for the user.
+  const prompt = `You are a cybersecurity expert analyzing text for potential threats. Perform a comprehensive security analysis and respond with a JSON object containing:
 
-Do not include any text outside of the JSON object.
+1. "threatLevel": A string, one of 'critical', 'high', 'medium', 'low', or 'none'.
+2. "summary": A detailed analysis of potential threats, including specific indicators and context.
+3. "recommendation": Specific, actionable security recommendations.
+
+ANALYSIS GUIDELINES:
+- Look for phishing indicators (urgency, authority, social engineering)
+- Identify suspicious URLs, domains, or IP addresses
+- Check for malware-related keywords or patterns
+- Analyze social engineering tactics
+- Consider context and sender credibility
+- Evaluate technical indicators (SSL, domain age, reputation)
+
+Be thorough but avoid false positives. If the text appears safe, explain why.
+
+Respond with ONLY the JSON object, no additional text.
 
 Text to analyze:
 ---

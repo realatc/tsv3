@@ -10,7 +10,7 @@ import ThreatLevelPicker from '../components/ThreatLevelPicker';
 import { notificationService, SentryModeAlert } from '../services/notificationService';
 import { navigate, goBack } from '../services/navigationService';
 import { useApp } from '../context/AppContext';
-import { getThreatColor } from '../utils/threatLevel';
+import { getSeverityColor } from '../utils/threatLevel';
 
 type SentryModeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'SentryMode'>;
 
@@ -360,7 +360,7 @@ const SentryModeScreen = () => {
                   renderItem={({ item }) => (
                     <View style={styles.historyItem}>
                       <View style={styles.historyItemHeader}>
-                        <View style={[styles.threatLevelBadge, { backgroundColor: getThreatColor(item.threatLevel) }]}>
+                        <View style={[styles.threatLevelBadge, { backgroundColor: getSeverityColor(item.threatLevel) }]}>
                           <Text style={styles.threatLevelText}>{item.threatLevel}</Text>
                         </View>
                         <Text style={styles.historyTime}>

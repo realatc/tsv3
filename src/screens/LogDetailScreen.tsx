@@ -4,7 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
-import { calculateThreatLevel, getThreatColor, getThreatIcon } from '../utils/threatLevel';
+import { calculateThreatLevel, getSeverityColor, getSeverityIcon } from '../utils/threatLevel';
 import { checkUrlSafety } from '../services/threatReader/safeBrowsing';
 import { getRelatedSearchResults } from '../services/threatReader/relatedSearch';
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -311,7 +311,7 @@ const LogDetailScreen = () => {
         {/* Threat Level */}
         <View style={styles.threatSection}>
             <View style={{flex: 1}}>
-                <Text style={[styles.threatLevelTitle, { color: getThreatColor(displayThreatLevel) }]}>{displayThreatLevel} Threat</Text>
+                <Text style={[styles.threatLevelTitle, { color: getSeverityColor(displayThreatLevel) }]}>{displayThreatLevel} Threat</Text>
                 <Text style={styles.threatScore}>Score: {threatInfo.score}/9</Text>
             </View>
             <TouchableOpacity onPress={showHelpAlert}>

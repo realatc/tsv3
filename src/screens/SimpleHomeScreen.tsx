@@ -1,24 +1,48 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, TextInput } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import type { HomeStackParamList } from '../types/navigation';
+import type { RootStackParamList } from '../types/navigation';
 import { useApp } from '../context/AppContext';
 import { useLogs, LogEntry } from '../context/LogContext';
 
 const SimpleHomeScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<HomeStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { ezModeEnabled, settingsSheetRef } = useApp();
   const { logs } = useLogs();
+  const [searchText, setSearchText] = useState('');
 
   // Get the 3 most recent logs
   const recentLogs = logs.slice(0, 3);
 
+  const handleLiveTextAnalysis = () => {
+    if (searchText.trim()) {
+      navigation.navigate('MainTabs', { screen: 'Browse', params: { screen: 'ThreatAnalysis', params: { initialText: searchText } } });
+    } else {
+      navigation.navigate('MainTabs', { screen: 'Browse', params: { screen: 'ThreatAnalysis', params: {} } });
+    }
+  };
+
+  const handleLatestScams = () => {
+    navigation.navigate('MainTabs', { screen: 'Home', params: { screen: 'LatestScams' } });
+  };
+
+  const handleHelpSupport = () => {
+    navigation.navigate('HelpAndSupport');
+  };
+
+  const handleContact = () => {
+    // Navigate to settings to configure trusted contact
+    if (settingsSheetRef.current) {
+      settingsSheetRef.current.snapToIndex(2); // Open settings sheet
+    }
+  };
+
   const renderLogItem = ({ item }: { item: LogEntry }) => (
     <TouchableOpacity
       style={styles.logCard}
-      onPress={() => (navigation as any).navigate('LogDetail', { log: item })}
+      onPress={() => navigation.navigate('MainTabs', { screen: 'Home', params: { screen: 'LogDetail', params: { log: item } } })}
       activeOpacity={0.8}
     >
       <View style={styles.logIconWrap}>
@@ -64,25 +88,49 @@ const SimpleHomeScreen = () => {
             </View>
           </View>
         </View>
-        {/* Actions */}
+
+        {/* Live Text Analyzer Search Bar */}
+        <View style={styles.searchSection}>
+          <Text style={styles.searchTitle}>Live Text Analyzer</Text>
+          <Text style={styles.searchSubtitle}>Analyze any text for potential threats</Text>
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Paste suspicious text here..."
+              placeholderTextColor="#666"
+              value={searchText}
+              onChangeText={setSearchText}
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+            />
+            <TouchableOpacity 
+              style={[styles.analyzeButton, !searchText.trim() && styles.analyzeButtonDisabled]}
+              onPress={handleLiveTextAnalysis}
+              disabled={!searchText.trim()}
+            >
+              <Icon name="shield-checkmark" size={20} color="#fff" />
+              <Text style={styles.analyzeButtonText}>Analyze</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Action Buttons - Now 3 instead of 4 for better symmetry */}
         <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.actionBtn} onPress={() => (navigation as any).navigate('SentryMode')}>
-            <Icon name="shield-checkmark" size={22} color="#A070F2" style={{ marginBottom: 4 }} />
-            <Text style={styles.actionText}>Sentry Mode</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn} onPress={() => (navigation as any).navigate('LatestScams')}>
-            <Icon name="alert-circle" size={22} color="#A070F2" style={{ marginBottom: 4 }} />
+          <TouchableOpacity style={styles.actionBtn} onPress={handleLatestScams} activeOpacity={0.7}>
+            <Icon name="alert-circle" size={24} color="#A070F2" style={{ marginBottom: 6 }} />
             <Text style={styles.actionText}>Latest Scams</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn} onPress={() => (navigation as any).navigate('HelpAndSupport')}>
-            <Icon name="help-circle" size={22} color="#A070F2" style={{ marginBottom: 4 }} />
-            <Text style={styles.actionText}>Help</Text>
+          <TouchableOpacity style={styles.actionBtn} onPress={handleHelpSupport} activeOpacity={0.7}>
+            <Icon name="help-circle" size={24} color="#A070F2" style={{ marginBottom: 6 }} />
+            <Text style={styles.actionText}>Help & Support</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn} onPress={() => {/* TODO: Call Trusted Contact */}}>
-            <Icon name="call" size={22} color="#A070F2" style={{ marginBottom: 4 }} />
-            <Text style={styles.actionText}>Contact</Text>
+          <TouchableOpacity style={styles.actionBtn} onPress={handleContact} activeOpacity={0.7}>
+            <Icon name="person-add" size={24} color="#A070F2" style={{ marginBottom: 6 }} />
+            <Text style={styles.actionText}>Setup Contact</Text>
           </TouchableOpacity>
         </View>
+
         {/* Recent Events */}
         <Text style={styles.subtitle}>Recent Events</Text>
         <FlatList
@@ -93,7 +141,10 @@ const SimpleHomeScreen = () => {
           contentContainerStyle={{ paddingBottom: 40 }}
           ListEmptyComponent={<Text style={styles.emptyText}>No recent events.</Text>}
         />
-        <TouchableOpacity style={styles.seeAllBtn} onPress={() => navigation.navigate({ name: 'LogHistory', params: {} })}>
+        <TouchableOpacity 
+          style={styles.seeAllBtn} 
+          onPress={() => navigation.navigate('MainTabs', { screen: 'Home', params: { screen: 'LogHistory', params: {} } })}
+        >
           <Text style={styles.seeAllText}>{`See All (${logs.length})`}</Text>
         </TouchableOpacity>
       </View>
@@ -110,11 +161,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#18181C',
     alignItems: 'center',
-    padding: 24,
+    padding: 20,
   },
   topBar: {
     width: '100%',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   titleRow: {
     flexDirection: 'row',
@@ -155,43 +206,109 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
+  searchSection: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  searchTitle: {
+    color: '#A070F2',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  searchSubtitle: {
+    color: '#B0B0B0',
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  searchContainer: {
+    backgroundColor: '#23232A',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#2C2C2E',
+  },
+  searchInput: {
+    color: '#fff',
+    fontSize: 16,
+    minHeight: 80,
+    marginBottom: 12,
+    textAlignVertical: 'top',
+  },
+  analyzeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#A070F2',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  analyzeButtonDisabled: {
+    backgroundColor: '#444',
+  },
+  analyzeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: 12,
-    marginTop: 8,
+    marginBottom: 16,
+    marginTop: 12,
+    paddingHorizontal: 4,
   },
   actionBtn: {
     flex: 1,
-    backgroundColor: '#23232A', // dark card color
-    borderRadius: 10,
+    backgroundColor: '#23232A',
+    borderRadius: 12,
     alignItems: 'center',
-    paddingVertical: 10,
-    marginHorizontal: 6,
+    paddingVertical: 16,
+    marginHorizontal: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#2C2C2E',
+    minHeight: 80, // Ensure consistent height
   },
   actionText: {
     color: '#A070F2',
-    fontSize: 13,
-    fontWeight: 'bold',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+    textAlign: 'center',
   },
   subtitle: {
     color: '#A070F2',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 12,
+    textAlign: 'left',
     alignSelf: 'flex-start',
-    marginTop: 8,
+    marginTop: 16,
+    marginLeft: 4,
   },
   logCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#23232A',
     borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
+    padding: 16,
+    marginBottom: 12,
     width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#2C2C2E',
   },
   logIconWrap: {
     marginRight: 14,
@@ -238,13 +355,17 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginBottom: 18,
     marginTop: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#2C2C2E',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#3C3C3E',
   },
   seeAllText: {
     color: '#A070F2',
-    fontSize: 15,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

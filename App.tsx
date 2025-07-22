@@ -90,6 +90,7 @@ function BrowseStackNavigator() {
       <BrowseStack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} />
       <BrowseStack.Screen name="KnowledgeBaseLogDetailsOverview" component={KnowledgeBaseLogDetailsOverview} />
       <BrowseStack.Screen name="LogDetail" component={LogDetailScreen} />
+      <BrowseStack.Screen name="ThreatAnalysis" component={ThreatAnalysisScreen} />
     </BrowseStack.Navigator>
   );
 }

@@ -18,7 +18,7 @@ export type BrowseStackParamList = {
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseLogDetailsOverview: { log?: any };
   LogDetail: { log: LogEntry };
-  ThreatAnalysis: undefined;
+  ThreatAnalysis: { initialText?: string };
 };
 
 export type LibraryStackParamList = {
@@ -37,7 +37,7 @@ export type LibraryStackParamList = {
 
 export type SearchStackParamList = {
   Search: undefined;
-  ThreatAnalysis: undefined;
+  ThreatAnalysis: { initialText?: string };
 };
 
 // Defines the parameters for the screens within the bottom tab navigator
