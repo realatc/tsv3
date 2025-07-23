@@ -16,7 +16,7 @@ class GitHubService {
   private repo = 'tsv3';
   
   // Use backend API instead of direct GitHub calls for security
-  private backendUrl = 'http://localhost:3000'; // Change this to your backend URL
+  private backendUrl = 'http://192.168.0.248:3000'; // Your computer's IP address
 
   async createIssue(issue: GitHubIssue): Promise<GitHubApiResponse> {
     try {

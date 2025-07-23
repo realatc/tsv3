@@ -18,7 +18,7 @@ interface BugReportResponse {
 }
 
 class BugReportService {
-  private backendUrl = 'http://localhost:3000'; // Change this to your backend URL
+  private backendUrl = 'http://192.168.0.248:3000'; // Your computer's IP address
 
   async submitBugReport(bugData: BugReportData): Promise<BugReportResponse> {
     try {
