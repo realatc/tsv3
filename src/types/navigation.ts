@@ -73,6 +73,7 @@ export type RootStackParamList = {
   KnowledgeBaseLogDetailsMetadata: { log?: any };
   KnowledgeBaseLogDetailsThreat: { log?: any };
   SentryModeGuidedDemo: undefined;
+  BugReportForm: undefined;
 };
 
 export type DrawerParamList = {

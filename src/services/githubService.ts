@@ -15,43 +15,43 @@ class GitHubService {
   private owner = 'realatc';
   private repo = 'tsv3';
   
-  // In production, you'd store this securely (not in the app)
-  // For now, we'll use a placeholder - you'll need to create a GitHub token
-  private token = 'YOUR_GITHUB_TOKEN_HERE'; // Replace with your actual token
+  // Use backend API instead of direct GitHub calls for security
+  private backendUrl = 'http://localhost:3000'; // Change this to your backend URL
 
   async createIssue(issue: GitHubIssue): Promise<GitHubApiResponse> {
-    const url = `${this.baseUrl}/repos/${this.owner}/${this.repo}/issues`;
-    
-    const payload = {
-      title: issue.title,
-      body: issue.body,
-      labels: issue.labels || ['bug', 'mobile-app']
-    };
-
     try {
-      const response = await fetch(url, {
+      // Use the backend API which has the GitHub token
+      const response = await fetch(`${this.backendUrl}/api/bug-reports`, {
         method: 'POST',
         headers: {
-          'Authorization': `token ${this.token}`,
-          'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          title: issue.title,
+          description: issue.body,
+          expected: '',
+          actual: '',
+          steps: '',
+          additional: '',
+          device: 'iOS',
+          appVersion: '1.0.0',
+          timestamp: Date.now()
+        }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`GitHub API Error: ${errorData.message || response.statusText}`);
+        throw new Error(`Backend API Error: ${errorData.error || response.statusText}`);
       }
 
       const data = await response.json();
       return {
-        html_url: data.html_url,
-        number: data.number,
-        title: data.title,
+        html_url: data.issueUrl,
+        number: data.issueNumber,
+        title: issue.title,
       };
     } catch (error) {
-      console.error('GitHub API Error:', error);
+      console.error('Backend API Error:', error);
       throw error;
     }
   }
@@ -63,9 +63,11 @@ class GitHubService {
     return `https://github.com/${this.owner}/${this.repo}/issues/new?title=${title}&body=${body}`;
   }
 
-  // Check if GitHub token is configured
+  // Check if backend is available for GitHub integration
   isTokenConfigured(): boolean {
-    return this.token !== 'YOUR_GITHUB_TOKEN_HERE' && this.token.length > 0;
+    // For now, assume backend is available if we're in development
+    // In production, you might want to check if backend is reachable
+    return true;
   }
 }
 

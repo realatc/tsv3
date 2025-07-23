@@ -70,7 +70,7 @@ const HelpAndSupportScreen = () => {
           title: 'Report a Bug',
           description: 'Help us improve by reporting issues',
           icon: 'bug',
-          onPress: () => Linking.openURL('mailto:bugs@threatsense.app')
+          onPress: () => navigation.navigate('BugReportForm')
         },
         {
           title: 'Privacy Policy',

@@ -43,6 +43,7 @@ import SentryModeScreen from './src/screens/SentryModeScreen';
 import ThreatAnalysisScreen from './src/screens/ThreatAnalysisScreen';
 import SentryModeGuidedDemo from './src/screens/SentryModeGuidedDemo';
 import SimpleHomeScreen from './src/screens/SimpleHomeScreen';
+import BugReportFormScreen from './src/screens/BugReportFormScreen';
 
 // Components
 import SettingsSheet from './src/components/SettingsSheet';
@@ -241,6 +242,7 @@ const AppContent = () => {
           <Stack.Screen name="SentryModeGuidedDemo" component={SentryModeGuidedDemo} />
           <Stack.Screen name="LogDetail" component={LogDetailScreen} />
           <Stack.Screen name="LogHistory" component={LogHistoryScreen} />
+          <Stack.Screen name="BugReportForm" component={BugReportFormScreen} />
         </Stack.Navigator>
         <SettingsSheet ref={settingsSheetRef} />
       </NavigationContainer>
