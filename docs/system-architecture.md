@@ -13,7 +13,7 @@ graph LR
     B --> D[URL Analysis]
     B --> E[Sender Analysis]
     
-    C --> F[AI NLP Processing]
+    C --> F[Perplexity AI Analysis]
     D --> G[Google Safe Browsing]
     E --> H[Contact History]
     
@@ -37,7 +37,15 @@ graph LR
     Q --> S[Contact Notifications]
     R --> T[User Interface]
     
+    %% Related Content Flow
+    T --> U[Related Content]
+    U --> V[Gemini AI Query Generation]
+    V --> W[Google Custom Search]
+    W --> X[Related Articles]
+    
     style A fill:#e1f5fe
+    style F fill:#e3f2fd
+    style V fill:#e3f2fd
     style I fill:#fff3e0
     style K fill:#f3e5f5
     style Q fill:#ffebee
@@ -54,7 +62,10 @@ graph LR
 - **Sender Analysis**: Evaluates sender history and trustworthiness
 
 ### AI Processing
-- **AI NLP Processing**: Uses Gemini AI for natural language understanding
+- **Perplexity AI Analysis**: Primary threat analysis using Perplexity's cybersecurity expertise
+  - Analyzes text for phishing indicators, social engineering, malware patterns
+  - Provides threat level, detailed summary, and actionable recommendations
+  - Uses advanced cybersecurity guidelines and real-time threat intelligence
 - **Google Safe Browsing**: Validates URLs against Google's threat database
 - **Contact History**: Analyzes previous interactions with the sender
 
@@ -67,4 +78,9 @@ graph LR
 - **Sentry Mode**: Emergency notification system for high-threat situations
 - **UI Updates**: Real-time interface updates for user awareness
 - **Contact Notifications**: Automated alerts to trusted contacts
-- **User Interface**: Clean, intuitive display of results and status 
+- **User Interface**: Clean, intuitive display of results and status
+
+### Related Content Generation
+- **Gemini AI Query Generation**: Uses Gemini to create search queries from threat analysis
+- **Google Custom Search**: Finds relevant articles and news about similar threats
+- **Related Articles**: Provides users with contextual information and resources 

@@ -8,11 +8,11 @@ ThreatSense provides comprehensive protection against digital threats through AI
 
 ## Key Features
 
-- **Live Text Analyzer** - Paste any text for instant threat analysis
+- **Live Text Analyzer** - Paste any text for instant threat analysis using Perplexity AI
 - **Sentry Mode** - Emergency notifications to trusted contacts
-- **Related Content** - AI-generated articles about similar threats
+- **Related Content** - AI-generated articles about similar threats using Gemini AI
 - **URL Safety Scanner** - Checks links against Google Safe Browsing
-- **Real-time AI Analysis** - Powered by Gemini AI and Perplexity
+- **Real-time AI Analysis** - Powered by Perplexity AI for threat detection and Gemini AI for content generation
 - **Privacy-Focused** - Local processing when possible
 
 ## System Diagrams
@@ -29,9 +29,21 @@ For detailed system diagrams and technical documentation:
 
 - **Frontend**: React Native
 - **Backend**: Node.js
-- **AI**: Gemini AI, Perplexity API
+- **AI**: Perplexity AI (threat analysis), Gemini AI (content generation)
 - **Security**: Google Safe Browsing, SSL validation
 - **Storage**: AsyncStorage, local data persistence
+
+## AI Integration
+
+### Perplexity AI
+- **Primary Threat Analysis**: Analyzes text for phishing, social engineering, and malware patterns
+- **Real-time Intelligence**: Provides current threat data and cybersecurity expertise
+- **Structured Output**: Returns threat level, detailed analysis, and actionable recommendations
+
+### Gemini AI
+- **Query Generation**: Creates search queries from threat analysis for finding related content
+- **Content Enhancement**: Generates contextual search terms for better article discovery
+- **Natural Language Processing**: Uses Google's Gemini 1.5 Flash model for advanced text understanding
 
 ## Getting Started
 
@@ -98,28 +110,8 @@ For comprehensive documentation, see the [docs/](docs/) directory:
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## Security
-
-ThreatSense is built with security and privacy in mind:
-
-- **Local Processing**: Sensitive data processed locally when possible
-- **Encrypted Communication**: All API calls use HTTPS
-- **Privacy-First**: Minimal data collection and storage
-- **User Control**: Full control over what data is shared
+Please read our contributing guidelines before submitting pull requests.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-For support and questions:
-- Create an issue in this repository
-- Check the [documentation](docs/README.md)
-- Review the [troubleshooting guide](docs/troubleshooting.md)
+This project is licensed under the MIT License - see the LICENSE file for details.
