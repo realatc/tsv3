@@ -184,10 +184,13 @@ const LogDetailScreen = () => {
     const safetyMap: { [url: string]: string } = {};
     urls.forEach(url => {
       safetyMap[url] = 'loading';
-      checkUrlSafety(url).then(status => {
-        safetyMap[url] = status;
-        // @ts-ignore
-        setUrlSafety(safetyMap);
+      checkUrlSafety(url).then(result => {
+        safetyMap[url] = result.status; // Extract the status string from the result object
+        setUrlSafety({...safetyMap});
+      }).catch(error => {
+        console.error(`[LogDetailScreen] Error checking URL ${url}:`, error);
+        safetyMap[url] = 'error';
+        setUrlSafety({...safetyMap});
       });
     });
   }, [urls]);
