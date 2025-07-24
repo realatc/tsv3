@@ -19,7 +19,7 @@ import { checkUrlSafety, UrlAnalysisResult } from '../services/threatReader/safe
 import { getSeverityColor, getSeverityIcon } from '../utils/threatLevel';
 
 type AnalysisResult = {
-  threatLevel: 'none' | 'low' | 'medium' | 'high' | 'critical';
+  threatLevel: 'safe' | 'low' | 'medium' | 'high' | 'critical';
   summary: string;
   recommendation: string;
 };
@@ -54,8 +54,17 @@ const ThreatAnalysisScreen = () => {
 
   // Function to extract URLs from text
   const extractUrls = (text: string): string[] => {
+    // First try to find URLs with protocols
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return text.match(urlRegex) || [];
+    const urlsWithProtocol = text.match(urlRegex) || [];
+    
+    // Then find URLs without protocols (like www.amazon.com)
+    const domainRegex = /\b(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.(?:[a-zA-Z]{2,})\b/g;
+    const domainsWithoutProtocol = text.match(domainRegex) || [];
+    
+    // Combine and deduplicate
+    const allUrls = [...urlsWithProtocol, ...domainsWithoutProtocol];
+    return [...new Set(allUrls)];
   };
 
   const handleAnalysis = async () => {
@@ -77,7 +86,12 @@ const ThreatAnalysisScreen = () => {
       const urlChecks: UrlCheckResult[] = [];
       for (const url of urls) {
         try {
-          const analysis = await checkUrlSafety(url);
+          // Normalize URL format and add protocol if missing
+          let urlToCheck = url.toLowerCase();
+          if (!urlToCheck.startsWith('http')) {
+            urlToCheck = `https://${urlToCheck}`;
+          }
+          const analysis = await checkUrlSafety(urlToCheck);
           urlChecks.push({ url, analysis, checked: true });
           console.log(`[ThreatAnalysis] URL ${url} status: ${analysis.status}`);
         } catch (error) {
