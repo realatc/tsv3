@@ -28,6 +28,7 @@ export type LibraryStackParamList = {
   KnowledgeBaseSentryMode: undefined;
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseScamsArticle: undefined;
+  KnowledgeBaseEZMode: undefined;
   KnowledgeBaseLogDetailsOverview: { log?: any };
   KnowledgeBaseLogDetailsGeneral: { log?: any };
   KnowledgeBaseLogDetailsSecurity: { log?: any };
@@ -67,6 +68,7 @@ export type RootStackParamList = {
   KnowledgeBaseSentryMode: undefined;
   KnowledgeBaseThreatLevelArticle: undefined;
   KnowledgeBaseScamsArticle: undefined;
+  KnowledgeBaseEZMode: undefined;
   KnowledgeBaseLogDetailsOverview: { log?: any };
   KnowledgeBaseLogDetailsGeneral: { log?: any };
   KnowledgeBaseLogDetailsSecurity: { log?: any };

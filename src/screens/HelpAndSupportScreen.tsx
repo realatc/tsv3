@@ -18,7 +18,7 @@ const HelpAndSupportScreen = () => {
           title: 'How to use EZ-Mode',
           description: 'Learn about the simplified interface for easier navigation',
           icon: 'flash',
-          onPress: () => navigation.navigate('MainTabs', { screen: 'Home', params: { screen: 'HomeScreen' } })
+          onPress: () => navigation.navigate('MainTabs', { screen: 'Library', params: { screen: 'KnowledgeBaseEZMode' } })
         },
         {
           title: 'Setting up Sentry Mode',

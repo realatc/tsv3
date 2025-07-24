@@ -33,6 +33,7 @@ import KnowledgeBaseScamsArticle from './src/screens/KnowledgeBaseScamsArticle';
 import KnowledgeBaseScreen from './src/screens/KnowledgeBaseScreen';
 import KnowledgeBaseSentryMode from './src/screens/KnowledgeBaseSentryMode';
 import KnowledgeBaseThreatLevelArticle from './src/screens/KnowledgeBaseThreatLevelArticle';
+import KnowledgeBaseEZMode from './src/screens/KnowledgeBaseEZMode';
 import LatestScamsScreen from './src/screens/LatestScamsScreen';
 import LibraryScreen from './src/screens/LibraryScreen';
 import LogDetailScreen from './src/screens/LogDetailScreen';
@@ -106,6 +107,7 @@ function LibraryStackNavigator() {
       <LibraryStack.Screen name="KnowledgeBaseSentryMode" component={KnowledgeBaseSentryMode} />
       <LibraryStack.Screen name="KnowledgeBaseThreatLevelArticle" component={KnowledgeBaseThreatLevelArticle} />
       <LibraryStack.Screen name="KnowledgeBaseScamsArticle" component={KnowledgeBaseScamsArticle} />
+      <LibraryStack.Screen name="KnowledgeBaseEZMode" component={KnowledgeBaseEZMode} />
       <LibraryStack.Screen name="KnowledgeBaseLogDetailsOverview" component={KnowledgeBaseLogDetailsOverview} />
       <LibraryStack.Screen name="KnowledgeBaseLogDetailsGeneral" component={KnowledgeBaseLogDetailsGeneral} />
       <LibraryStack.Screen name="KnowledgeBaseLogDetailsSecurity" component={KnowledgeBaseLogDetailsSecurity} />
