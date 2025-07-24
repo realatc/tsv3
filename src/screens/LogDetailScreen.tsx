@@ -50,12 +50,16 @@ const DetailsTab = ({ log, relatedContent, loadingRelated, handleLinkPress }: { 
         <Text style={styles.relatedContentTitle}>Related Content</Text>
         {loadingRelated ? (
           <Text style={{ color: '#fff' }}>Loading...</Text>
+        ) : relatedContent.length === 0 ? (
+          <Text style={{ color: '#fff' }}>No related content available.</Text>
         ) : (
-          relatedContent.map((item: any, index: number) => (
-            <TouchableOpacity key={index} onPress={() => handleLinkPress(item.link)}>
-              <Text style={styles.relatedContentLink}>{item.title}</Text>
-            </TouchableOpacity>
-          ))
+          relatedContent
+            .filter((item: any) => item.url && item.title) // Only show items with both url and title
+            .map((item: any, index: number) => (
+              <TouchableOpacity key={index} onPress={() => handleLinkPress(item.url)}>
+                <Text style={styles.relatedContentLink}>{item.title}</Text>
+              </TouchableOpacity>
+            ))
         )}
       </View>
     </View>
@@ -222,6 +226,10 @@ const LogDetailScreen = () => {
   };
 
   const handleLinkPress = (url: string) => {
+    if (!url) {
+      Alert.alert('Error', 'No URL available for this link.');
+      return;
+    }
     Linking.openURL(url).catch(err => Alert.alert('Error', 'Could not open the link.'));
   };
 
@@ -410,7 +418,17 @@ const styles = StyleSheet.create({
   threatBreakdownItem: { color: '#E0E0E0', fontSize: 16 },
   threatBreakdownPoints: { color: '#FF6B6B', fontSize: 16, fontWeight: 'bold' },
   relatedContentTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff', marginBottom: 12 },
-  relatedContentLink: { color: '#4A90E2', fontSize: 16, marginBottom: 8 },
+  relatedContentLink: { 
+    color: '#4A90E2', 
+    fontSize: 16, 
+    marginBottom: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    backgroundColor: 'rgba(74, 144, 226, 0.1)',
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: '#4A90E2',
+  },
   menuOptionText: {
     color: '#fff',
     fontSize: 16,

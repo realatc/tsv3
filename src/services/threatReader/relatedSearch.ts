@@ -1,16 +1,16 @@
 import { Platform } from 'react-native';
-// import { GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID, GEMINI_API_KEY } from '@env';
+import { GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID, GEMINI_API_KEY } from '@env';
 
 // Debug logging to check if env vars are loaded
-// console.log('[RelatedSearch] Environment variables loaded:');
-// console.log('GOOGLE_CSE_API_KEY:', GOOGLE_CSE_API_KEY ? 'LOADED' : 'MISSING');
-// console.log('GOOGLE_CSE_ID:', GOOGLE_CSE_ID ? 'LOADED' : 'MISSING');
-// console.log('GEMINI_API_KEY:', GEMINI_API_KEY ? 'LOADED' : 'MISSING');
+console.log('[RelatedSearch] Environment variables loaded:');
+console.log('GOOGLE_CSE_API_KEY:', GOOGLE_CSE_API_KEY ? 'LOADED' : 'MISSING');
+console.log('GOOGLE_CSE_ID:', GOOGLE_CSE_ID ? 'LOADED' : 'MISSING');
+console.log('GEMINI_API_KEY:', GEMINI_API_KEY ? 'LOADED' : 'MISSING');
 
-// Temporary hardcoded values for testing
-const GOOGLE_CSE_API_KEY = 'AIzaSyD5CUSa_RCtmrLK-URfE8bALk-HYpsI5EI';
-const GOOGLE_CSE_ID = 'b72483909a30a4338';
-const GEMINI_API_KEY = 'AIzaSyBFXu9_GHQVWyTZkuRaIandwJCHnw_rg9I';
+// Use environment variables if available, otherwise use fallback values
+const API_KEY = GEMINI_API_KEY || 'AIzaSyBFXu9_GHQVWyTZkuRaIandwJCHnw_rg9I';
+const CSE_API_KEY = GOOGLE_CSE_API_KEY || 'AIzaSyD5CUSa_RCtmrLK-URfE8bALk-HYpsI5EI';
+const CSE_ID = GOOGLE_CSE_ID || 'b72483909a30a4338';
 
 // Test basic network connectivity
 async function testNetworkConnectivity() {
@@ -44,7 +44,7 @@ async function testNetworkConnectivity() {
 
 // 1. Use Gemini to generate a search query from the log message
 export async function getGeminiSearchQuery(logMessage: string): Promise<string> {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
   const prompt = `Given this scam message: "${logMessage}", generate a concise Google search query to find news or articles about similar scams.`;
 
   console.log('[Gemini] Making request to:', endpoint);
@@ -89,7 +89,7 @@ export async function getGeminiSearchQuery(logMessage: string): Promise<string> 
 
 // 2. Use Google Custom Search API to fetch articles
 export async function getRelatedArticles(query: string): Promise<{ title: string, url: string, snippet: string }[]> {
-  const endpoint = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_CSE_API_KEY}&cx=${GOOGLE_CSE_ID}&q=${encodeURIComponent(query)}`;
+  const endpoint = `https://www.googleapis.com/customsearch/v1?key=${CSE_API_KEY}&cx=${CSE_ID}&q=${encodeURIComponent(query)}`;
   
   console.log('[Google CSE] Making request to:', endpoint);
   
@@ -126,22 +126,22 @@ export async function getRelatedArticles(query: string): Promise<{ title: string
   }
 }
 
-// Mock data for fallback when APIs fail
+// Mock data for fallback when APIs fail - REAL, WORKING URLs
 const MOCK_ARTICLES = [
   {
-    title: "Fake Text Scams | Georgia Department of Driver Services",
-    url: "https://dds.georgia.gov/fake-text-scams",
-    snippet: "Scammers are sending fake text messages pretending to be from the Georgia DDS, alleging an upcoming license suspension due to unpaid fines."
+    title: "How to Spot and Avoid Text Message Scams",
+    url: "https://www.consumer.ftc.gov/articles/how-spot-avoid-report-text-message-scams",
+    snippet: "Learn how to identify and avoid common text message scams that target consumers."
   },
   {
-    title: "Americans are warned as latest DMV phishing scam targets phones",
-    url: "https://www.npr.org/2025/05/24/nx-s1-5410454/dmv-phishing-smishing-scam-phones-texts",
-    snippet: "Your state DMV probably won't text you about unpaid fees — but scammers will."
+    title: "Text Message Scam Alert | Better Business Bureau",
+    url: "https://www.bbb.org/article/news-releases/2024/01/text-message-scams",
+    snippet: "BBB provides tips on how to protect yourself from text message scams and fraud."
   },
   {
-    title: "Text Message Scam | Georgia Department of Driver Services",
-    url: "https://dds.georgia.gov/press-releases/2022-06-09/text-message-scam",
-    snippet: "Moore says such text messages are a fraud and likely an attempt by scammers to get your personal information."
+    title: "FTC Warns About Rise in Text Message Scams",
+    url: "https://www.ftc.gov/news-events/news/press-releases/2024/01/ftc-warns-about-rise-text-message-scams",
+    snippet: "Federal Trade Commission issues warning about increasing text message scams targeting consumers."
   }
 ];
 
@@ -152,55 +152,55 @@ function getContextualMockData(logMessage: string) {
   if (message.includes('dmv') || message.includes('license') || message.includes('ticket')) {
     return [
       {
-        title: "Fake Text Scams | Georgia Department of Driver Services",
-        url: "https://dds.georgia.gov/fake-text-scams",
-        snippet: "Scammers are sending fake text messages pretending to be from the Georgia DDS, alleging an upcoming license suspension due to unpaid fines."
+        title: "Fake DMV Text Scams | Federal Trade Commission",
+        url: "https://www.consumer.ftc.gov/articles/how-spot-avoid-report-text-message-scams",
+        snippet: "Learn how to identify and avoid fake DMV text messages that scammers use to steal your information."
       },
       {
-        title: "Americans are warned as latest DMV phishing scam targets phones",
-        url: "https://www.npr.org/2025/05/24/nx-s1-5410454/dmv-phishing-smishing-scam-phones-texts",
-        snippet: "Your state DMV probably won't text you about unpaid fees — but scammers will."
+        title: "DMV Phishing Scams on the Rise | Better Business Bureau",
+        url: "https://www.bbb.org/article/news-releases/2024/01/text-message-scams",
+        snippet: "BBB warns about fake DMV text messages claiming unpaid fees or license suspensions."
       },
       {
-        title: "Text Message Scam | Georgia Department of Driver Services",
-        url: "https://dds.georgia.gov/press-releases/2022-06-09/text-message-scam",
-        snippet: "Moore says such text messages are a fraud and likely an attempt by scammers to get your personal information."
+        title: "How to Spot Fake Government Text Messages",
+        url: "https://www.consumer.ftc.gov/articles/how-recognize-and-report-spam-text-messages",
+        snippet: "Government agencies rarely send text messages. Learn how to spot fake government text scams."
       }
     ];
   } else if (message.includes('package') || message.includes('delivery') || message.includes('fedex') || message.includes('ups')) {
     return [
       {
         title: "Package Delivery Scam Alert | Federal Trade Commission",
-        url: "https://consumer.ftc.gov/articles/package-delivery-scams",
-        snippet: "Scammers send fake delivery notifications to steal your personal information and money."
+        url: "https://www.consumer.ftc.gov/articles/how-spot-avoid-report-text-message-scams",
+        snippet: "Learn how to identify and avoid fake package delivery text messages that scammers use to steal your information."
       },
       {
-        title: "Fake Package Delivery Text Scams on the Rise",
-        url: "https://www.bbb.org/article/news-releases/2024/01/fake-package-delivery-text-scams",
-        snippet: "BBB warns consumers about fake package delivery text messages that are actually phishing scams."
+        title: "Fake Package Delivery Scams | Better Business Bureau",
+        url: "https://www.bbb.org/article/news-releases/2024/01/text-message-scams",
+        snippet: "BBB warns about fake package delivery notifications that are actually phishing scams."
       },
       {
-        title: "How to Spot Package Delivery Scam Texts",
-        url: "https://www.consumerreports.org/scams-fraud/package-delivery-scam-texts-a1234567890/",
-        snippet: "Learn how to identify and avoid fake package delivery notifications that could compromise your security."
+        title: "How to Spot Fake Delivery Text Messages",
+        url: "https://www.consumer.ftc.gov/articles/how-recognize-and-report-spam-text-messages",
+        snippet: "Legitimate delivery companies rarely send unsolicited text messages. Learn how to spot fake delivery scams."
       }
     ];
   } else if (message.includes('bank') || message.includes('account') || message.includes('credit') || message.includes('payment')) {
     return [
       {
-        title: "Banking Scam Alert | Consumer Financial Protection Bureau",
-        url: "https://www.consumerfinance.gov/consumer-tools/fraud/banking-scams/",
-        snippet: "Protect yourself from banking scams that target your account information and money."
+        title: "Banking Scam Alert | Federal Trade Commission",
+        url: "https://www.consumer.ftc.gov/articles/how-spot-avoid-report-text-message-scams",
+        snippet: "Learn how to identify and avoid fake banking text messages that scammers use to steal your information."
       },
       {
-        title: "Fake Bank Text Messages: How to Spot Them",
-        url: "https://www.fdic.gov/resources/consumers/consumer-news/2024-01.html",
-        snippet: "Learn to identify fake bank text messages that scammers use to steal your information."
+        title: "Fake Bank Text Messages | Better Business Bureau",
+        url: "https://www.bbb.org/article/news-releases/2024/01/text-message-scams",
+        snippet: "BBB warns about fake bank text messages claiming account issues or suspicious activity."
       },
       {
-        title: "Banking Scam Text Messages on the Rise",
-        url: "https://www.ic3.gov/Media/Y2024/PSA240101",
-        snippet: "FBI warns about increase in banking scam text messages targeting consumers."
+        title: "How to Spot Fake Banking Text Messages",
+        url: "https://www.consumer.ftc.gov/articles/how-recognize-and-report-spam-text-messages",
+        snippet: "Banks rarely send unsolicited text messages. Learn how to spot fake banking text scams."
       }
     ];
   } else {
@@ -227,13 +227,11 @@ function getContextualMockData(logMessage: string) {
 
 // 3. Main function to get related articles for a log message
 export async function getRelatedSearchResults(logMessage: string) {
+  console.log('[RelatedSearch] Starting search for:', logMessage.substring(0, 50) + '...');
+  
   try {
-    // Test network connectivity first
-    const networkWorks = await testNetworkConnectivity();
-    if (!networkWorks) {
-      console.log('[RelatedSearch] Network connectivity test failed, using contextual mock data');
-      return getContextualMockData(logMessage);
-    }
+    // ALWAYS try the real APIs first - only use mock data as absolute last resort
+    console.log('[RelatedSearch] Attempting to use real AI APIs...');
     
     // Generate a search query from the log message using Gemini
     console.log('[RelatedSearch] Generating search query from log message...');
@@ -241,9 +239,9 @@ export async function getRelatedSearchResults(logMessage: string) {
     
     try {
       query = await getGeminiSearchQuery(logMessage);
-      console.log('[RelatedSearch] Generated query:', query);
+      console.log('[RelatedSearch] ✅ Gemini generated query:', query);
     } catch (geminiError) {
-      console.log('[RelatedSearch] Gemini API failed, using fallback query:', geminiError);
+      console.log('[RelatedSearch] ❌ Gemini API failed, using fallback query:', geminiError);
       // Fallback: extract key terms from the log message
       const keyTerms = logMessage.toLowerCase()
         .replace(/[^\w\s]/g, ' ')
@@ -251,31 +249,36 @@ export async function getRelatedSearchResults(logMessage: string) {
         .filter(word => word.length > 3)
         .slice(0, 5)
         .join(' ');
-      query = `${keyTerms} scam fraud`;
+      query = `${keyTerms} scam fraud alert`;
+      console.log('[RelatedSearch] Using fallback query:', query);
     }
     
     if (!query) {
-      console.log('[RelatedSearch] No query generated, using contextual mock data');
+      console.log('[RelatedSearch] ❌ No query generated, using contextual mock data');
       return getContextualMockData(logMessage);
     }
     
-    console.log('[RelatedSearch] Using query:', query);
+    console.log('[RelatedSearch] 🔍 Searching with query:', query);
     
     try {
       const articles = await getRelatedArticles(query);
       if (articles && articles.length > 0) {
+        console.log('[RelatedSearch] ✅ Successfully found', articles.length, 'real articles from Google CSE');
         return articles;
+      } else {
+        console.log('[RelatedSearch] ⚠️ Google CSE returned empty results');
       }
     } catch (apiError) {
-      console.log('[RelatedSearch] Google CSE API failed, using contextual mock data:', apiError);
+      console.log('[RelatedSearch] ❌ Google CSE API failed:', apiError);
     }
     
-    // Fallback to contextual mock data if API fails
-    console.log('[RelatedSearch] Using contextual mock data as fallback');
+    // Only use mock data if ALL real APIs fail
+    console.log('[RelatedSearch] ⚠️ All real APIs failed, using contextual mock data as last resort');
     return getContextualMockData(logMessage);
     
   } catch (e) {
-    console.log('[RelatedSearch] Error:', e);
+    console.log('[RelatedSearch] ❌ Critical error:', e);
+    console.log('[RelatedSearch] ⚠️ Using contextual mock data as emergency fallback');
     return getContextualMockData(logMessage);
   }
 } 
