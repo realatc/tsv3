@@ -28,13 +28,11 @@ graph LR
     K -->|High| M[Alert & Log]
     K -->|Medium| N[Log & Warn]
     K -->|Low| O[Log Only]
-    K -->|None| P[Safe]
     
     L --> Q[Sentry Mode]
     M --> Q
     N --> R[UI Update]
     O --> R
-    P --> R
     
     Q --> S[Contact Notifications]
     R --> T[User Interface]
@@ -52,7 +50,7 @@ graph LR
 - **User Input**: Text messages, URLs, or content from various sources
 - **Input Parser**: Validates and normalizes input data
 - **Content Analysis**: Extracts key information and patterns
-- **URL Analysis**: Checks links for safety and reputation
+- **URL Analysis**: Checks links for safety using Google Safe Browsing
 - **Sender Analysis**: Evaluates sender history and trustworthiness
 
 ### AI Processing
@@ -62,7 +60,7 @@ graph LR
 
 ### Risk Assessment
 - **Risk Calculator**: Combines all analysis results into a threat score
-- **Threat Level**: Determines the appropriate response level
+- **Threat Level**: Determines the appropriate response level (Low, Medium, High, Critical)
 - **Decision Logic**: Routes to appropriate handling based on threat level
 
 ### Response System

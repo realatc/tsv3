@@ -16,8 +16,6 @@ graph LR
     
     subgraph "Security APIs"
         G[Google Safe Browsing] --> H[URL Safety]
-        I[DNS Services] --> J[Domain Reputation]
-        K[SSL Checker] --> L[Certificate Validation]
     end
     
     subgraph "Local Processing"
@@ -30,8 +28,6 @@ graph LR
     D --> Q
     F --> Q
     H --> Q
-    J --> Q
-    L --> Q
     N --> Q
     P --> Q
     
@@ -41,8 +37,6 @@ graph LR
     style C fill:#e3f2fd
     style E fill:#e3f2fd
     style G fill:#fff3e0
-    style I fill:#fff3e0
-    style K fill:#fff3e0
     style M fill:#f3e5f5
     style O fill:#f3e5f5
     style Q fill:#ffebee
@@ -58,8 +52,6 @@ graph LR
 
 ### Security APIs
 - **Google Safe Browsing**: URL reputation and safety checking
-- **DNS Services**: Domain reputation and blacklist checking
-- **SSL Checker**: Certificate validation and encryption verification
 
 ### Local Processing
 - **Pattern Matching**: Rule-based threat pattern detection
