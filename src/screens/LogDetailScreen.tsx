@@ -196,9 +196,19 @@ const LogDetailScreen = () => {
   useEffect(() => {
     setLoadingRelated(true);
     getRelatedSearchResults(log.message)
-      .then(setRelatedContent)
-      .catch(console.error)
-      .finally(() => setLoadingRelated(false));
+      .then((results: any) => {
+        const contentArray = Array.isArray(results) ? results : [];
+        console.log('[LogDetailScreen] Related content loaded:', contentArray.length, 'items');
+        setRelatedContent(contentArray);
+      })
+      .catch((error) => {
+        console.error('[LogDetailScreen] Error loading related content:', error);
+        setRelatedContent([]); // Set empty array on error
+      })
+      .finally(() => {
+        console.log('[LogDetailScreen] Related content loading finished');
+        setLoadingRelated(false);
+      });
   }, [log.message]);
 
   useEffect(() => {

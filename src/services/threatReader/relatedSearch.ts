@@ -53,6 +53,10 @@ export async function getGeminiSearchQuery(logMessage: string): Promise<string> 
   }));
 
   try {
+    // Add timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 
@@ -61,8 +65,10 @@ export async function getGeminiSearchQuery(logMessage: string): Promise<string> 
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }]
       }),
+      signal: controller.signal,
     });
     
+    clearTimeout(timeoutId);
     console.log('[Gemini] Response status:', response.status);
     console.log('[Gemini] Response headers:', response.headers);
     
@@ -94,8 +100,15 @@ export async function getRelatedArticles(query: string): Promise<{ title: string
   console.log('[Google CSE] Making request to:', endpoint);
   
   try {
-    const response = await fetch(endpoint);
+    // Add timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    const response = await fetch(endpoint, {
+      signal: controller.signal,
+    });
     
+    clearTimeout(timeoutId);
     console.log('[Google CSE] Response status:', response.status);
     console.log('[Google CSE] Response headers:', response.headers);
     
@@ -229,56 +242,66 @@ function getContextualMockData(logMessage: string) {
 export async function getRelatedSearchResults(logMessage: string) {
   console.log('[RelatedSearch] Starting search for:', logMessage.substring(0, 50) + '...');
   
-  try {
-    // ALWAYS try the real APIs first - only use mock data as absolute last resort
-    console.log('[RelatedSearch] Attempting to use real AI APIs...');
-    
-    // Generate a search query from the log message using Gemini
-    console.log('[RelatedSearch] Generating search query from log message...');
-    let query = '';
-    
+  // Add overall timeout to prevent hanging
+  const overallTimeout = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Related search timed out after 15 seconds')), 15000);
+  });
+  
+  const searchPromise = (async () => {
     try {
-      query = await getGeminiSearchQuery(logMessage);
-      console.log('[RelatedSearch] ✅ Gemini generated query:', query);
-    } catch (geminiError) {
-      console.log('[RelatedSearch] ❌ Gemini API failed, using fallback query:', geminiError);
-      // Fallback: extract key terms from the log message
-      const keyTerms = logMessage.toLowerCase()
-        .replace(/[^\w\s]/g, ' ')
-        .split(/\s+/)
-        .filter(word => word.length > 3)
-        .slice(0, 5)
-        .join(' ');
-      query = `${keyTerms} scam fraud alert`;
-      console.log('[RelatedSearch] Using fallback query:', query);
-    }
-    
-    if (!query) {
-      console.log('[RelatedSearch] ❌ No query generated, using contextual mock data');
+      // ALWAYS try the real APIs first - only use mock data as absolute last resort
+      console.log('[RelatedSearch] Attempting to use real AI APIs...');
+      
+      // Generate a search query from the log message using Gemini
+      console.log('[RelatedSearch] Generating search query from log message...');
+      let query = '';
+      
+      try {
+        query = await getGeminiSearchQuery(logMessage);
+        console.log('[RelatedSearch] ✅ Gemini generated query:', query);
+      } catch (geminiError) {
+        console.log('[RelatedSearch] ❌ Gemini API failed, using fallback query:', geminiError);
+        // Fallback: extract key terms from the log message
+        const keyTerms = logMessage.toLowerCase()
+          .replace(/[^\w\s]/g, ' ')
+          .split(/\s+/)
+          .filter(word => word.length > 3)
+          .slice(0, 5)
+          .join(' ');
+        query = `${keyTerms} scam fraud alert`;
+        console.log('[RelatedSearch] Using fallback query:', query);
+      }
+      
+      if (!query) {
+        console.log('[RelatedSearch] ❌ No query generated, using contextual mock data');
+        return getContextualMockData(logMessage);
+      }
+      
+      console.log('[RelatedSearch] 🔍 Searching with query:', query);
+      
+      try {
+        const articles = await getRelatedArticles(query);
+        if (articles && articles.length > 0) {
+          console.log('[RelatedSearch] ✅ Successfully found', articles.length, 'real articles from Google CSE');
+          return articles;
+        } else {
+          console.log('[RelatedSearch] ⚠️ Google CSE returned empty results');
+        }
+      } catch (apiError) {
+        console.log('[RelatedSearch] ❌ Google CSE API failed:', apiError);
+      }
+      
+      // Only use mock data if ALL real APIs fail
+      console.log('[RelatedSearch] ⚠️ All real APIs failed, using contextual mock data as last resort');
+      return getContextualMockData(logMessage);
+      
+    } catch (e) {
+      console.log('[RelatedSearch] ❌ Critical error:', e);
+      console.log('[RelatedSearch] ⚠️ Using contextual mock data as emergency fallback');
       return getContextualMockData(logMessage);
     }
-    
-    console.log('[RelatedSearch] 🔍 Searching with query:', query);
-    
-    try {
-      const articles = await getRelatedArticles(query);
-      if (articles && articles.length > 0) {
-        console.log('[RelatedSearch] ✅ Successfully found', articles.length, 'real articles from Google CSE');
-        return articles;
-      } else {
-        console.log('[RelatedSearch] ⚠️ Google CSE returned empty results');
-      }
-    } catch (apiError) {
-      console.log('[RelatedSearch] ❌ Google CSE API failed:', apiError);
-    }
-    
-    // Only use mock data if ALL real APIs fail
-    console.log('[RelatedSearch] ⚠️ All real APIs failed, using contextual mock data as last resort');
-    return getContextualMockData(logMessage);
-    
-  } catch (e) {
-    console.log('[RelatedSearch] ❌ Critical error:', e);
-    console.log('[RelatedSearch] ⚠️ Using contextual mock data as emergency fallback');
-    return getContextualMockData(logMessage);
-  }
+  })();
+  
+  // Race between the search and the timeout
+  return Promise.race([searchPromise, overallTimeout]);
 } 

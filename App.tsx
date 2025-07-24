@@ -54,7 +54,7 @@ import { LogProvider } from './src/context/LogContext';
 import { AccessibilityProvider } from './src/context/AccessibilityContext';
 import { AppProvider, useApp } from './src/context/AppContext';
 import { SentryModeProvider } from './src/context/SentryModeContext';
-import { navigationRef } from './src/services/navigationService';
+import { navigationRef, navigate } from './src/services/navigationService';
 
 import { 
   RootStackParamList, 
@@ -334,7 +334,8 @@ const AppContent = () => {
                       if (sentryAlertModal?.onOk) {
                         setTimeout(() => {
                           // Only set if not already open for this alertId
-                          if (!contactResponseModal || contactResponseModal.alertId !== alertId) {
+                          const currentAlertId = contactResponseModal?.alertId;
+                          if (!contactResponseModal || currentAlertId !== alertId) {
                             sentryAlertModal.onOk(alertId);
                           }
                         }, 10000);
@@ -343,6 +344,51 @@ const AppContent = () => {
                   >
                     <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>OK</Text>
                   </TouchableOpacity>
+                  
+                  {/* View Log Details Button */}
+                  {sentryAlertModal?.details?.eventId && (
+                    <TouchableOpacity 
+                      style={{ backgroundColor: '#23232A', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 6, borderWidth: 1, borderColor: '#4A90E2' }} 
+                      onPress={async () => {
+                        console.log('[SentryAlertModal] navigating to log details for eventId:', sentryAlertModal.details.eventId);
+                        
+                        // Trigger the automated contact response (same as OK button)
+                        if (sentryAlertModal?.onOk) {
+                          const alertId = sentryAlertModal.details?.alertId || sentryAlertModal.alertId || sentryAlertModal.id || Date.now().toString();
+                          setTimeout(() => {
+                            // Only set if not already open for this alertId
+                            const currentAlertId = contactResponseModal?.alertId;
+                            if (!contactResponseModal || currentAlertId !== alertId) {
+                              sentryAlertModal.onOk(alertId);
+                            }
+                          }, 10000);
+                        }
+                        
+                        setSentryAlertModal(null);
+                        
+                        // Find the log entry using the eventId
+                        try {
+                          const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+                          const logsRaw = await AsyncStorage.getItem('@threatsense/logs');
+                          if (logsRaw) {
+                            const logs = JSON.parse(logsRaw);
+                            const log = logs.find((l: any) => l.id === sentryAlertModal.details.eventId);
+                            if (log) {
+                              setTimeout(() => {
+                                navigate('LogDetail', { log });
+                              }, 100);
+                            } else {
+                              console.log('[SentryAlertModal] Log not found for eventId:', sentryAlertModal.details.eventId);
+                            }
+                          }
+                        } catch (error) {
+                          console.error('[SentryAlertModal] Error finding log:', error);
+                        }
+                      }}
+                    >
+                      <Text style={{ color: '#4A90E2', fontWeight: 'bold', fontSize: 16 }}>View Log Details</Text>
+                    </TouchableOpacity>
+                  )}
                   {sentryAlertModal?.onCall && (
                     <TouchableOpacity 
                       style={{ backgroundColor: '#23232A', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 6, borderWidth: 1, borderColor: '#A070F2' }} 

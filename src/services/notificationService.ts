@@ -263,6 +263,7 @@ For support, contact: support@threatsense.app
         description: threat.description,
         time: threat.timestamp,
         location: threat.location || 'Current Location',
+        eventId: eventId, // Add the eventId so the View Log Details button can work
       },
       notification: [
         'SMS text message',
