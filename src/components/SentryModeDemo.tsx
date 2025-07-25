@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, Modal, ScrollView, fin
 import Icon from 'react-native-vector-icons/Ionicons';
 import { threatAnalysisService } from '../services/threatAnalysisService';
 import { useSentryMode } from '../context/SentryModeContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface SentryModeDemoProps {
   showGuidedDemo: boolean;
@@ -12,6 +13,8 @@ interface SentryModeDemoProps {
 }
 
 const SentryModeDemo: React.FC<SentryModeDemoProps> = ({ showGuidedDemo, setShowGuidedDemo, highlightCardRefs, scrollViewRef }) => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const { settings } = useSentryMode();
   const [demoStep, setDemoStep] = useState(0);
   const [isDemoRunning, setIsDemoRunning] = useState(false);
@@ -22,25 +25,25 @@ const SentryModeDemo: React.FC<SentryModeDemoProps> = ({ showGuidedDemo, setShow
       title: 'Welcome to Sentry Mode Demo',
       description: 'This quick walkthrough shows how Sentry Mode keeps you safe in an emergency.',
       icon: 'shield-checkmark-outline',
-      color: '#A070F2',
+      color: theme.primary,
     },
     {
       title: 'Threat Detected & Analyzed',
       description: 'ThreatSense monitors your messages and uses AI to detect and analyze threats.',
       icon: 'analytics-outline',
-      color: '#FF9800',
+      color: theme.warning,
     },
     {
       title: 'Trusted Contact Alerted',
       description: 'If a serious threat is found, your trusted contact is instantly notified and can respond.',
       icon: 'notifications-outline',
-      color: '#F44336',
+      color: theme.error,
     },
     {
       title: 'You\'re Not Alone',
       description: 'You get confirmation that help is on the way, or the situation is resolved. Ready to see it in action?',
       icon: 'checkmark-circle-outline',
-      color: '#4CAF50',
+      color: theme.success,
     },
   ];
 
@@ -79,7 +82,7 @@ const SentryModeDemo: React.FC<SentryModeDemoProps> = ({ showGuidedDemo, setShow
     } else {
       setHighlightStyle(null);
     }
-  }, [demoStep, showGuidedDemo, highlightCardRefs, scrollViewRef]);
+  }, [demoStep, showGuidedDemo, highlightCardRefs, scrollViewRef, demoSteps]);
 
   const simulateThreat = async (level: 'Low' | 'Medium' | 'High' | 'Critical') => {
     if (!settings.isEnabled) {
@@ -101,14 +104,23 @@ const SentryModeDemo: React.FC<SentryModeDemoProps> = ({ showGuidedDemo, setShow
           text: 'Simulate', 
           onPress: async () => {
             try {
-              const result = await threatAnalysisService.simulateThreat(level);
-              Alert.alert(
-                'Threat Simulated',
-                `A ${level} level threat has been simulated.\n\nThreat Type: ${result.threatType}\nDescription: ${result.description}\n\nCheck the console for notification details.`,
-                [{ text: 'OK' }]
-              );
+              const mockThreat = {
+                id: `demo-${Date.now()}`,
+                message: `Demo ${level} threat simulation`,
+                sender: 'demo@threatsense.app',
+                timestamp: new Date().toISOString(),
+                threatLevel: level,
+                category: 'Demo',
+                confidence: 0.95,
+                analysis: `This is a simulated ${level.toLowerCase()} threat for demonstration purposes.`,
+                recommendations: ['This is a demo - no action needed'],
+              };
+
+              await threatAnalysisService.analyzeText(mockThreat.message);
+              Alert.alert('Simulation Complete', `A ${level} threat has been simulated and processed.`);
             } catch (error) {
-              Alert.alert('Error', 'Failed to simulate threat. Please try again.');
+              console.error('Simulation error:', error);
+              Alert.alert('Simulation Error', 'Failed to simulate threat. Please try again.');
             }
           }
         }
@@ -117,25 +129,21 @@ const SentryModeDemo: React.FC<SentryModeDemoProps> = ({ showGuidedDemo, setShow
   };
 
   const startGuidedDemo = () => {
-    setShowGuidedDemo(true);
     setDemoStep(0);
-    setIsDemoRunning(true);
+    setShowGuidedDemo(true);
   };
 
   const handleNextStep = () => {
-    if (demoStep < demoSteps.length - 1) {
-      setDemoStep(demoStep + 1);
-    } else {
-      setShowGuidedDemo(false);
-      setDemoStep(0);
-      // Start the actual simulation
+    if (demoStep === demoSteps.length - 1) {
       handleStartSimulation();
+    } else {
+      setDemoStep(demoStep + 1);
     }
   };
 
   const skipDemo = () => {
     setShowGuidedDemo(false);
-    setIsDemoRunning(false);
+    setDemoStep(0);
   };
 
   const handleStartSimulation = () => {
@@ -182,9 +190,9 @@ const SentryModeDemo: React.FC<SentryModeDemoProps> = ({ showGuidedDemo, setShow
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     padding: 16,
     marginBottom: 15,
@@ -195,13 +203,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
   },
   description: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 14,
     marginBottom: 16,
   },
@@ -215,7 +223,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   guidedDemoText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 14,
     fontWeight: '600',
     marginLeft: 8,
@@ -235,45 +243,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   lowThreat: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: theme.success,
   },
   mediumThreat: {
-    backgroundColor: '#FF9800',
+    backgroundColor: theme.warning,
   },
   highThreat: {
-    backgroundColor: '#F44336',
+    backgroundColor: theme.error,
   },
   criticalThreat: {
-    backgroundColor: '#9C27B0',
+    backgroundColor: theme.primary,
   },
   threatButtonText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 14,
     fontWeight: '500',
   },
   infoBox: {
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 8,
     padding: 12,
   },
   infoText: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 13,
     marginBottom: 4,
   },
   bold: {
     fontWeight: '600',
-    color: '#fff',
+    color: theme.text,
   },
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: theme.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
   demoModal: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 16,
     width: '90%',
     maxHeight: '80%',
@@ -285,7 +293,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   demoTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 18,
     fontWeight: '600',
     flex: 1,
@@ -310,14 +318,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   stepTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 20,
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 12,
   },
   stepDescription: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
@@ -344,7 +352,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   skipButtonText: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 16,
   },
   nextButton: {
@@ -355,12 +363,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   nextButtonText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginRight: 8,
   },
-  progressText: { color: '#A070F2', fontWeight: '600', fontSize: 15, textAlign: 'center', marginBottom: 8 },
+  progressText: { color: theme.primary, fontWeight: '600', fontSize: 15, textAlign: 'center', marginBottom: 8 },
   highlightOverlay: {
     position: 'absolute',
     top: 0,
@@ -368,9 +376,9 @@ const styles = StyleSheet.create({
     right: 0,
     height: Dimensions.get('window').height,
     borderWidth: 3,
-    borderColor: '#fff',
+    borderColor: theme.text,
     borderRadius: 12,
-    backgroundColor: '#00000015',
+    backgroundColor: theme.overlay,
     zIndex: 9999,
   },
   demoOverlay: {
@@ -378,7 +386,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#222C',
+    backgroundColor: theme.surface,
     padding: 20,
     alignItems: 'center',
     zIndex: 10000,
@@ -387,7 +395,7 @@ const styles = StyleSheet.create({
   },
   stepIconInline: {
     marginVertical: 8,
-    backgroundColor: '#fff2',
+    backgroundColor: theme.border,
     borderRadius: 20,
     padding: 8,
   },
@@ -398,7 +406,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
   skipDemoText: {
-    color: '#B0BEC5',
+    color: theme.textSecondary,
     fontWeight: '600',
     fontSize: 16,
     marginRight: 24,

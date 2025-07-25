@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, Modal, FlatList, TextI
 import Icon from 'react-native-vector-icons/Ionicons';
 import Contacts from 'react-native-contacts';
 import { SentryModeSettings } from '../context/SentryModeContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface ContactPickerProps {
   selectedContact: SentryModeSettings['trustedContact'];
@@ -19,6 +20,8 @@ interface Contact {
 }
 
 const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContactSelect }) => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
@@ -113,8 +116,9 @@ const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContac
 
       console.log('Getting all contacts...');
       const allContacts = await Contacts.getAll();
-      console.log('Total contacts found:', allContacts.length);
+      console.log('Contacts loaded:', allContacts.length);
       
+      // Filter contacts that have phone numbers and valid display names
       const contactsWithPhones = allContacts
         .filter(contact => 
           contact.phoneNumbers && 
@@ -130,25 +134,12 @@ const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContac
       console.log('Contacts with phones:', contactsWithPhones.length);
       setContacts(contactsWithPhones);
       setFilteredContacts(contactsWithPhones);
-      console.log('Contacts loaded successfully');
-      
     } catch (error) {
       console.error('Error loading contacts:', error);
       Alert.alert(
-        'Error Loading Contacts',
-        'Failed to load contacts. Please try again or use the mock contact option.',
-        [
-          { text: 'Use Mock Contact', onPress: () => {
-            const mockContact = {
-              name: 'John Doe',
-              phoneNumber: '+1 (555) 123-4567'
-            };
-            onContactSelect(mockContact);
-            setIsModalVisible(false);
-            setSearchQuery('');
-          }},
-          { text: 'Cancel', style: 'cancel' }
-        ]
+        'Error',
+        'Failed to load contacts. Please try again.',
+        [{ text: 'OK' }]
       );
     } finally {
       setIsLoading(false);
@@ -156,71 +147,74 @@ const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContac
   };
 
   const handleContactPress = () => {
-    Alert.alert(
-      'Select Contact',
-      'Choose how to select your trusted contact:',
-      [
-        {
-          text: 'From Contacts',
-          onPress: async () => {
-            try {
-              console.log('Opening contact picker...');
-              if (hasPermission) {
-                await loadContacts();
-                console.log('Setting modal visible...');
-                setIsModalVisible(true);
-              } else {
-                console.log('Requesting permissions...');
-                await checkPermissions();
-              }
-            } catch (error) {
-              console.error('Error opening contact picker:', error);
-              Alert.alert(
-                'Error',
-                'Unable to open contacts. Please try the mock contact option.',
-                [
-                  { text: 'Use Mock Contact', onPress: () => {
-                    const mockContact = {
-                      name: 'John Doe',
-                      phoneNumber: '+1 (555) 123-4567'
-                    };
-                    onContactSelect(mockContact);
-                    setIsModalVisible(false);
-                    setSearchQuery('');
-                  }},
-                  { text: 'Cancel', style: 'cancel' }
-                ]
-              );
+    if (selectedContact) {
+      // Show options for existing contact
+      Alert.alert(
+        'Trusted Contact',
+        `Current contact: ${selectedContact.name}`,
+        [
+          {
+            text: 'Change Contact',
+            onPress: () => {
+              setIsModalVisible(true);
+              loadContacts();
             }
+          },
+          {
+            text: 'Clear Contact',
+            style: 'destructive',
+            onPress: () => {
+              console.log('Clearing contact');
+              onContactSelect(null);
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
           }
-        },
-        {
-          text: 'Mock Contact (Demo)',
-          onPress: () => {
-            console.log('Using mock contact');
-            const mockContact = {
-              name: 'John Doe',
-              phoneNumber: '+1 (555) 123-4567'
-            };
-            onContactSelect(mockContact);
-            setIsModalVisible(false);
-            setSearchQuery('');
+        ]
+      );
+    } else {
+      // No contact selected, show options
+      Alert.alert(
+        'Select Trusted Contact',
+        'Choose how to select your trusted contact:',
+        [
+          {
+            text: 'From Contacts',
+            onPress: () => {
+              setIsModalVisible(true);
+              loadContacts();
+            }
+          },
+          {
+            text: 'Use Mock Contact',
+            onPress: () => {
+              console.log('Using mock contact');
+              const mockContact = {
+                name: 'John Doe',
+                phoneNumber: '+1 (555) 123-4567'
+              };
+              onContactSelect(mockContact);
+              setIsModalVisible(false);
+              setSearchQuery('');
+            }
+          },
+          {
+            text: 'Clear Contact',
+            style: 'destructive',
+            onPress: () => {
+              console.log('Clearing contact');
+              onContactSelect(null);
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
           }
-        },
-        {
-          text: 'Clear Contact',
-          style: 'destructive',
-          onPress: () => {
-            console.log('Clearing contact');
-            onContactSelect(null);
-          }
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        }
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const handleContactSelect = (contact: Contact) => {
@@ -252,7 +246,7 @@ const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContac
           {item.phoneNumbers[0]?.number || 'No phone number'}
         </Text>
       </View>
-      <Icon name="chevron-forward" size={20} color="#555" />
+      <Icon name="chevron-forward" size={20} color={theme.textSecondary} />
     </TouchableOpacity>
   );
 
@@ -261,7 +255,7 @@ const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContac
       <TouchableOpacity style={styles.container} onPress={handleContactPress}>
         <View style={styles.content}>
           <View style={styles.leftSection}>
-            <Icon name="person-circle-outline" size={24} color="#A070F2" />
+            <Icon name="person-circle-outline" size={24} color={theme.primary} />
             <View style={styles.textContainer}>
               <Text style={styles.label}>Trusted Contact</Text>
               <Text style={styles.value} numberOfLines={1}>
@@ -269,7 +263,7 @@ const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContac
               </Text>
             </View>
           </View>
-          <Icon name="chevron-forward" size={20} color="#555" />
+          <Icon name="chevron-forward" size={20} color={theme.textSecondary} />
         </View>
       </TouchableOpacity>
 
@@ -300,11 +294,11 @@ const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContac
           </View>
 
           <View style={styles.searchContainer}>
-            <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
+            <Icon name="search" size={20} color={theme.textSecondary} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search contacts..."
-              placeholderTextColor="#666"
+              placeholderTextColor={theme.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
@@ -335,9 +329,9 @@ const ContactPicker: React.FC<ContactPickerProps> = ({ selectedContact, onContac
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     padding: 16,
     marginBottom: 15,
@@ -357,18 +351,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 17,
     fontWeight: '500',
   },
   value: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 15,
     marginTop: 2,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: theme.background,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -377,17 +371,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: theme.border,
   },
   closeButton: {
     padding: 8,
   },
   closeButtonText: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 16,
   },
   modalTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -397,7 +391,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surface,
     margin: 20,
     borderRadius: 12,
     paddingHorizontal: 15,
@@ -408,7 +402,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: '#FFFFFF',
+    color: theme.text,
     fontSize: 16,
   },
   contactsList: {
@@ -421,18 +415,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: theme.border,
   },
   contactInfo: {
     flex: 1,
   },
   contactName: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '500',
   },
   contactPhone: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 14,
     marginTop: 2,
   },
@@ -442,7 +436,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 16,
   },
   emptyContainer: {
@@ -452,12 +446,12 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   emptyText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     marginBottom: 10,
   },
   emptySubtext: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 14,
   },
 });

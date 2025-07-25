@@ -6,6 +6,7 @@ import { AccessibleText } from '../components/AccessibleText';
 import { useAccessibility, getAccessibleSpacing, getAccessiblePadding, getAccessibleBorderRadius } from '../context/AccessibilityContext';
 import { useLogs } from '../context/LogContext';
 import { useApp } from '../context/AppContext';
+import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { HomeStackParamList } from '../types/navigation';
@@ -19,6 +20,7 @@ const HomeScreen = () => {
   const { settings } = useAccessibility();
   const { logs, getBlockedSendersCount } = useLogs();
   const { settingsSheetRef } = useApp();
+  const { theme, isLightMode } = useTheme();
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [recentModalVisible, setRecentModalVisible] = useState(false);
   const [recentMeta, setRecentMeta] = useState<{ [logId: string]: { read: boolean; dismissed: boolean } }>({});
@@ -191,13 +193,187 @@ const HomeScreen = () => {
     setRecentMeta(prev => ({ ...prev, [id]: { ...prev[id], dismissed: true } }));
   };
 
+  const styles = StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: 'transparent',
+    },
+    container: {
+      padding: 20,
+      paddingBottom: 40,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 15,
+      paddingTop: 10,
+      paddingBottom: 20,
+    },
+    logoContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    headerTitle: {
+      color: theme.text,
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginLeft: 10,
+    },
+    profileButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    profileImage: {
+      width: 34,
+      height: 34,
+    },
+    statsSection: {
+      marginBottom: 30,
+    },
+    sectionTitle: {
+      color: theme.text,
+      fontSize: 20,
+      fontWeight: '600',
+      marginBottom: 15,
+    },
+    statsGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+    },
+    statCard: {
+      minWidth: 110,
+      maxWidth: 150,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    statHeader: {
+      marginBottom: 8,
+    },
+    statTitleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 4,
+    },
+    statTitle: {
+      color: theme.textSecondary,
+      fontSize: 12,
+      textAlign: 'center',
+    },
+    statValue: {
+      fontSize: 24,
+      fontWeight: 'bold',
+    },
+    recentActivitySection: {
+      marginBottom: 30,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 15,
+    },
+    unreadBadge: {
+      backgroundColor: theme.error,
+      borderRadius: 10,
+      width: 20,
+      height: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginLeft: 10,
+    },
+    unreadText: {
+      color: theme.text,
+      fontSize: 12,
+      fontWeight: 'bold',
+    },
+    recentActivityList: {
+      // Styles for the activity list
+    },
+    recentActivityItem: {
+      marginBottom: 10,
+    },
+    activityHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 2,
+    },
+    activityIconContainer: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: theme.surfaceSecondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
+    },
+    activityInfo: {
+      flex: 1,
+    },
+    activityTitle: {
+      color: theme.text,
+      fontSize: 16,
+      fontWeight: '600',
+      marginBottom: 2,
+    },
+    activityActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    dismissButton: {
+      padding: 4,
+    },
+    activityMetaRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 2,
+      marginLeft: 44,
+      marginRight: 4,
+    },
+    activityType: {
+      color: theme.textSecondary,
+      fontSize: 12,
+      fontWeight: '500',
+      textTransform: 'capitalize',
+    },
+    activityDate: {
+      color: theme.textSecondary,
+      fontSize: 12,
+      fontWeight: '400',
+      textAlign: 'right',
+    },
+    noActivityContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 40,
+    },
+    noActivityIcon: {
+      marginBottom: 10,
+    },
+    noActivityTitle: {
+      color: theme.text,
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 5,
+    },
+    noActivitySubtitle: {
+      color: theme.textSecondary,
+      fontSize: 12,
+      textAlign: 'center',
+    },
+  });
+
   return (
-    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
+    <LinearGradient colors={isLightMode ? ['#f5f5f5', '#e8e8e8'] : ['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.headerRow}>
             <View style={styles.logoContainer}>
-              <Icon name="shield-outline" size={28} color="#A070F2" />
+              <Icon name="shield-outline" size={28} color={theme.primary} />
               <Text style={styles.headerTitle}>ThreatSense</Text>
             </View>
             <TouchableOpacity
@@ -205,7 +381,7 @@ const HomeScreen = () => {
               style={styles.profileButton}
               accessibilityLabel="Open Settings"
             >
-              <Icon name="person-circle-outline" size={34} color="#fff" style={styles.profileImage} />
+              <Icon name="person-circle-outline" size={34} color={theme.text} style={styles.profileImage} />
             </TouchableOpacity>
           </View>
 
@@ -309,179 +485,5 @@ const HomeScreen = () => {
     </LinearGradient>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  container: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingTop: 10,
-    paddingBottom: 20,
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginLeft: 10,
-  },
-  profileButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileImage: {
-    width: 34,
-    height: 34,
-  },
-  statsSection: {
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 15,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  statCard: {
-    minWidth: 110,
-    maxWidth: 150,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statHeader: {
-    marginBottom: 8,
-  },
-  statTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  statTitle: {
-    color: '#B0B0B0',
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  recentActivitySection: {
-    marginBottom: 30,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  unreadBadge: {
-    backgroundColor: '#FF6B6B',
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 10,
-  },
-  unreadText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  recentActivityList: {
-    // Styles for the activity list
-  },
-  recentActivityItem: {
-    marginBottom: 10,
-  },
-  activityHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  activityIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  activityInfo: {
-    flex: 1,
-  },
-  activityTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  activityActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dismissButton: {
-    padding: 4,
-  },
-  activityMetaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 2,
-    marginLeft: 44,
-    marginRight: 4,
-  },
-  activityType: {
-    color: '#8A8A8E',
-    fontSize: 12,
-    fontWeight: '500',
-    textTransform: 'capitalize',
-  },
-  activityDate: {
-    color: '#8A8A8E',
-    fontSize: 12,
-    fontWeight: '400',
-    textAlign: 'right',
-  },
-  noActivityContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-  },
-  noActivityIcon: {
-    marginBottom: 10,
-  },
-  noActivityTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  noActivitySubtitle: {
-    color: '#B0B0B0',
-    fontSize: 12,
-    textAlign: 'center',
-  },
-});
 
 export default HomeScreen; 

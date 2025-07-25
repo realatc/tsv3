@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useTheme } from '../context/ThemeContext';
 
 export type ThreatLevel = 'Low' | 'Medium' | 'High';
 
@@ -9,32 +10,34 @@ interface ThreatLevelPickerProps {
   onLevelSelect: (level: ThreatLevel) => void;
 }
 
-const threatLevels: { level: ThreatLevel; label: string; color: string; icon: string; description: string }[] = [
-  {
-    level: 'Low',
-    label: 'Low',
-    color: '#4CAF50',
-    icon: 'shield-outline',
-    description: 'Minor threats only'
-  },
-  {
-    level: 'Medium',
-    label: 'Medium',
-    color: '#FF9800',
-    icon: 'shield-half',
-    description: 'Moderate threats'
-  },
-  {
-    level: 'High',
-    label: 'High',
-    color: '#F44336',
-    icon: 'shield',
-    description: 'Significant threats'
-  }
-];
-
 const ThreatLevelPicker: React.FC<ThreatLevelPickerProps> = ({ selectedLevel, onLevelSelect }) => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const threatLevels: { level: ThreatLevel; label: string; color: string; icon: string; description: string }[] = [
+    {
+      level: 'Low',
+      label: 'Low',
+      color: theme.success,
+      icon: 'shield-outline',
+      description: 'Minor threats only'
+    },
+    {
+      level: 'Medium',
+      label: 'Medium',
+      color: theme.warning,
+      icon: 'shield-half',
+      description: 'Moderate threats'
+    },
+    {
+      level: 'High',
+      label: 'High',
+      color: theme.error,
+      icon: 'shield',
+      description: 'Significant threats'
+    }
+  ];
 
   const selectedThreatLevel = threatLevels.find(tl => tl.level === selectedLevel);
 
@@ -49,14 +52,14 @@ const ThreatLevelPicker: React.FC<ThreatLevelPickerProps> = ({ selectedLevel, on
         <View style={styles.content}>
           <View style={styles.leftSection}>
             <View style={[styles.levelIndicator, { backgroundColor: selectedThreatLevel?.color }]}>
-              <Icon name={selectedThreatLevel?.icon as any} size={16} color="#fff" />
+              <Icon name={selectedThreatLevel?.icon as any} size={16} color={theme.text} />
             </View>
             <View style={styles.textContainer}>
               <Text style={styles.label}>Notify on Threat Level</Text>
               <Text style={styles.value}>{selectedLevel}</Text>
             </View>
           </View>
-          <Icon name="chevron-forward" size={20} color="#555" />
+          <Icon name="chevron-forward" size={20} color={theme.textSecondary} />
         </View>
       </TouchableOpacity>
 
@@ -71,7 +74,7 @@ const ThreatLevelPicker: React.FC<ThreatLevelPickerProps> = ({ selectedLevel, on
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Select Threat Level</Text>
               <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-                <Icon name="close" size={24} color="#fff" />
+                <Icon name="close" size={24} color={theme.text} />
               </TouchableOpacity>
             </View>
 
@@ -87,14 +90,14 @@ const ThreatLevelPicker: React.FC<ThreatLevelPickerProps> = ({ selectedLevel, on
                 >
                   <View style={styles.optionContent}>
                     <View style={[styles.optionIcon, { backgroundColor: threatLevel.color }]}>
-                      <Icon name={threatLevel.icon as any} size={20} color="#fff" />
+                      <Icon name={threatLevel.icon as any} size={20} color={theme.text} />
                     </View>
                     <View style={styles.optionText}>
                       <Text style={styles.optionLabel}>{threatLevel.label}</Text>
                       <Text style={styles.optionDescription}>{threatLevel.description}</Text>
                     </View>
                     {selectedLevel === threatLevel.level && (
-                      <Icon name="checkmark-circle" size={24} color="#A070F2" />
+                      <Icon name="checkmark-circle" size={24} color={theme.primary} />
                     )}
                   </View>
                 </TouchableOpacity>
@@ -107,9 +110,9 @@ const ThreatLevelPicker: React.FC<ThreatLevelPickerProps> = ({ selectedLevel, on
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     padding: 16,
     marginBottom: 15,
@@ -136,22 +139,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 17,
     fontWeight: '500',
   },
   value: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 15,
     marginTop: 2,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: theme.overlay,
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1E1E1E',
+    backgroundColor: theme.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: 34,
@@ -162,10 +165,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: theme.border,
   },
   modalTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -175,12 +178,12 @@ const styles = StyleSheet.create({
   option: {
     marginBottom: 12,
     borderRadius: 10,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surface,
   },
   selectedOption: {
-    backgroundColor: '#3A3A3C',
+    backgroundColor: theme.surfaceSecondary,
     borderWidth: 1,
-    borderColor: '#A070F2',
+    borderColor: theme.primary,
   },
   optionContent: {
     flexDirection: 'row',
@@ -199,12 +202,12 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   optionLabel: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '500',
   },
   optionDescription: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 14,
     marginTop: 2,
   },

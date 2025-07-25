@@ -17,6 +17,7 @@ import { useRoute, RouteProp } from '@react-navigation/native';
 import { analyzeText, getRelatedThreatIntel, RelatedIntel } from '../services/perplexity/perplexityService';
 import { checkUrlSafety, UrlAnalysisResult } from '../services/threatReader/safeBrowsing';
 import { getSeverityColor, getSeverityIcon } from '../utils/threatLevel';
+import { useTheme } from '../context/ThemeContext';
 
 type AnalysisResult = {
   threatLevel: 'safe' | 'low' | 'medium' | 'high' | 'critical';
@@ -33,6 +34,8 @@ type UrlCheckResult = {
 type ThreatAnalysisRouteProp = RouteProp<{ ThreatAnalysis: { initialText?: string } }, 'ThreatAnalysis'>;
 
 const ThreatAnalysisScreen = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const route = useRoute<ThreatAnalysisRouteProp>();
   const [text, setText] = useState(route.params?.initialText || '');
   const [result, setResult] = useState<any>(null);
@@ -133,11 +136,11 @@ const ThreatAnalysisScreen = () => {
 
   const getUrlStatusColor = (status: string) => {
     switch (status) {
-      case 'malware': return '#FF4444';
-      case 'phishing': return '#FF8800';
-      case 'uncommon': return '#FFAA00';
-      case 'safe': return '#44AA44';
-      default: return '#888888';
+      case 'malware': return theme.error;
+      case 'phishing': return theme.warning;
+      case 'uncommon': return theme.warning;
+      case 'safe': return theme.success;
+      default: return theme.textSecondary;
     }
   };
 
@@ -220,12 +223,12 @@ const ThreatAnalysisScreen = () => {
 
   const renderResult = () => {
     if (loading) {
-      return <ActivityIndicator size="large" color="#4A90E2" style={styles.centered} />;
+      return <ActivityIndicator size="large" color={theme.primary} style={styles.centered} />;
     }
     if (!result) {
       return (
         <View style={styles.placeholderContainer}>
-          <Icon name="chatbox-ellipses-outline" size={80} color="#444" />
+          <Icon name="chatbox-ellipses-outline" size={80} color={theme.textSecondary} />
           <Text style={styles.placeholderText}>
             Enter text above and tap 'Analyze' to check for threats.
           </Text>
@@ -264,7 +267,7 @@ const ThreatAnalysisScreen = () => {
     if (isFetchingIntel) {
       return (
         <View style={styles.centered}>
-          <ActivityIndicator size="small" color="#4A90E2" />
+          <ActivityIndicator size="small" color={theme.primary} />
           <Text style={styles.loadingText}>Finding related threats...</Text>
         </View>
       );
@@ -301,7 +304,7 @@ const ThreatAnalysisScreen = () => {
           <TextInput
             style={styles.textInput}
             placeholder="Enter a URL, paste an email, message, or any text you want to check for threats..."
-            placeholderTextColor="#666"
+            placeholderTextColor={theme.textSecondary}
             value={text}
             onChangeText={setText}
             multiline
@@ -314,10 +317,10 @@ const ThreatAnalysisScreen = () => {
             disabled={!text.trim() || loading}
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={theme.text} />
             ) : (
               <>
-                <Icon name="shield-checkmark" size={20} color="#fff" />
+                <Icon name="shield-checkmark" size={20} color={theme.text} />
                 <Text style={styles.analyzeButtonText}>Analyze</Text>
               </>
             )}
@@ -336,24 +339,24 @@ const ThreatAnalysisScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#18181C',
+    backgroundColor: theme.background,
   },
   header: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: theme.border,
   },
   headerTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 4,
   },
   headerSubtitle: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 16,
   },
   content: {
@@ -363,31 +366,31 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   textInput: {
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     minHeight: 120,
     textAlignVertical: 'top',
     borderWidth: 1,
-    borderColor: '#2C2C2E',
+    borderColor: theme.border,
     marginBottom: 16,
   },
   analyzeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#A070F2',
+    backgroundColor: theme.primary,
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 24,
   },
   analyzeButtonDisabled: {
-    backgroundColor: '#444',
+    backgroundColor: theme.surfaceSecondary,
   },
   analyzeButtonText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -396,15 +399,15 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   urlResultsContainer: {
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#2C2C2E',
+    borderColor: theme.border,
   },
   urlResultsTitle: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 12,
@@ -412,7 +415,7 @@ const styles = StyleSheet.create({
   urlResultItem: {
     marginBottom: 12,
     padding: 12,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 8,
   },
   urlResultHeader: {
@@ -426,23 +429,23 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   urlText: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 14,
     fontFamily: 'monospace',
   },
   urlErrorText: {
-    color: '#FF4444',
+    color: theme.error,
     fontSize: 12,
     marginTop: 4,
   },
   urlDomainText: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 12,
     fontWeight: '600',
     marginTop: 4,
   },
   urlDetailText: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 11,
     marginTop: 2,
   },
@@ -450,16 +453,16 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#333',
+    borderTopColor: theme.border,
   },
   recommendationText: {
-    color: '#FFAA00',
+    color: theme.warning,
     fontSize: 11,
     marginTop: 2,
     lineHeight: 14,
   },
   resultCard: {
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -481,25 +484,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
   },
   sectionContent: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 14,
     lineHeight: 20,
   },
   relatedIntelContainer: {
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#2C2C2E',
+    borderColor: theme.border,
   },
   relatedIntelTitle: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 12,
@@ -507,22 +510,22 @@ const styles = StyleSheet.create({
   intelItem: {
     marginBottom: 16,
     padding: 12,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 8,
   },
   intelTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
   },
   intelSource: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 12,
     marginBottom: 4,
   },
   intelSnippet: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 12,
     lineHeight: 16,
   },
@@ -532,13 +535,13 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   placeholderText: {
-    color: '#666',
+    color: theme.textSecondary,
     fontSize: 16,
     textAlign: 'center',
     marginTop: 16,
   },
   placeholderSubtext: {
-    color: '#666',
+    color: theme.textSecondary,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 8,
@@ -549,12 +552,12 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   loadingText: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 14,
     marginTop: 8,
   },
   inputHint: {
-    color: '#888',
+    color: theme.textSecondary,
     fontSize: 12,
     marginTop: 8,
     textAlign: 'center',

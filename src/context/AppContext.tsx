@@ -2,12 +2,33 @@ import React, { createContext, useContext, useRef, useState, RefObject, useEffec
 import BottomSheet from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+type SentryAlertModalType = {
+  message: string;
+  details?: {
+    level: string;
+    type: string;
+    description: string;
+    time: string;
+    location: string;
+    alertId?: string;
+    eventId?: string;
+  };
+  notification?: string[];
+  responses?: string[];
+  footer?: string;
+  alertId?: string;
+  id?: string;
+  onOk?: ((alertId: string) => void) | null;
+  onCall?: (() => void) | null;
+  onText?: (() => void) | null;
+};
+
 type AppContextType = {
   settingsSheetRef: RefObject<BottomSheet>;
   contactResponseModal: null | { message: string; threatType?: string; responseType?: string; timestamp?: string; alertId?: string };
   setContactResponseModal: React.Dispatch<React.SetStateAction<null | { message: string; threatType?: string; responseType?: string; timestamp?: string; alertId?: string }>>;
-  sentryAlertModal: any;
-  setSentryAlertModal: React.Dispatch<React.SetStateAction<any>>;
+  sentryAlertModal: SentryAlertModalType | null;
+  setSentryAlertModal: React.Dispatch<React.SetStateAction<SentryAlertModalType | null>>;
   ezModeEnabled: boolean;
   setEzModeEnabled: (enabled: boolean) => void;
 };
@@ -24,9 +45,9 @@ export const setGlobalContactResponseModal = (modal: null | { message: string; t
   }
 };
 
-let globalSetSentryAlertModal: null | ((modal: any) => void) = null;
-let lastModalContent: any = null;
-export const setGlobalSentryAlertModal = (modal: any) => {
+let globalSetSentryAlertModal: null | ((modal: SentryAlertModalType | null) => void) = null;
+let lastModalContent: SentryAlertModalType | null = null;
+export const setGlobalSentryAlertModal = (modal: SentryAlertModalType | null) => {
   console.log('[setGlobalSentryAlertModal] called with:', modal);
   if (modal === lastModalContent) {
     console.warn('[setGlobalSentryAlertModal] Prevented duplicate modal set');
@@ -43,7 +64,7 @@ export const setGlobalSentryAlertModal = (modal: any) => {
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const settingsSheetRef = useRef<BottomSheet>(null);
   const [contactResponseModal, setContactResponseModal] = useState<null | { message: string; threatType?: string; responseType?: string; timestamp?: string; alertId?: string }>(null);
-  const [sentryAlertModal, setSentryAlertModal] = useState<any>(null);
+  const [sentryAlertModal, setSentryAlertModal] = useState<SentryAlertModalType | null>(null);
   const [ezModeEnabled, setEzModeEnabledState] = useState<boolean>(false);
 
   // Load ezModeEnabled from AsyncStorage on mount

@@ -5,6 +5,7 @@ import { useAccessibility } from '../context/AccessibilityContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types/navigation';
+import { useTheme } from '../context/ThemeContext';
 
 type AccessibilitySettingsScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -15,46 +16,48 @@ type Props = {
   navigation: AccessibilitySettingsScreenNavigationProp;
 };
 
-const SettingItem = ({ 
-  title,
-  icon,
-  value,
-  onValueChange
-}: {
-  title: string;
-  icon: string;
-  value?: boolean;
-  onValueChange?: (value: boolean) => void;
-}) => (
-  <View style={styles.settingItem}>
-    <View style={styles.settingLeft}>
-      <Icon name={icon} size={22} color="#A070F2" style={styles.settingIcon} />
-      <Text style={styles.settingTitle}>{title}</Text>
-    </View>
-    {typeof value === 'boolean' && onValueChange && (
-      <Switch
-        value={value}
-        onValueChange={onValueChange}
-        trackColor={{ false: '#767577', true: '#81b0ff' }}
-        thumbColor={value ? '#A070F2' : '#f4f3f4'}
-        ios_backgroundColor="#3e3e3e"
-      />
-    )}
-  </View>
-);
-
 const AccessibilitySettingsScreen = ({ navigation }: Props) => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const { settings, updateSetting } = useAccessibility();
+
+  const SettingItem = ({ 
+    title,
+    icon,
+    value,
+    onValueChange
+  }: {
+    title: string;
+    icon: string;
+    value?: boolean;
+    onValueChange?: (value: boolean) => void;
+  }) => (
+    <View style={styles.settingItem}>
+      <View style={styles.settingLeft}>
+        <Icon name={icon} size={22} color={theme.primary} style={styles.settingIcon} />
+        <Text style={styles.settingTitle}>{title}</Text>
+      </View>
+      {typeof value === 'boolean' && onValueChange && (
+        <Switch
+          value={value}
+          onValueChange={onValueChange}
+          trackColor={{ false: theme.border, true: theme.primaryLight }}
+          thumbColor={value ? theme.primary : theme.surface}
+          ios_backgroundColor={theme.surfaceSecondary}
+        />
+      )}
+    </View>
+  );
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 15 }}>
-          <Text style={{ color: '#A070F2', fontSize: 17, fontWeight: '600' }}>Done</Text>
+          <Text style={{ color: theme.primary, fontSize: 17, fontWeight: '600' }}>Done</Text>
         </TouchableOpacity>
       ),
     });
-  }, [navigation]);
+  }, [navigation, theme.primary]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -115,16 +118,16 @@ const AccessibilitySettingsScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: theme.background,
   },
   container: {
     padding: 16,
   },
   sectionTitle: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 13,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -133,7 +136,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   settingsGroup: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
   },
   settingItem: {
@@ -143,7 +146,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#3A3A3C',
+    borderBottomColor: theme.border,
   },
   settingLeft: {
     flexDirection: 'row',
@@ -155,7 +158,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   settingTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 17,
   },
 });

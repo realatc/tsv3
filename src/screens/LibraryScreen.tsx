@@ -6,6 +6,7 @@ import { RootStackParamList } from '../types/navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import { useApp } from '../context/AppContext';
+import { useTheme } from '../context/ThemeContext';
 
 type LibraryScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Library'>;
 type NavigableLibraryScreen =
@@ -20,6 +21,8 @@ type NavigableLibraryScreen =
   | 'KnowledgeBaseSentryMode';
 
 const LibraryScreen = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const navigation = useNavigation<LibraryScreenNavigationProp>();
   const { settingsSheetRef } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
@@ -105,7 +108,7 @@ const LibraryScreen = () => {
   };
 
   return (
-    <LinearGradient colors={['#1E1E1E', '#121212']} style={styles.container}>
+    <LinearGradient colors={[theme.background, theme.surface]} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.headerRow}>
@@ -115,7 +118,7 @@ const LibraryScreen = () => {
               style={styles.profileButton}
               accessibilityLabel="Open Settings"
             >
-              <Icon name="person-circle-outline" size={34} color="#fff" style={styles.profileImage} />
+              <Icon name="person-circle-outline" size={34} color={theme.text} style={styles.profileImage} />
             </TouchableOpacity>
           </View>
 
@@ -126,11 +129,11 @@ const LibraryScreen = () => {
           {/* Search Input */}
           <View style={styles.searchContainer}>
             <View style={styles.searchInputContainer}>
-              <Icon name="search-outline" size={20} color="#666" style={styles.searchIcon} />
+              <Icon name="search-outline" size={20} color={theme.textSecondary} style={styles.searchIcon} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search articles..."
-                placeholderTextColor="#666"
+                placeholderTextColor={theme.textSecondary}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 autoCapitalize="none"
@@ -142,7 +145,7 @@ const LibraryScreen = () => {
                   style={styles.clearButton}
                   accessibilityLabel="Clear search"
                 >
-                  <Icon name="close-circle" size={20} color="#666" />
+                  <Icon name="close-circle" size={20} color={theme.textSecondary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -162,20 +165,20 @@ const LibraryScreen = () => {
               onPress={() => handlePress(item.screen as string)}
             >
               <View style={styles.iconContainer}>
-                <Icon name={item.icon} size={28} color="#A070F2" />
+                <Icon name={item.icon} size={28} color={theme.primary} />
               </View>
               <View style={styles.textContainer}>
                 <Text style={styles.itemTitle}>{item.title}</Text>
                 <Text style={styles.itemSubtitle}>{item.subtitle}</Text>
               </View>
-              <Icon name="chevron-forward-outline" size={22} color="#555" />
+              <Icon name="chevron-forward-outline" size={22} color={theme.textSecondary} />
             </TouchableOpacity>
           ))}
 
           {/* No results message */}
           {searchQuery.length > 0 && filteredMenuItems.length === 0 && (
             <View style={styles.noResultsContainer}>
-              <Icon name="search-outline" size={48} color="#666" />
+              <Icon name="search-outline" size={48} color={theme.textSecondary} />
               <Text style={styles.noResultsText}>No articles found</Text>
               <Text style={styles.noResultsSubtext}>
                 Try searching with different keywords
@@ -188,7 +191,7 @@ const LibraryScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -213,7 +216,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 24,
     fontWeight: 'bold',
     marginLeft: 10,
@@ -232,24 +235,24 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text,
     marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: '#aaa',
+    color: theme.textSecondary,
     marginBottom: 30,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
   },
   iconContainer: {
-    backgroundColor: 'rgba(160, 112, 242, 0.15)',
+    backgroundColor: theme.primaryLight,
     borderRadius: 10,
     padding: 10,
     marginRight: 15,
@@ -260,18 +263,18 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.text,
   },
   itemSubtitle: {
     fontSize: 14,
-    color: '#999',
+    color: theme.textSecondary,
     marginTop: 2,
   },
   viewAllButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 15,
     marginTop: 20,
@@ -279,7 +282,7 @@ const styles = StyleSheet.create({
   viewAllButtonText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#A070F2',
+    color: theme.primary,
     marginRight: 8,
   },
   searchContainer: {
@@ -288,19 +291,19 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     paddingHorizontal: 15,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: theme.border,
   },
   searchIcon: {
     marginRight: 10,
   },
   searchInput: {
     flex: 1,
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     paddingVertical: 0,
   },
@@ -308,7 +311,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   resultsCount: {
-    color: '#aaa',
+    color: theme.textSecondary,
     fontSize: 14,
     marginBottom: 15,
     fontStyle: 'italic',
@@ -318,14 +321,14 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   noResultsText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 18,
     fontWeight: '600',
     marginTop: 15,
     marginBottom: 8,
   },
   noResultsSubtext: {
-    color: '#999',
+    color: theme.textSecondary,
     fontSize: 14,
     textAlign: 'center',
   },

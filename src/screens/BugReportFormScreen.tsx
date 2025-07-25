@@ -16,10 +16,13 @@ import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from '../types/navigation';
 import GitHubService from '../services/githubService';
+import { useTheme } from '../context/ThemeContext';
 
 type BugReportFormNavigationProp = StackNavigationProp<RootStackParamList, 'BugReportForm'>;
 
 const BugReportFormScreen = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const navigation = useNavigation<BugReportFormNavigationProp>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -99,94 +102,35 @@ ${formData.additional || 'None'}
         }
       }
 
-      // Fallback: Use email method
-      const subject = encodeURIComponent(`Bug Report: ${formData.title}`);
-      const body = encodeURIComponent(issueBody);
-      const mailtoUrl = `mailto:bugs@threatsense.app?subject=${subject}&body=${body}`;
+      // Fallback: Copy to clipboard and show instructions
+      const emailBody = `Subject: Bug Report - ${formData.title}
 
-      // Try to open email app
-      const { Linking } = require('react-native');
+${issueBody}
+
+Please send this email to: support@threatsense.app`;
+
+      await Clipboard.setString(emailBody);
       
-      try {
-        await Linking.openURL(mailtoUrl);
-        
-        Alert.alert(
-          'Bug Report Ready!',
-          'Your bug report has been prepared and your email app should open. If it doesn\'t, please email us at bugs@threatsense.app',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.goBack(),
-            },
-          ]
-        );
-      } catch (emailError) {
-        console.error('Email app not available:', emailError);
-        
-        // Fallback: Show the formatted bug report and let user copy it
-        Alert.alert(
-          'Email App Not Available',
-          'Your bug report is ready. Please copy the details below and email us at bugs@threatsense.app',
-          [
-            {
-              text: 'Copy Bug Report',
-              onPress: async () => {
-                // Copy the formatted bug report to clipboard
-                const formattedReport = `Bug Report for ThreatSense
-
-Title: ${formData.title}
-
-Description: ${formData.description}
-
-Expected Behavior: ${formData.expected || 'Not specified'}
-
-Actual Behavior: ${formData.actual || 'Not specified'}
-
-Steps to Reproduce: ${formData.steps || 'Not specified'}
-
-Additional Information: ${formData.additional || 'None'}
-
-Device: iOS
-App Version: 1.0.0
-Date: ${new Date().toLocaleDateString()}
-
----
-Please email this report to: bugs@threatsense.app`;
-
-                try {
-                  await Clipboard.setString(formattedReport);
-                  Alert.alert(
-                    'Bug Report Copied!',
-                    'Your bug report has been copied to your clipboard. Please paste it into an email and send to bugs@threatsense.app',
-                    [
-                      { text: 'OK', onPress: () => navigation.goBack() }
-                    ]
-                  );
-                } catch (clipboardError) {
-                  console.error('Clipboard error:', clipboardError);
-                  Alert.alert(
-                    'Copy Failed',
-                    'Please manually copy the bug report details and email to bugs@threatsense.app',
-                    [
-                      { text: 'OK', onPress: () => navigation.goBack() }
-                    ]
-                  );
-                }
-              }
-            },
-            {
-              text: 'Cancel',
-              style: 'cancel'
+      Alert.alert(
+        'Bug Report Ready!',
+        'Your bug report has been copied to your clipboard. Please paste it into your email app and send it to support@threatsense.app',
+        [
+          {
+            text: 'Copy Again',
+            onPress: async () => {
+              await Clipboard.setString(emailBody);
+              Alert.alert('Copied!', 'Bug report copied to clipboard again.');
             }
-          ]
-        );
-      }
+          },
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          }
+        ]
+      );
     } catch (error) {
       console.error('Error submitting bug report:', error);
-      Alert.alert(
-        'Submission Error',
-        'There was an error submitting your bug report. Please try again or email us directly at bugs@threatsense.app'
-      );
+      Alert.alert('Error', 'Failed to submit bug report. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -203,7 +147,7 @@ Please email this report to: bugs@threatsense.app`;
           style={styles.backButton} 
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back" size={24} color="#fff" />
+          <Icon name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Report a Bug</Text>
         <View style={styles.headerSpacer} />
@@ -212,7 +156,7 @@ Please email this report to: bugs@threatsense.app`;
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.form}>
           <View style={styles.iconContainer}>
-            <Icon name="bug" size={48} color="#A070F2" />
+            <Icon name="bug" size={48} color={theme.primary} />
           </View>
           
           <Text style={styles.title}>Help Us Improve ThreatSense</Text>
@@ -225,7 +169,7 @@ Please email this report to: bugs@threatsense.app`;
             <TextInput
               style={styles.input}
               placeholder="Brief description of the bug"
-              placeholderTextColor="#666"
+              placeholderTextColor={theme.textSecondary}
               value={formData.title}
               onChangeText={(text) => updateFormData('title', text)}
               maxLength={100}
@@ -237,7 +181,7 @@ Please email this report to: bugs@threatsense.app`;
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Describe what happened in detail"
-              placeholderTextColor="#666"
+              placeholderTextColor={theme.textSecondary}
               value={formData.description}
               onChangeText={(text) => updateFormData('description', text)}
               multiline
@@ -251,7 +195,7 @@ Please email this report to: bugs@threatsense.app`;
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Describe what you expected to see or happen"
-              placeholderTextColor="#666"
+              placeholderTextColor={theme.textSecondary}
               value={formData.expected}
               onChangeText={(text) => updateFormData('expected', text)}
               multiline
@@ -265,7 +209,7 @@ Please email this report to: bugs@threatsense.app`;
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Describe what actually happened instead"
-              placeholderTextColor="#666"
+              placeholderTextColor={theme.textSecondary}
               value={formData.actual}
               onChangeText={(text) => updateFormData('actual', text)}
               multiline
@@ -279,7 +223,7 @@ Please email this report to: bugs@threatsense.app`;
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="1. First step&#10;2. Second step&#10;3. Third step"
-              placeholderTextColor="#666"
+              placeholderTextColor={theme.textSecondary}
               value={formData.steps}
               onChangeText={(text) => updateFormData('steps', text)}
               multiline
@@ -293,7 +237,7 @@ Please email this report to: bugs@threatsense.app`;
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Any other details that might help us understand the issue"
-              placeholderTextColor="#666"
+              placeholderTextColor={theme.textSecondary}
               value={formData.additional}
               onChangeText={(text) => updateFormData('additional', text)}
               multiline
@@ -308,10 +252,10 @@ Please email this report to: bugs@threatsense.app`;
             disabled={isSubmitting}
           >
             {isSubmitting ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={theme.text} />
             ) : (
               <>
-                <Icon name="send" size={20} color="#fff" />
+                <Icon name="send" size={20} color={theme.text} />
                 <Text style={styles.submitButtonText}>Submit Bug Report</Text>
               </>
             )}
@@ -323,7 +267,7 @@ Please email this report to: bugs@threatsense.app`;
           
           {!GitHubService.isTokenConfigured() && (
             <View style={styles.tokenWarning}>
-              <Icon name="warning" size={16} color="#FFD700" />
+              <Icon name="warning" size={16} color={theme.warning} />
               <Text style={styles.tokenWarningText}>
                 GitHub integration not configured. Reports will be sent via email.
               </Text>
@@ -335,10 +279,10 @@ Please email this report to: bugs@threatsense.app`;
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#18181C',
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -346,13 +290,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: theme.border,
   },
   backButton: {
     padding: 8,
   },
   headerTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 20,
     fontWeight: 'bold',
     marginLeft: 16,
@@ -371,14 +315,14 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   title: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
@@ -388,18 +332,18 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   label: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 12,
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
   },
   textArea: {
@@ -407,7 +351,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   submitButton: {
-    backgroundColor: '#A070F2',
+    backgroundColor: theme.primary,
     borderRadius: 8,
     padding: 16,
     flexDirection: 'row',
@@ -420,13 +364,13 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitButtonText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 8,
   },
   disclaimer: {
-    color: '#666',
+    color: theme.textSecondary,
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 16,
@@ -434,13 +378,13 @@ const styles = StyleSheet.create({
   tokenWarning: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2A2A2A',
+    backgroundColor: theme.surfaceSecondary,
     padding: 12,
     borderRadius: 8,
     marginTop: 16,
   },
   tokenWarningText: {
-    color: '#FFD700',
+    color: theme.warning,
     fontSize: 12,
     marginLeft: 8,
     flex: 1,

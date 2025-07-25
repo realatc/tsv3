@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import ContactPicker from './ContactPicker';
+import { useTheme } from '../context/ThemeContext';
 
 const ContactPickerTest = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [selectedContact, setSelectedContact] = useState<any>(null);
 
   const handleContactSelect = (contact: any) => {
@@ -35,40 +38,40 @@ const ContactPickerTest = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: theme.background,
   },
   content: {
     flex: 1,
     padding: 20,
   },
   title: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
   },
   subtitle: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 16,
     marginBottom: 30,
   },
   resultContainer: {
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     padding: 20,
     marginTop: 20,
   },
   resultTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 10,
   },
   resultText: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 16,
   },
 });

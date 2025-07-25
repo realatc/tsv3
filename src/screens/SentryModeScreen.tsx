@@ -11,16 +11,17 @@ import { notificationService, SentryModeAlert } from '../services/notificationSe
 import { navigate, goBack } from '../services/navigationService';
 import { useApp } from '../context/AppContext';
 import { getSeverityColor } from '../utils/threatLevel';
+import { useTheme } from '../context/ThemeContext';
 
 type SentryModeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'SentryMode'>;
 
-const getStatusColor = (status: SentryModeAlert['status']) => {
+const getStatusColor = (status: SentryModeAlert['status'], theme: any) => {
   switch (status) {
-    case 'acknowledged': return '#4CAF50';
-    case 'contacted': return '#2196F3';
-    case 'emergency': return '#F44336';
-    case 'no_response': return '#FF9800';
-    default: return '#8A8A8E';
+    case 'acknowledged': return theme.success;
+    case 'contacted': return theme.primary;
+    case 'emergency': return theme.error;
+    case 'no_response': return theme.warning;
+    default: return theme.textSecondary;
   }
 };
 
@@ -36,6 +37,8 @@ const getStatusText = (status: SentryModeAlert['status']) => {
 };
 
 const SentryModeScreen = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const navigation = useNavigation<SentryModeScreenNavigationProp>();
   const { settings, updateSettings, isLoading } = useSentryMode();
   const { settingsSheetRef, contactResponseModal, setContactResponseModal } = useApp();
@@ -204,12 +207,12 @@ const SentryModeScreen = () => {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#18181A' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Text style={styles.headerTitle}>Sentry Mode</Text>
           <TouchableOpacity onPress={() => setShowDemoInfo(true)} style={styles.demoInfoIcon}>
-            <Icon name="help-circle-outline" size={24} color="#A070F2" />
+            <Icon name="help-circle-outline" size={24} color={theme.primary} />
           </TouchableOpacity>
         </View>
         <Text style={styles.headerDescription}>
@@ -220,7 +223,7 @@ const SentryModeScreen = () => {
         <View ref={enableCardRef} style={styles.card}>
           <View style={styles.row}>
             <View style={styles.leftSection}>
-              <Icon name="shield-checkmark-outline" size={24} color="#A070F2" />
+              <Icon name="shield-checkmark-outline" size={24} color={theme.primary} />
               <View style={styles.textContainer}>
                 <Text style={styles.rowTitle}>Enable Sentry Mode</Text>
                 <Text style={styles.rowSubtitle}>
@@ -231,8 +234,8 @@ const SentryModeScreen = () => {
             <Switch
               value={settings.isEnabled}
               onValueChange={handleToggleSentryMode}
-              trackColor={{ false: '#767577', true: '#A070F2' }}
-              thumbColor={settings.isEnabled ? '#fff' : '#f4f3f4'}
+              trackColor={{ false: theme.border, true: theme.primary }}
+              thumbColor={settings.isEnabled ? theme.text : theme.surface}
             />
           </View>
         </View>
@@ -244,9 +247,9 @@ const SentryModeScreen = () => {
           activeOpacity={0.8}
         >
           <View style={styles.docsHeader}>
-            <Icon name="document-text-outline" size={20} color="#4A90E2" />
+            <Icon name="document-text-outline" size={20} color={theme.primary} />
             <Text style={styles.docsTitle}>Learn More</Text>
-            <Icon name="chevron-forward" size={20} color="#4A90E2" style={{ marginLeft: 'auto' }} />
+            <Icon name="chevron-forward" size={20} color={theme.primary} style={{ marginLeft: 'auto' }} />
           </View>
           <Text style={styles.docsText}>
             Read the complete Sentry Mode documentation including setup guides, 
@@ -275,7 +278,7 @@ const SentryModeScreen = () => {
             {/* Status Card */}
             <View style={styles.statusCard}>
               <View style={styles.statusHeader}>
-                <Icon name="information-circle-outline" size={20} color="#A070F2" />
+                <Icon name="information-circle-outline" size={20} color={theme.primary} />
                 <Text style={styles.statusTitle}>Current Configuration</Text>
               </View>
               <View style={styles.statusContent}>
@@ -291,7 +294,7 @@ const SentryModeScreen = () => {
                 </View>
                 <View style={styles.statusRow}>
                   <Text style={styles.statusLabel}>Status:</Text>
-                  <Text style={[styles.statusValue, { color: '#4CAF50' }]}>
+                  <Text style={[styles.statusValue, { color: theme.success }]}>
                     Ready to monitor
                   </Text>
                 </View>
@@ -301,21 +304,14 @@ const SentryModeScreen = () => {
             {/* Info Card */}
             <View style={styles.infoCard}>
               <View style={styles.infoHeader}>
-                <Icon name="bulb-outline" size={20} color="#FFD700" />
-                <Text style={styles.infoTitle}>How it works</Text>
+                <Icon name="bulb-outline" size={20} color={theme.primary} />
+                <Text style={styles.infoTitle}>How It Works</Text>
               </View>
               <Text style={styles.infoText}>
                 When ThreatSense detects a threat at or above your selected level, 
-                it will automatically send a notification to your trusted contact 
-                with details about the threat and your location.
+                it will automatically send notifications to your trusted contact through 
+                SMS, email, and push notifications (if they have the app).
               </Text>
-              <TouchableOpacity
-                style={styles.demoLinkCentered}
-                onPress={() => navigation.navigate('SentryModeGuidedDemo')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.demoLinkCenteredText}>See Guided Demo</Text>
-              </TouchableOpacity>
             </View>
 
             {/* Trusted Contact Card */}
@@ -324,34 +320,40 @@ const SentryModeScreen = () => {
             </View>
 
             {/* Test Notification Button */}
-            <TouchableOpacity
+            <TouchableOpacity 
               ref={testNotificationRef}
               style={styles.testButton}
               onPress={handleTestNotification}
+              activeOpacity={0.8}
             >
-              <Text style={[styles.testButtonText, { color: '#fff' }]}>Test Notification</Text>
+              <Icon name="notifications-outline" size={20} color={theme.success} />
+              <Text style={styles.testButtonText}>Test Notification</Text>
             </TouchableOpacity>
 
             {/* Preview Alert Button */}
-            <TouchableOpacity style={[styles.testButton, { backgroundColor: '#A070F2', marginBottom: 10 }]} onPress={handlePreviewAlert}>
-              <Icon name="eye-outline" size={20} color="#fff" />
-              <Text style={[styles.testButtonText, { color: '#fff' }]}>Preview Alert</Text>
+            <TouchableOpacity 
+              style={styles.testButton}
+              onPress={handlePreviewAlert}
+              activeOpacity={0.8}
+            >
+              <Icon name="eye-outline" size={20} color={theme.primary} />
+              <Text style={[styles.testButtonText, { color: theme.primary }]}>Preview Alert</Text>
             </TouchableOpacity>
 
             {/* Simulate Contact Response Button */}
-            <TouchableOpacity style={[styles.testButton, { backgroundColor: '#FF9800', marginBottom: 10 }]} onPress={handleSimulateResponse}>
-              <Icon name="chatbubble-outline" size={20} color="#fff" />
-              <Text style={[styles.testButtonText, { color: '#fff' }]}>Simulate Contact Response</Text>
+            <TouchableOpacity style={[styles.testButton, { backgroundColor: theme.warning, marginBottom: 10 }]} onPress={handleSimulateResponse}>
+              <Icon name="chatbubble-outline" size={20} color={theme.text} />
+              <Text style={[styles.testButtonText, { color: theme.text }]}>Simulate Contact Response</Text>
             </TouchableOpacity>
 
             {/* Notification History */}
             {notificationHistory.length > 0 && (
               <View style={styles.historySection}>
                 <View style={styles.historyHeader}>
-                  <Icon name="time-outline" size={20} color="#A070F2" />
+                  <Icon name="time-outline" size={20} color={theme.primary} />
                   <Text style={styles.historyTitle}>Recent Alerts</Text>
                   <TouchableOpacity onPress={loadNotificationHistory} style={styles.refreshButton}>
-                    <Icon name="refresh" size={18} color="#A070F2" />
+                    <Icon name="refresh" size={18} color={theme.primary} />
                   </TouchableOpacity>
                 </View>
                 <FlatList
@@ -360,7 +362,7 @@ const SentryModeScreen = () => {
                   renderItem={({ item }) => (
                     <View style={styles.historyItem}>
                       <View style={styles.historyItemHeader}>
-                        <View style={[styles.threatLevelBadge, { backgroundColor: getSeverityColor(item.threatLevel) }]}>
+                                                 <View style={[styles.threatLevelBadge, { backgroundColor: getSeverityColor(item.threatLevel) }]}>
                           <Text style={styles.threatLevelText}>{item.threatLevel}</Text>
                         </View>
                         <Text style={styles.historyTime}>
@@ -373,7 +375,7 @@ const SentryModeScreen = () => {
                       )}
                       <View style={styles.statusRow}>
                         <Text style={styles.statusLabel}>Status:</Text>
-                        <Text style={[styles.statusValue, { color: getStatusColor(item.status) }]}>
+                        <Text style={[styles.statusValue, { color: getStatusColor(item.status, theme) }]}>
                           {getStatusText(item.status)}
                         </Text>
                       </View>
@@ -392,9 +394,13 @@ const SentryModeScreen = () => {
         )}
 
         {/* Reset Button */}
-        <TouchableOpacity style={styles.resetButton} onPress={handleResetSettings}>
-          <Icon name="refresh-outline" size={20} color="#FF6B6B" />
-          <Text style={styles.resetButtonText}>Reset to Defaults</Text>
+        <TouchableOpacity 
+          style={styles.resetButton}
+          onPress={handleResetSettings}
+          activeOpacity={0.8}
+        >
+          <Icon name="refresh-outline" size={20} color={theme.error} />
+          <Text style={styles.resetButtonText}>Reset Settings</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />
@@ -419,19 +425,19 @@ const SentryModeScreen = () => {
         animationType="fade"
         onRequestClose={() => setContactResponseModal(null)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' }}>
-          <View style={{ backgroundColor: '#23232A', borderRadius: 16, padding: 28, minWidth: 270, maxWidth: 340, alignItems: 'center' }}>
-            <Icon name="chatbubble-ellipses-outline" size={40} color="#A070F2" style={{ marginBottom: 12 }} />
-            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>Contact Response</Text>
-            <Text style={{ color: '#B0BEC5', fontSize: 16, marginBottom: 16, textAlign: 'center' }}>{contactResponseModal?.message}</Text>
+        <View style={{ flex: 1, backgroundColor: theme.overlay, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: theme.surface, borderRadius: 16, padding: 28, minWidth: 270, maxWidth: 340, alignItems: 'center' }}>
+            <Icon name="chatbubble-ellipses-outline" size={40} color={theme.primary} style={{ marginBottom: 12 }} />
+            <Text style={{ color: theme.text, fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>Contact Response</Text>
+            <Text style={{ color: theme.textSecondary, fontSize: 16, marginBottom: 16, textAlign: 'center' }}>{contactResponseModal?.message}</Text>
             {contactResponseModal?.threatType && (
-              <Text style={{ color: '#FFD700', fontSize: 15, marginBottom: 8 }}>Threat Type: {contactResponseModal.threatType}</Text>
+              <Text style={{ color: theme.warning, fontSize: 15, marginBottom: 8 }}>Threat Type: {contactResponseModal.threatType}</Text>
             )}
             {contactResponseModal?.timestamp && (
-              <Text style={{ color: '#8A8A8E', fontSize: 13, marginBottom: 8 }}>Received: {new Date(contactResponseModal.timestamp).toLocaleTimeString()}</Text>
+              <Text style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 8 }}>Received: {new Date(contactResponseModal.timestamp).toLocaleTimeString()}</Text>
             )}
-            <TouchableOpacity style={{ backgroundColor: '#A070F2', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 10 }} onPress={() => setContactResponseModal(null)}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>OK</Text>
+            <TouchableOpacity style={{ backgroundColor: theme.primary, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 10 }} onPress={() => setContactResponseModal(null)}>
+              <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 16 }}>OK</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -443,50 +449,50 @@ const SentryModeScreen = () => {
         animationType="fade"
         onRequestClose={() => setShowAlertModal(false)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' }}>
-          <View style={{ backgroundColor: '#23232A', borderRadius: 16, padding: 28, minWidth: 270, maxWidth: 340, alignItems: 'center' }}>
-            <Icon name="shield-checkmark-outline" size={40} color="#A070F2" style={{ marginBottom: 12 }} />
-            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>Sentry Mode: High Threat Detected</Text>
-            <Text style={{ color: '#FFD700', fontSize: 15, marginBottom: 8, textAlign: 'center' }}>SENTRY MODE ALERT TRIGGERED</Text>
-            <Text style={{ color: '#B0BEC5', fontSize: 16, marginBottom: 16, textAlign: 'center' }}>{alertModalContent?.message}</Text>
+        <View style={{ flex: 1, backgroundColor: theme.overlay, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: theme.surface, borderRadius: 16, padding: 28, minWidth: 270, maxWidth: 340, alignItems: 'center' }}>
+            <Icon name="shield-checkmark-outline" size={40} color={theme.primary} style={{ marginBottom: 12 }} />
+            <Text style={{ color: theme.text, fontSize: 18, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' }}>Sentry Mode: High Threat Detected</Text>
+            <Text style={{ color: theme.warning, fontSize: 15, marginBottom: 8, textAlign: 'center' }}>SENTRY MODE ALERT TRIGGERED</Text>
+            <Text style={{ color: theme.textSecondary, fontSize: 16, marginBottom: 16, textAlign: 'center' }}>{alertModalContent?.message}</Text>
             {alertModalContent?.details && (
               <View style={{ marginBottom: 12 }}>
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>THREAT DETAILS:</Text>
-                <Text style={{ color: '#fff', fontSize: 14 }}>• Level: {alertModalContent.details.level}</Text>
-                <Text style={{ color: '#fff', fontSize: 14 }}>• Type: {alertModalContent.details.type}</Text>
-                <Text style={{ color: '#fff', fontSize: 14 }}>• Description: {alertModalContent.details.description}</Text>
-                <Text style={{ color: '#fff', fontSize: 14 }}>• Time: {alertModalContent.details.time}</Text>
-                <Text style={{ color: '#fff', fontSize: 14 }}>• Location: {alertModalContent.details.location}</Text>
+                <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>THREAT DETAILS:</Text>
+                <Text style={{ color: theme.text, fontSize: 14 }}>• Level: {alertModalContent.details.level}</Text>
+                <Text style={{ color: theme.text, fontSize: 14 }}>• Type: {alertModalContent.details.type}</Text>
+                <Text style={{ color: theme.text, fontSize: 14 }}>• Description: {alertModalContent.details.description}</Text>
+                <Text style={{ color: theme.text, fontSize: 14 }}>• Time: {alertModalContent.details.time}</Text>
+                <Text style={{ color: theme.text, fontSize: 14 }}>• Location: {alertModalContent.details.location}</Text>
               </View>
             )}
             {alertModalContent?.notification && (
               <View style={{ marginBottom: 12 }}>
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>NOTIFICATION SENT:</Text>
+                <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>NOTIFICATION SENT:</Text>
                 {alertModalContent.notification.map((n: string, i: number) => (
-                  <Text key={i} style={{ color: '#fff', fontSize: 14 }}>• {n}</Text>
+                  <Text key={i} style={{ color: theme.text, fontSize: 14 }}>• {n}</Text>
                 ))}
               </View>
             )}
             {alertModalContent?.responses && (
               <View style={{ marginBottom: 12 }}>
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>EXPECTED RESPONSES:</Text>
+                <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 15, marginBottom: 4 }}>EXPECTED RESPONSES:</Text>
                 {alertModalContent.responses.map((r: string, i: number) => (
-                  <Text key={i} style={{ color: '#fff', fontSize: 14 }}>• {r}</Text>
+                  <Text key={i} style={{ color: theme.text, fontSize: 14 }}>• {r}</Text>
                 ))}
               </View>
             )}
-            <Text style={{ color: '#B0BEC5', fontSize: 14, marginBottom: 16, textAlign: 'center' }}>{alertModalContent?.footer}</Text>
-            <TouchableOpacity style={{ backgroundColor: '#A070F2', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 10, marginBottom: 6 }} onPress={() => setShowAlertModal(false)}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>OK</Text>
+            <Text style={{ color: theme.textSecondary, fontSize: 14, marginBottom: 16, textAlign: 'center' }}>{alertModalContent?.footer}</Text>
+            <TouchableOpacity style={{ backgroundColor: theme.primary, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 10, marginBottom: 6 }} onPress={() => setShowAlertModal(false)}>
+              <Text style={{ color: theme.text, fontWeight: 'bold', fontSize: 16 }}>OK</Text>
             </TouchableOpacity>
             {alertModalContent?.onCall && (
-              <TouchableOpacity style={{ backgroundColor: '#23232A', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 6, borderWidth: 1, borderColor: '#A070F2' }} onPress={alertModalContent.onCall}>
-                <Text style={{ color: '#A070F2', fontWeight: 'bold', fontSize: 16 }}>Call Contact</Text>
+              <TouchableOpacity style={{ backgroundColor: theme.surface, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 6, borderWidth: 1, borderColor: theme.primary }} onPress={alertModalContent.onCall}>
+                <Text style={{ color: theme.primary, fontWeight: 'bold', fontSize: 16 }}>Call Contact</Text>
               </TouchableOpacity>
             )}
             {alertModalContent?.onText && (
-              <TouchableOpacity style={{ backgroundColor: '#23232A', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 6, borderWidth: 1, borderColor: '#A070F2' }} onPress={alertModalContent.onText}>
-                <Text style={{ color: '#A070F2', fontWeight: 'bold', fontSize: 16 }}>Text Contact</Text>
+              <TouchableOpacity style={{ backgroundColor: theme.surface, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 6, borderWidth: 1, borderColor: theme.primary }} onPress={alertModalContent.onText}>
+                <Text style={{ color: theme.primary, fontWeight: 'bold', fontSize: 16 }}>Text Contact</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -496,10 +502,10 @@ const SentryModeScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: theme.background,
   },
   scrollView: {
     flex: 1,
@@ -511,22 +517,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
   },
   headerTitle: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text,
     marginBottom: 10,
   },
   headerDescription: {
     fontSize: 16,
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     lineHeight: 22,
   },
   card: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     padding: 16,
     marginBottom: 15,
@@ -546,17 +552,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rowTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 17,
     fontWeight: '500',
   },
   rowSubtitle: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 14,
     marginTop: 2,
   },
   statusCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     padding: 16,
     marginBottom: 15,
@@ -567,7 +573,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   statusTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -581,16 +587,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statusLabel: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 14,
   },
   statusValue: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 14,
     fontWeight: '500',
   },
   infoCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     padding: 16,
     marginBottom: 15,
@@ -601,13 +607,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   infoTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
   },
   infoText: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 14,
     lineHeight: 20,
     paddingLeft: 28,
@@ -616,13 +622,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     padding: 16,
     marginTop: 20,
   },
   resetButtonText: {
-    color: '#FF6B6B',
+    color: theme.error,
     fontSize: 16,
     fontWeight: '500',
     marginLeft: 8,
@@ -631,13 +637,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     padding: 16,
     marginBottom: 15,
   },
   testButtonText: {
-    color: '#4CAF50',
+    color: theme.success,
     fontSize: 16,
     fontWeight: '500',
     marginLeft: 8,
@@ -646,7 +652,7 @@ const styles = StyleSheet.create({
     height: 40,
   },
   docsCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     padding: 16,
     marginBottom: 15,
@@ -657,13 +663,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   docsTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
   },
   docsText: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 14,
     lineHeight: 20,
     paddingLeft: 28,
@@ -682,7 +688,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   demoLinkCenteredText: {
-    color: '#A070F2',
+    color: theme.primary,
     fontWeight: '600',
     fontSize: 15,
   },
@@ -696,49 +702,49 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: theme.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
   },
   demoInfoModal: {
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     borderRadius: 16,
     padding: 28,
     maxWidth: 340,
     width: '85%',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOpacity: 0.18,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
   },
   demoInfoTitle: {
-    color: '#A070F2',
+    color: theme.primary,
     fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 12,
     textAlign: 'center',
   },
   demoInfoText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 15,
     textAlign: 'center',
     marginBottom: 18,
   },
   demoInfoClose: {
-    backgroundColor: '#A070F2',
+    backgroundColor: theme.primary,
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 22,
   },
   demoInfoCloseText: {
-    color: '#fff',
+    color: theme.text,
     fontWeight: '600',
     fontSize: 15,
   },
   historySection: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     padding: 16,
     marginBottom: 15,
@@ -749,7 +755,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   historyTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -771,24 +777,24 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   threatLevelText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 14,
     fontWeight: '500',
   },
   historyTime: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 14,
   },
   historyDescription: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 14,
   },
   historySender: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 14,
   },
   responseTime: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 14,
   },
 });

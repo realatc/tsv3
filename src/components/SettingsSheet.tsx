@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, SafeAreaVi
 import BottomSheet from '@gorhom/bottom-sheet';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAccessibility } from '../context/AccessibilityContext';
+import { useTheme } from '../context/ThemeContext';
 import { navigate } from '../services/navigationService';
 import { RootStackParamList } from '../types/navigation';
 import { useApp } from '../context/AppContext';
@@ -14,6 +15,7 @@ type Ref = BottomSheet;
 const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
   const { resetToDefaults } = useAccessibility();
   const { ezModeEnabled, setEzModeEnabled } = useApp();
+  const { isLightMode, toggleTheme, theme } = useTheme();
 
   const handleResetSettings = () => {
     Alert.alert(
@@ -33,14 +35,83 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
     }
   };
 
+  const styles = StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    sheetContainer: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    header: {
+      paddingVertical: 16,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.border,
+      paddingHorizontal: 20,
+    },
+    headerTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: theme.text,
+      textAlign: 'center',
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: 20,
+    },
+    section: {
+      marginBottom: 24,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: theme.text,
+      marginBottom: 12,
+      marginLeft: 4,
+    },
+    settingsGroup: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    settingItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 16,
+      paddingHorizontal: 20,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.border,
+    },
+    settingLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+    settingText: {
+      fontSize: 16,
+      color: theme.text,
+      marginLeft: 12,
+      flex: 1,
+    },
+    settingValue: {
+      fontSize: 16,
+      color: theme.textSecondary,
+      fontWeight: '500',
+    },
+  });
+
   return (
     <BottomSheet
       ref={ref}
       index={-1}
       snapPoints={['40%', '75%', '100%']}
       enablePanDownToClose={true}
-      backgroundStyle={{ backgroundColor: '#1E1E1E' }}
-      handleIndicatorStyle={{ backgroundColor: '#666' }}
+      backgroundStyle={{ backgroundColor: theme.background }}
+      handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
       detached={true}
       bottomInset={-400}
     >
@@ -57,10 +128,10 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
               <View style={styles.settingsGroup}>
                 <TouchableOpacity style={[styles.settingItem, {borderBottomWidth: 0}]} onPress={() => handleNavigation('AccessibilitySettings')}>
                   <View style={styles.settingLeft}>
-                    <Icon name="accessibility" size={20} color="#A070F2" />
+                    <Icon name="accessibility" size={20} color={theme.primary} />
                     <Text style={styles.settingText}>Accessibility</Text>
                   </View>
-                  <Icon name="chevron-forward" size={20} color="#555" />
+                  <Icon name="chevron-forward" size={20} color={theme.textSecondary} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -71,10 +142,10 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
               <View style={styles.settingsGroup}>
                 <TouchableOpacity style={[styles.settingItem, {borderBottomWidth: 0}]} onPress={() => handleNavigation('SentryMode')}>
                   <View style={styles.settingLeft}>
-                    <Icon name="shield-checkmark-outline" size={20} color="#A070F2" />
+                    <Icon name="shield-checkmark-outline" size={20} color={theme.primary} />
                     <Text style={styles.settingText}>Sentry Mode</Text>
                   </View>
-                  <Icon name="chevron-forward" size={20} color="#555" />
+                  <Icon name="chevron-forward" size={20} color={theme.textSecondary} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -85,30 +156,43 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
               <View style={styles.settingsGroup}>
                 <View style={styles.settingItem}>
                   <View style={styles.settingLeft}>
-                    <Icon name="flash" size={20} color="#A070F2" />
+                    <Icon name="flash" size={20} color={theme.primary} />
                     <Text style={styles.settingText}>Enable EZ-Mode (Simple Mode)</Text>
                   </View>
                   <Switch
                     value={ezModeEnabled}
                     onValueChange={setEzModeEnabled}
                     thumbColor="#fff"
-                    trackColor={{ false: '#3A3A3C', true: '#34C759' }}
-                    ios_backgroundColor="#3A3A3C"
+                    trackColor={{ false: theme.surfaceSecondary, true: theme.success }}
+                    ios_backgroundColor={theme.surfaceSecondary}
+                  />
+                </View>
+                <View style={styles.settingItem}>
+                  <View style={styles.settingLeft}>
+                    <Icon name="sunny" size={20} color={theme.primary} />
+                    <Text style={styles.settingText}>Light Mode</Text>
+                  </View>
+                  <Switch
+                    value={isLightMode}
+                    onValueChange={toggleTheme}
+                    thumbColor="#fff"
+                    trackColor={{ false: theme.surfaceSecondary, true: theme.success }}
+                    ios_backgroundColor={theme.surfaceSecondary}
                   />
                 </View>
                 <TouchableOpacity style={styles.settingItem} onPress={() => handleNavigation('HelpAndSupport')}>
                   <View style={styles.settingLeft}>
-                    <Icon name="help-circle-outline" size={20} color="#A070F2" />
+                    <Icon name="help-circle-outline" size={20} color={theme.primary} />
                     <Text style={styles.settingText}>Help & Support</Text>
                   </View>
-                  <Icon name="chevron-forward" size={20} color="#555" />
+                  <Icon name="chevron-forward" size={20} color={theme.textSecondary} />
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.settingItem, {borderBottomWidth: 0}]} onPress={handleResetSettings}>
                   <View style={styles.settingLeft}>
-                    <Icon name="refresh" size={20} color="#A070F2" />
+                    <Icon name="refresh" size={20} color={theme.primary} />
                     <Text style={styles.settingText}>Reset to Defaults</Text>
                   </View>
-                  <Icon name="chevron-forward" size={20} color="#555" />
+                  <Icon name="chevron-forward" size={20} color={theme.textSecondary} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -119,7 +203,7 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
               <View style={styles.settingsGroup}>
                 <View style={[styles.settingItem, {borderBottomWidth: 0}]}>
                   <View style={styles.settingLeft}>
-                    <Icon name="information-circle" size={20} color="#A070F2" />
+                    <Icon name="information-circle" size={20} color={theme.primary} />
                     <Text style={styles.settingText}>Version</Text>
                   </View>
                   <Text style={styles.settingValue}>1.0.0</Text>
@@ -136,24 +220,24 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
                   "By using ThreatSense, you agree to the following terms:\\n\\n1. You will not use this app for any nefarious purposes, like trying to frame your annoying neighbor, Kevin.\\n\\n2. You acknowledge that our AI, while brilliant, might occasionally mistake a cat photo for a phishing attempt. No AI is purr-fect.\\n\\n3. You will not hold us liable if the app advises you that a message from a Nigerian prince is, in fact, a scam. We're just the messengers.\\n\\n4. You agree to use your newfound threat-spotting powers for good, not for becoming the most paranoid person at the family BBQ.\\n\\n5. If you successfully prevent a scam, you are morally obligated to do a small celebratory dance. We don't make the rules. (We do.)"
                 )}>
                   <View style={styles.settingLeft}>
-                    <Icon name="document-text-outline" size={20} color="#A070F2" />
+                    <Icon name="document-text-outline" size={20} color={theme.primary} />
                     <Text style={styles.settingText}>Terms of Service</Text>
                   </View>
-                  <Icon name="chevron-forward" size={20} color="#555" />
+                  <Icon name="chevron-forward" size={20} color={theme.textSecondary} />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Privacy Policy', 'Coming soon!')}>
                   <View style={styles.settingLeft}>
-                    <Icon name="shield-checkmark-outline" size={20} color="#A070F2" />
+                    <Icon name="shield-checkmark-outline" size={20} color={theme.primary} />
                     <Text style={styles.settingText}>Privacy Policy</Text>
                   </View>
-                  <Icon name="chevron-forward" size={20} color="#555" />
+                  <Icon name="chevron-forward" size={20} color={theme.textSecondary} />
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]} onPress={() => Alert.alert('Contact Us', 'For support, please email support@threatsense.app')}>
                   <View style={styles.settingLeft}>
-                    <Icon name="mail-outline" size={20} color="#A070F2" />
+                    <Icon name="mail-outline" size={20} color={theme.primary} />
                     <Text style={styles.settingText}>Contact Us</Text>
                   </View>
-                  <Icon name="chevron-forward" size={20} color="#555" />
+                  <Icon name="chevron-forward" size={20} color={theme.textSecondary} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -164,72 +248,4 @@ const SettingsSheet = forwardRef<Ref, SettingsSheetProps>((props, ref) => {
   );
 });
 
-const styles = StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: '#1E1E1E',
-    },
-    sheetContainer: {
-      flex: 1,
-      backgroundColor: '#1E1E1E',
-    },
-    header: {
-      paddingVertical: 16,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: '#333',
-      alignItems: 'center',
-    },
-    headerTitle: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    content: {
-      paddingHorizontal: 16,
-    },
-    section: {
-      marginTop: 24,
-    },
-    sectionTitle: {
-      color: '#8A8A8E',
-      fontSize: 13,
-      fontWeight: '600',
-      textTransform: 'uppercase',
-      marginBottom: 8,
-      paddingHorizontal: 16,
-    },
-    settingsGroup: {
-      backgroundColor: '#2C2C2E',
-      borderRadius: 10,
-      overflow: 'hidden',
-    },
-    settingItem: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: '#3A3A3C',
-    },
-    settingLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    settingIcon: {
-      marginRight: 15,
-      width: 24,
-      textAlign: 'center',
-    },
-    settingText: {
-      color: '#fff',
-      fontSize: 17,
-      marginLeft: 12,
-    },
-    settingValue: {
-      color: '#8A8A8E',
-      fontSize: 17,
-    },
-  });
-  
 export default SettingsSheet; 

@@ -7,25 +7,28 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useApp } from '../context/AppContext';
 import { useLogs } from '../context/LogContext';
 import { addSampleLogs, addHighThreatLog, clearAllLogs, addPhishingEmail, addScamTexts, addGeorgiaMVCFraud, addSentryDemoLogs } from '../utils/dev/devUtils';
+import { useTheme } from '../context/ThemeContext';
 
 type BrowseScreenNavigationProp = StackNavigationProp<BrowseStackParamList, 'Browse'>;
 
 const BrowseScreen = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const navigation = useNavigation<BrowseScreenNavigationProp>();
   const { settingsSheetRef } = useApp();
   const logContext = useLogs();
 
   const logViews = [
     { title: 'All Logs', filter: 'All', icon: 'archive-outline' },
-    { title: 'High Threats', filter: 'High', icon: 'alert-circle-outline', color: '#FF6B6B' },
-    { title: 'Medium Threats', filter: 'Medium', icon: 'alert-outline', color: '#FFD166' },
-    { title: 'Safe Messages', filter: 'Low', icon: 'shield-checkmark-outline', color: '#06D6A0' },
+    { title: 'High Threats', filter: 'High', icon: 'alert-circle-outline', color: theme.error },
+    { title: 'Medium Threats', filter: 'Medium', icon: 'alert-outline', color: theme.warning },
+    { title: 'Safe Messages', filter: 'Low', icon: 'shield-checkmark-outline', color: theme.success },
   ];
   
   const messageTypes = [
-    { title: 'Text Messages', category: 'Text', icon: 'chatbubble-outline', color: '#4A90E2' },
-    { title: 'Email Messages', category: 'Mail', icon: 'mail-outline', color: '#50E3C2' },
-    { title: 'Phone Calls', category: 'Phone Call', icon: 'call-outline', color: '#A070F2' },
+    { title: 'Text Messages', category: 'Text', icon: 'chatbubble-outline', color: theme.primary },
+    { title: 'Email Messages', category: 'Mail', icon: 'mail-outline', color: theme.info },
+    { title: 'Phone Calls', category: 'Phone Call', icon: 'call-outline', color: theme.primary },
   ];
   
   const showConfirmation = (title: string, message: string) => {
@@ -33,13 +36,13 @@ const BrowseScreen = () => {
   };
 
   const labItems = [
-    { title: 'Add Sample Logs', icon: 'document-text-outline', color: '#4A90E2', action: () => { addSampleLogs(logContext); showConfirmation('Success', 'Sample logs added.'); } },
-    { title: 'Add Scam Texts', icon: 'chatbubbles-outline', color: '#FFD166', action: () => { addScamTexts(logContext); showConfirmation('Success', 'Scam texts added.'); } },
-    { title: 'Add Phishing Email', icon: 'mail-unread-outline', color: '#FF6B6B', action: () => { addPhishingEmail(logContext); showConfirmation('Success', 'Phishing email added.'); } },
-    { title: 'Add Georgia MVC Scam', icon: 'car-sport-outline', color: '#FF8C00', action: () => { addGeorgiaMVCFraud(logContext); showConfirmation('Success', 'Georgia MVC scam added.'); } },
-    { title: 'Add High-Threat Log', icon: 'alert-circle-outline', color: '#FF6B6B', action: () => { addHighThreatLog(logContext); showConfirmation('Success', 'High-threat log added.'); } },
-    { title: 'Sentry Demo', icon: 'shield-half-outline', color: '#06D6A0', action: async () => { await addSentryDemoLogs(logContext); } },
-    { title: 'Clear All Logs', icon: 'trash-outline', color: '#999999', action: () => {
+    { title: 'Add Sample Logs', icon: 'document-text-outline', color: theme.primary, action: () => { addSampleLogs(logContext); showConfirmation('Success', 'Sample logs added.'); } },
+    { title: 'Add Scam Texts', icon: 'chatbubbles-outline', color: theme.warning, action: () => { addScamTexts(logContext); showConfirmation('Success', 'Scam texts added.'); } },
+    { title: 'Add Phishing Email', icon: 'mail-unread-outline', color: theme.error, action: () => { addPhishingEmail(logContext); showConfirmation('Success', 'Phishing email added.'); } },
+    { title: 'Add Georgia MVC Scam', icon: 'car-sport-outline', color: theme.warning, action: () => { addGeorgiaMVCFraud(logContext); showConfirmation('Success', 'Georgia MVC scam added.'); } },
+    { title: 'Add High-Threat Log', icon: 'alert-circle-outline', color: theme.error, action: () => { addHighThreatLog(logContext); showConfirmation('Success', 'High-threat log added.'); } },
+    { title: 'Sentry Demo', icon: 'shield-half-outline', color: theme.success, action: async () => { await addSentryDemoLogs(logContext); } },
+    { title: 'Clear All Logs', icon: 'trash-outline', color: theme.textSecondary, action: () => {
         Alert.alert(
           'Confirm Clear',
           'Are you sure you want to delete all logs?',
@@ -65,7 +68,7 @@ const BrowseScreen = () => {
       style={styles.logCard}
       onPress={() => navigation.navigate('LogHistory', { threatFilter: item.filter !== 'All' ? item.filter : undefined })}
     >
-      <Icon name={item.icon} size={28} color={item.color || '#fff'} />
+      <Icon name={item.icon} size={28} color={item.color || theme.text} />
       <Text style={styles.logCardTitle}>{item.title}</Text>
     </TouchableOpacity>
   );
@@ -75,7 +78,7 @@ const BrowseScreen = () => {
       style={styles.labCard}
       onPress={item.action}
     >
-      <Icon name={item.icon} size={28} color={item.color || '#fff'} />
+      <Icon name={item.icon} size={28} color={item.color || theme.text} />
       <Text style={styles.labCardTitle}>{item.title}</Text>
     </TouchableOpacity>
   );
@@ -90,7 +93,7 @@ const BrowseScreen = () => {
             style={styles.profileButton}
             accessibilityLabel="Open Settings"
           >
-            <Icon name="person-circle-outline" size={34} color="#fff" />
+            <Icon name="person-circle-outline" size={34} color={theme.text} />
           </TouchableOpacity>
         </View>
 
@@ -148,10 +151,10 @@ const BrowseScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: theme.background,
   },
   container: {
     paddingBottom: 40,
@@ -167,7 +170,7 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text,
   },
   profileButton: {
     padding: 5
@@ -178,32 +181,32 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text,
     marginBottom: 4,
     paddingHorizontal: 20,
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: '#aaa',
+    color: theme.textSecondary,
     marginBottom: 15,
     paddingHorizontal: 20,
   },
   logCard: {
     width: 140,
     height: 120,
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 15,
     padding: 15,
     justifyContent: 'space-between',
     marginRight: 15,
   },
   logCardTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
   },
   kbContainer: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 15,
     marginHorizontal: 20,
     overflow: 'hidden',
@@ -214,7 +217,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: theme.border,
   },
   kbIconContainer: {
     width: 40,
@@ -226,20 +229,20 @@ const styles = StyleSheet.create({
   },
   kbItemTitle: {
     flex: 1,
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
   },
   messageTypeCard: {
     width: 140,
     height: 120,
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 15,
     padding: 15,
     justifyContent: 'space-between',
     marginRight: 15,
   },
   messageTypeCardTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -249,7 +252,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   unreadBadge: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: theme.error,
     borderRadius: 10,
     paddingHorizontal: 4,
     paddingVertical: 2,
@@ -258,16 +261,16 @@ const styles = StyleSheet.create({
   unreadText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text,
   },
   recentActivityContainer: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 15,
     marginHorizontal: 20,
     overflow: 'hidden',
   },
   recentActivityItem: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: theme.surfaceSecondary,
     marginBottom: 1,
     paddingVertical: 15,
     paddingHorizontal: 20,
@@ -281,7 +284,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: theme.surfaceSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
@@ -292,12 +295,12 @@ const styles = StyleSheet.create({
   activityTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.text,
     marginBottom: 2,
   },
   activityCategory: {
     fontSize: 14,
-    color: '#aaa',
+    color: theme.textSecondary,
   },
   activityActions: {
     flexDirection: 'row',
@@ -306,29 +309,29 @@ const styles = StyleSheet.create({
   dismissButton: {
     padding: 8,
     borderRadius: 15,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: theme.surfaceSecondary,
   },
   activityTime: {
     fontSize: 12,
-    color: '#666',
+    color: theme.textSecondary,
     marginLeft: 55,
   },
   labCard: {
     width: 140,
     height: 120,
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 15,
     padding: 15,
     justifyContent: 'space-between',
     marginRight: 15,
   },
   labCardTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
   },
   labContainer: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 15,
     marginHorizontal: 20,
     overflow: 'hidden',
@@ -339,7 +342,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: theme.border,
   },
   labIconContainer: {
     width: 40,
@@ -351,7 +354,7 @@ const styles = StyleSheet.create({
   },
   labItemTitle: {
     flex: 1,
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
   },
 });

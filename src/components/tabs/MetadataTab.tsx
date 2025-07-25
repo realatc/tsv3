@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types/navigation';
+import { useTheme } from '../../context/ThemeContext';
 
 type MetadataTabNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -12,16 +13,71 @@ type MetadataTabProps = {
   urls: string[];
 };
 
-const MetadataRow = ({ label, value }: { label: string; value: any }) => (
-  <View style={styles.row}>
-    <Text style={styles.label}>{label}</Text>
-    <Text style={styles.value}>{value?.toString() || 'N/A'}</Text>
-  </View>
-);
-
 export const MetadataTab = ({ log, urls }: MetadataTabProps) => {
   const navigation = useNavigation<MetadataTabNavigationProp>();
+  const { theme } = useTheme();
   const metadata = log.metadata || {};
+
+  const styles = StyleSheet.create({
+    card: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 18,
+      marginVertical: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    titleContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    sectionTitle: {
+      color: theme.text,
+      fontWeight: 'bold',
+      fontSize: 18,
+    },
+    helpButton: {
+      padding: 4,
+    },
+    grid: {
+      marginBottom: 16,
+    },
+    metadataRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+    metadataLabel: {
+      color: theme.textSecondary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    metadataValue: {
+      color: theme.text,
+      fontSize: 14,
+      textAlign: 'right',
+      flex: 1,
+      marginLeft: 8,
+    },
+    urlText: {
+      color: theme.primary,
+      fontSize: 14,
+      marginBottom: 4,
+      textDecorationLine: 'underline',
+    },
+  });
+
+  const MetadataRow = ({ label, value }: { label: string; value: string }) => (
+    <View style={styles.metadataRow}>
+      <Text style={styles.metadataLabel}>{label}</Text>
+      <Text style={styles.metadataValue}>{value}</Text>
+    </View>
+  );
 
   return (
     <View style={styles.card}>
@@ -37,7 +93,7 @@ export const MetadataTab = ({ log, urls }: MetadataTabProps) => {
           })}
           style={styles.helpButton}
         >
-          <Icon name="information-circle-outline" size={22} color="#4A90E2" />
+          <Icon name="information-circle-outline" size={22} color={theme.primary} />
         </TouchableOpacity>
       </View>
       <View style={styles.grid}>
@@ -66,50 +122,4 @@ export const MetadataTab = ({ log, urls }: MetadataTabProps) => {
       )}
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 12,
-    padding: 18,
-    marginVertical: 8,
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 18,
-    marginTop: 12,
-  },
-  helpButton: {
-    padding: 4,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  row: {
-    width: '48%',
-    marginBottom: 12,
-  },
-  label: {
-    color: '#B0BEC5',
-    fontSize: 14,
-  },
-  value: {
-    color: '#ECEFF1',
-    fontSize: 16,
-  },
-  urlText: {
-    color: '#4A90E2',
-    fontSize: 14,
-    marginTop: 4,
-  },
-}); 
+}; 

@@ -1,8 +1,12 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { AccessibleText } from '../components/AccessibleText';
+import { useTheme } from '../context/ThemeContext';
 
 const BlockedSendersScreen = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.container}>
       <AccessibleText style={styles.title}>Blocked Senders</AccessibleText>
@@ -13,23 +17,23 @@ const BlockedSendersScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#121212',
+    backgroundColor: theme.background,
     padding: 20,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: theme.text,
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     textAlign: 'center',
   },
 });

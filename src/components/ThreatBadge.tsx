@@ -2,12 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAccessibility } from '../context/AccessibilityContext';
-
-const threatColors = {
-  High: '#FF6B6B', // Softer, more appealing red
-  Medium: '#FFB300',
-  Low: '#43A047',
-};
+import { useTheme } from '../context/ThemeContext';
 
 const threatIcons = {
   High: 'warning',
@@ -25,13 +20,20 @@ const threatPatterns = {
 // Compact version for log history list
 export const ThreatBadgeCompact = ({ level, score }: { level: 'High' | 'Medium' | 'Low', score?: number }) => {
   const { settings } = useAccessibility();
+  const { theme } = useTheme();
+  
+  const threatColors = {
+    High: theme.threatHigh,
+    Medium: theme.threatMedium,
+    Low: theme.threatLow,
+  };
   
   return (
     <View style={styles.container}>
       <View style={[
         styles.badge, 
         { 
-          backgroundColor: settings.colorBlindFriendly ? 'rgba(255,255,255,0.15)' : threatColors[level] + '15', 
+          backgroundColor: settings.colorBlindFriendly ? theme.surfaceSecondary : threatColors[level] + '15', 
           borderColor: threatColors[level],
           borderWidth: settings.colorBlindFriendly ? 2 : 1.5,
         }
@@ -42,7 +44,7 @@ export const ThreatBadgeCompact = ({ level, score }: { level: 'High' | 'Medium' 
         )}
       </View>
       {score !== undefined && score > 0 && (
-        <View style={[styles.scoreIndicator, { backgroundColor: threatColors[level] }]} />
+        <View style={[styles.scoreIndicator, { backgroundColor: threatColors[level], borderColor: theme.background }]} />
       )}
     </View>
   );
@@ -51,6 +53,13 @@ export const ThreatBadgeCompact = ({ level, score }: { level: 'High' | 'Medium' 
 // Detailed version for log details screen
 export const ThreatBadge = ({ level, score }: { level: 'High' | 'Medium' | 'Low', score?: number }) => {
   const { settings } = useAccessibility();
+  const { theme } = useTheme();
+  
+  const threatColors = {
+    High: theme.threatHigh,
+    Medium: theme.threatMedium,
+    Low: theme.threatLow,
+  };
   
   return (
     <View style={styles.detailedBadge}> 
@@ -85,7 +94,6 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     borderWidth: 1.5,
-    borderColor: '#1a1a1a',
   },
   detailedBadge: {
     flexDirection: 'row',

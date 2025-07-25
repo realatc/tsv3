@@ -14,6 +14,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types/navigation';
+import { useTheme } from '../context/ThemeContext';
 
 interface TableOfContentsItem {
   id: string;
@@ -72,6 +73,8 @@ const KnowledgeBaseArticle: React.FC<KnowledgeBaseArticleProps> = ({
   articleContent,
   themeColor,
 }) => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -99,16 +102,23 @@ const KnowledgeBaseArticle: React.FC<KnowledgeBaseArticleProps> = ({
       const matchIndex = lowerCombinedText.indexOf(searchTerm);
 
       if (matchIndex !== -1 && !addedSections.has(sectionId)) {
-        const startIndex = Math.max(0, matchIndex - snippetPadding);
-        const endIndex = Math.min(combinedText.length, matchIndex + searchTerm.length + snippetPadding);
-        let snippet = combinedText.substring(startIndex, endIndex);
-        if (startIndex > 0) snippet = '...' + snippet;
-        if (endIndex < combinedText.length) snippet = snippet + '...';
+        const start = Math.max(0, matchIndex - snippetPadding);
+        const end = Math.min(combinedText.length, matchIndex + searchTerm.length + snippetPadding);
+        let snippet = combinedText.substring(start, end);
+        
+        if (start > 0) snippet = '...' + snippet;
+        if (end < combinedText.length) snippet = snippet + '...';
 
-        results.push({ sectionId, sectionTitle: section.title, snippet, index: results.length });
+        results.push({
+          sectionId,
+          sectionTitle: section.title,
+          snippet,
+          index: matchIndex
+        });
         addedSections.add(sectionId);
       }
     });
+
     setSearchResults(results);
     setCurrentSearchIndex(0);
   };
@@ -118,41 +128,26 @@ const KnowledgeBaseArticle: React.FC<KnowledgeBaseArticleProps> = ({
     performSearch(text);
   };
 
-  const scrollToSection = useCallback((sectionId: string) => {
-    if (sectionRefs.current[sectionId]) {
-      sectionRefs.current[sectionId].measureLayout(
-        scrollViewRef.current as any,
-        (x: number, y: number) => {
-          scrollViewRef.current?.scrollTo({ y: y - 100, animated: true });
-        },
-        () => console.log('Could not measure section position')
-      );
-    }
-    setShowTableOfContents(false);
-  }, []);
-
   const navigateToSearchResult = (direction: 'next' | 'prev') => {
     if (searchResults.length === 0) return;
-    let newIndex = currentSearchIndex;
-    if (direction === 'next') {
-      newIndex = (currentSearchIndex + 1) % searchResults.length;
-    } else {
-      newIndex = currentSearchIndex === 0 ? searchResults.length - 1 : currentSearchIndex - 1;
-    }
+    
+    const newIndex = direction === 'next' 
+      ? (currentSearchIndex + 1) % searchResults.length
+      : (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
+    
     setCurrentSearchIndex(newIndex);
     const result = searchResults[newIndex];
     setHighlightedSection(result.sectionId);
     setTimeout(() => setHighlightedSection(null), 2000);
     scrollToSection(result.sectionId);
   };
-  
+
   const toggleSearch = () => {
     setShowSearch(!showSearch);
     if (showSearch) {
       setSearchQuery('');
       setSearchResults([]);
       setCurrentSearchIndex(0);
-      setHighlightedSection(null);
     }
   };
 
@@ -162,20 +157,33 @@ const KnowledgeBaseArticle: React.FC<KnowledgeBaseArticleProps> = ({
     return highlightedSection === sectionId ? [styles.section, { ...styles.highlightedSection, borderColor: themeColor, backgroundColor: `${themeColor}22` }] : styles.section;
   };
 
+  const scrollToSection = useCallback((sectionId: string) => {
+    const ref = sectionRefs.current[sectionId];
+    if (ref) {
+      ref.measureLayout(
+        scrollViewRef.current as any,
+        (x: number, y: number) => {
+          scrollViewRef.current?.scrollTo({ y: y - 100, animated: true });
+        },
+        () => console.log('Failed to measure layout')
+      );
+    }
+  }, []);
+
   return (
-    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={{ flex: 1 }}>
+    <LinearGradient colors={[theme.background, theme.surface]} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Icon name="arrow-back" size={24} color="#FFFFFF" />
+            <Icon name="arrow-back" size={24} color={theme.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{pageTitle}</Text>
           <View style={styles.headerActions}>
             <TouchableOpacity style={styles.headerButton} onPress={toggleSearch}>
-              <Icon name={showSearch ? "close" : "search"} size={24} color="#FFFFFF" />
+              <Icon name={showSearch ? "close" : "search"} size={24} color={theme.text} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.headerButton} onPress={toggleTableOfContents}>
-              <Icon name="list" size={24} color="#FFFFFF" />
+              <Icon name="list" size={24} color={theme.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -183,18 +191,18 @@ const KnowledgeBaseArticle: React.FC<KnowledgeBaseArticleProps> = ({
         {showSearch && (
           <View style={styles.searchContainer}>
             <View style={styles.searchInputContainer}>
-              <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
+              <Icon name="search" size={20} color={theme.textSecondary} style={styles.searchIcon} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search article content..."
-                placeholderTextColor="#666"
+                placeholderTextColor={theme.textSecondary}
                 value={searchQuery}
                 onChangeText={handleSearch}
                 autoFocus
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => handleSearch('')} style={styles.clearButton}>
-                  <Icon name="close-circle" size={20} color="#666" />
+                  <Icon name="close-circle" size={20} color={theme.textSecondary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -273,7 +281,7 @@ const KnowledgeBaseArticle: React.FC<KnowledgeBaseArticleProps> = ({
               <View style={styles.tocHeader}>
                 <Text style={styles.tocTitle}>Table of Contents</Text>
                 <TouchableOpacity onPress={toggleTableOfContents} style={styles.closeButton}>
-                  <Icon name="close" size={24} color="#FFFFFF" />
+                  <Icon name="close" size={24} color={theme.text} />
                 </TouchableOpacity>
               </View>
               <ScrollView style={styles.tocContent}>
@@ -297,17 +305,17 @@ const KnowledgeBaseArticle: React.FC<KnowledgeBaseArticleProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'transparent' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#333' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: theme.border },
   backButton: { padding: 8 },
-  headerTitle: { fontSize: 18, fontWeight: '600', color: '#FFFFFF', flex: 1, textAlign: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: theme.text, flex: 1, textAlign: 'center' },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
   headerButton: { padding: 8, marginLeft: 8 },
-  searchContainer: { paddingHorizontal: 20, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#333' },
-  searchInputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#2C2C2E', borderRadius: 12, paddingHorizontal: 15, paddingVertical: 12 },
+  searchContainer: { paddingHorizontal: 20, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: theme.border },
+  searchInputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.surface, borderRadius: 12, paddingHorizontal: 15, paddingVertical: 12 },
   searchIcon: { marginRight: 10 },
-  searchInput: { flex: 1, color: '#FFFFFF', fontSize: 16 },
+  searchInput: { flex: 1, color: theme.text, fontSize: 16 },
   clearButton: { padding: 4 },
   searchResults: { marginTop: 15 },
   searchResultsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
@@ -315,31 +323,31 @@ const styles = StyleSheet.create({
   searchNavigation: { flexDirection: 'row', alignItems: 'center' },
   navButton: { padding: 4, marginHorizontal: 4 },
   navText: { fontSize: 12, marginHorizontal: 8 },
-  searchResultItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, backgroundColor: '#2C2C2E', borderRadius: 8, marginBottom: 8 },
+  searchResultItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, backgroundColor: theme.surface, borderRadius: 8, marginBottom: 8 },
   activeSearchResult: { borderWidth: 1 },
-  searchResultTitleText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600', marginBottom: 4 },
-  searchResultSnippet: { color: '#B0B0B0', fontSize: 12 },
+  searchResultTitleText: { color: theme.text, fontSize: 14, fontWeight: '600', marginBottom: 4 },
+  searchResultSnippet: { color: theme.textSecondary, fontSize: 12 },
   searchResultHighlight: { fontWeight: 'bold' },
   container: { flex: 1 },
   content: { padding: 20, paddingBottom: 40 },
   titleSection: { alignItems: 'center', marginBottom: 30 },
   iconContainer: { borderRadius: 20, padding: 20, marginBottom: 15 },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'center', lineHeight: 36 },
+  title: { fontSize: 28, fontWeight: 'bold', color: theme.text, textAlign: 'center', lineHeight: 36 },
   section: { marginBottom: 30 },
   highlightedSection: { borderRadius: 8, padding: 10, borderWidth: 1 },
-  highlightedWord: { backgroundColor: 'rgba(255, 235, 59, 0.3)', color: '#FFF2A8' },
-  sectionTitle: { fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 15 },
-  bodyText: { fontSize: 16, lineHeight: 24, color: '#E0E0E0', marginBottom: 15 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.8)', justifyContent: 'flex-end' },
-  tableOfContentsContainer: { backgroundColor: '#1E1E1E', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '70%' },
-  tocHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#333' },
-  tocTitle: { fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' },
+  highlightedWord: { backgroundColor: theme.warning, color: theme.text },
+  sectionTitle: { fontSize: 22, fontWeight: 'bold', color: theme.text, marginBottom: 15 },
+  bodyText: { fontSize: 16, lineHeight: 24, color: theme.textSecondary, marginBottom: 15 },
+  modalOverlay: { flex: 1, backgroundColor: theme.overlay, justifyContent: 'flex-end' },
+  tableOfContentsContainer: { backgroundColor: theme.background, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '70%' },
+  tocHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: theme.border },
+  tocTitle: { fontSize: 20, fontWeight: 'bold', color: theme.text },
   closeButton: { padding: 4 },
   tocContent: { padding: 20 },
-  tocItem: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#333' },
-  tocItemText: { fontSize: 16, color: '#FFFFFF' },
+  tocItem: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.border },
+  tocItemText: { fontSize: 16, color: theme.text },
   tocMainItem: { fontWeight: '600' },
-  tocSubItem: { fontWeight: '400', color: '#B0B0B0' },
+  tocSubItem: { fontWeight: '400', color: theme.textSecondary },
 });
 
 export default KnowledgeBaseArticle; 

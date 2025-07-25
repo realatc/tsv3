@@ -6,8 +6,11 @@ import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from '../types/navigation';
 import { useApp } from '../context/AppContext';
 import { useLogs, LogEntry } from '../context/LogContext';
+import { useTheme } from '../context/ThemeContext';
 
 const SimpleHomeScreen = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { ezModeEnabled, settingsSheetRef } = useApp();
   const { logs } = useLogs();
@@ -23,8 +26,6 @@ const SimpleHomeScreen = () => {
       navigation.navigate('MainTabs', { screen: 'Browse', params: { screen: 'ThreatAnalysis', params: {} } });
     }
   };
-
-
 
   const handleLogDetail = (log: LogEntry) => {
     // Navigate directly to LogDetail using root navigation
@@ -53,7 +54,7 @@ const SimpleHomeScreen = () => {
         <Icon
           name={item.category === 'Mail' ? 'mail-outline' : item.category === 'Text' ? 'chatbubble-outline' : 'call-outline'}
           size={20}
-          color="#A070F2"
+          color={theme.primary}
         />
       </View>
       <View style={{ flex: 1 }}>
@@ -77,7 +78,7 @@ const SimpleHomeScreen = () => {
         {/* Top Bar */}
         <View style={styles.topBar}>
           <View style={styles.titleRow}>
-            <Icon name="shield-checkmark" size={28} color="#A070F2" style={{ marginRight: 8 }} />
+            <Icon name="shield-checkmark" size={28} color={theme.primary} style={{ marginRight: 8 }} />
             <Text style={styles.appTitle}>ThreatSense</Text>
             <View style={{ flex: 1 }} />
             <TouchableOpacity
@@ -85,13 +86,13 @@ const SimpleHomeScreen = () => {
               style={styles.profileIconBtn}
               accessibilityLabel="Open Settings"
             >
-              <Icon name="person-circle-outline" size={32} color="#fff" />
+              <Icon name="person-circle-outline" size={32} color={theme.text} />
             </TouchableOpacity>
           </View>
           {/* EZ-Mode Indicator below title, left-aligned */}
           <View style={styles.ezModeIndicatorRowLeft}>
             <View style={styles.ezModePillSmallNeutral}>
-              <Icon name="flash" size={12} color="#43A047" style={{ marginRight: 3 }} />
+              <Icon name="flash" size={12} color={theme.success} style={{ marginRight: 3 }} />
               <Text style={styles.ezModePillTextSmall}>EZ-Mode Enabled</Text>
             </View>
           </View>
@@ -105,7 +106,7 @@ const SimpleHomeScreen = () => {
             <TextInput
               style={styles.searchInput}
               placeholder="Enter a URL, paste an email, message, or any text you want to check for threats..."
-              placeholderTextColor="#666"
+              placeholderTextColor={theme.textSecondary}
               value={searchText}
               onChangeText={setSearchText}
               multiline
@@ -117,7 +118,7 @@ const SimpleHomeScreen = () => {
               onPress={handleLiveTextAnalysis}
               disabled={!searchText.trim()}
             >
-              <Icon name="shield-checkmark" size={20} color="#fff" />
+              <Icon name="shield-checkmark" size={20} color={theme.text} />
               <Text style={styles.analyzeButtonText}>Analyze</Text>
             </TouchableOpacity>
           </View>
@@ -125,8 +126,6 @@ const SimpleHomeScreen = () => {
             Examples: https://example.com, suspicious emails, text messages, social media posts
           </Text>
         </View>
-
-        
 
         {/* Recent Events */}
         <Text style={styles.subtitle}>Recent Events</Text>
@@ -141,10 +140,10 @@ const SimpleHomeScreen = () => {
             showsVerticalScrollIndicator={false}
           />
         </View>
-                          <TouchableOpacity
-                    style={styles.seeAllBtn}
-                    onPress={handleLogHistory}
-                  >
+        <TouchableOpacity
+          style={styles.seeAllBtn}
+          onPress={handleLogHistory}
+        >
           <Text style={styles.seeAllText}>{`See All (${logs.length})`}</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -152,14 +151,14 @@ const SimpleHomeScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#18181C',
+    backgroundColor: theme.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#18181C',
+    backgroundColor: theme.background,
   },
   contentContainer: {
     alignItems: 'center',
@@ -175,7 +174,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   appTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 22,
     fontWeight: 'bold',
     letterSpacing: 0.5,
@@ -196,7 +195,7 @@ const styles = StyleSheet.create({
   ezModePillSmallNeutral: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 1,
@@ -204,7 +203,7 @@ const styles = StyleSheet.create({
     height: 18,
   },
   ezModePillTextSmall: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 11,
     fontWeight: '600',
   },
@@ -213,25 +212,25 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   searchTitle: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 4,
   },
   searchSubtitle: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 14,
     marginBottom: 12,
   },
   searchContainer: {
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#2C2C2E',
+    borderColor: theme.border,
   },
   searchInput: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     minHeight: 80,
     marginBottom: 12,
@@ -241,16 +240,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#A070F2',
+    backgroundColor: theme.primary,
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 20,
   },
   analyzeButtonDisabled: {
-    backgroundColor: '#444',
+    backgroundColor: theme.surfaceSecondary,
   },
   analyzeButtonText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -265,28 +264,28 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     flex: 0.45,
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     alignItems: 'center',
     paddingVertical: 16,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
     borderWidth: 1,
-    borderColor: '#2C2C2E',
+    borderColor: theme.border,
     minHeight: 80, // Ensure consistent height
   },
   actionText: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 12,
     fontWeight: '600',
     marginTop: 4,
     textAlign: 'center',
   },
   subtitle: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 12,
@@ -298,32 +297,32 @@ const styles = StyleSheet.create({
   logCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     width: '100%',
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
     borderWidth: 1,
-    borderColor: '#2C2C2E',
+    borderColor: theme.border,
   },
   logIconWrap: {
     marginRight: 14,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 8,
     padding: 5,
   },
   logSender: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 15,
     fontWeight: 'bold',
   },
   logMessage: {
-    color: '#B0BEC5',
+    color: theme.textSecondary,
     fontSize: 14,
     marginTop: 2,
   },
@@ -334,20 +333,20 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   logType: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 12,
     fontWeight: '500',
     textTransform: 'capitalize',
   },
   logDate: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 12,
     fontWeight: '400',
     marginTop: 0,
     textAlign: 'right',
   },
   emptyText: {
-    color: '#B0BEC5',
+    color: theme.textSecondary,
     fontSize: 15,
     textAlign: 'center',
     marginVertical: 16,
@@ -358,18 +357,18 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#3C3C3E',
+    borderColor: theme.border,
   },
   seeAllText: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 14,
     fontWeight: '600',
   },
   searchHint: {
-    color: '#888',
+    color: theme.textSecondary,
     fontSize: 12,
     marginTop: 8,
     textAlign: 'center',

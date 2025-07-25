@@ -4,17 +4,20 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from '../types/navigation';
+import { useTheme } from '../context/ThemeContext';
 
 type KnowledgeBaseEZModeNavigationProp = StackNavigationProp<RootStackParamList, 'KnowledgeBaseEZMode'>;
 
 const KnowledgeBaseEZMode = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const navigation = useNavigation<KnowledgeBaseEZModeNavigationProp>();
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-back" size={24} color="#fff" />
+          <Icon name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>EZ-Mode Guide</Text>
         <View style={styles.headerSpacer} />
@@ -23,7 +26,7 @@ const KnowledgeBaseEZMode = () => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.articleContainer}>
           <View style={styles.titleSection}>
-            <Icon name="flash" size={48} color="#A070F2" style={styles.titleIcon} />
+            <Icon name="flash" size={48} color={theme.primary} style={styles.titleIcon} />
             <Text style={styles.title}>How to Use EZ-Mode</Text>
             <Text style={styles.subtitle}>Simplified interface for easier navigation</Text>
           </View>
@@ -40,7 +43,7 @@ const KnowledgeBaseEZMode = () => {
             <Text style={styles.sectionTitle}>Key Features</Text>
             
             <View style={styles.featureItem}>
-              <Icon name="search" size={24} color="#A070F2" style={styles.featureIcon} />
+              <Icon name="search" size={24} color={theme.primary} style={styles.featureIcon} />
               <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>Live Text Analyzer</Text>
                 <Text style={styles.featureDescription}>
@@ -50,7 +53,7 @@ const KnowledgeBaseEZMode = () => {
             </View>
 
             <View style={styles.featureItem}>
-              <Icon name="time" size={24} color="#A070F2" style={styles.featureIcon} />
+              <Icon name="time" size={24} color={theme.primary} style={styles.featureIcon} />
               <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>Recent Activity</Text>
                 <Text style={styles.featureDescription}>
@@ -60,7 +63,7 @@ const KnowledgeBaseEZMode = () => {
             </View>
 
             <View style={styles.featureItem}>
-              <Icon name="person-circle" size={24} color="#A070F2" style={styles.featureIcon} />
+              <Icon name="person-circle" size={24} color={theme.primary} style={styles.featureIcon} />
               <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>Quick Settings</Text>
                 <Text style={styles.featureDescription}>
@@ -103,19 +106,19 @@ const KnowledgeBaseEZMode = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#2A2A2A',
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: theme.border,
   },
   backButton: {
     padding: 8,
@@ -124,7 +127,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.text,
     flex: 1,
   },
   headerSpacer: {
@@ -146,13 +149,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text,
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#999',
+    color: theme.textSecondary,
     textAlign: 'center',
   },
   section: {
@@ -161,13 +164,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.text,
     marginBottom: 12,
   },
   bodyText: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#ccc',
+    color: theme.text,
   },
   featureItem: {
     flexDirection: 'row',
@@ -185,13 +188,13 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: theme.text,
     marginBottom: 4,
   },
   featureDescription: {
     fontSize: 16,
     lineHeight: 22,
-    color: '#ccc',
+    color: theme.text,
   },
 });
 

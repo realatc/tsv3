@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types/navigation';
+import { useTheme } from '../../context/ThemeContext';
 
 type SecurityTabNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -15,6 +16,7 @@ type SecurityTabProps = {
 
 export const SecurityTab = ({ log, urls, urlSafety }: SecurityTabProps) => {
   const navigation = useNavigation<SecurityTabNavigationProp>();
+  const { theme } = useTheme();
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
   const [showUrlWarning, setShowUrlWarning] = useState(false);
   const [showUrlHelp, setShowUrlHelp] = useState(false);
@@ -31,6 +33,97 @@ export const SecurityTab = ({ log, urls, urlSafety }: SecurityTabProps) => {
     }
   };
 
+  const styles = StyleSheet.create({
+    card: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 18,
+      marginVertical: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    titleContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    sectionTitle: {
+      color: theme.text,
+      fontWeight: 'bold',
+      fontSize: 18,
+    },
+    label: {
+      color: theme.textSecondary,
+      fontSize: 14,
+      marginTop: 10,
+    },
+    value: {
+      color: theme.text,
+      fontSize: 16,
+      marginBottom: 10,
+    },
+    helpButton: {
+      padding: 4,
+    },
+    helpIconButton: {
+      marginLeft: 8,
+    },
+    urlText: {
+      color: theme.primary,
+      textDecorationLine: 'underline',
+      fontSize: 16,
+    },
+    statusBadge: {
+      borderRadius: 12,
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      marginLeft: 10,
+    },
+    statusBadgeText: {
+      color: theme.text,
+      fontWeight: 'bold',
+      fontSize: 12,
+    },
+    helpModalOverlay: {
+      flex: 1,
+      backgroundColor: theme.overlay,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    helpModalContent: {
+      backgroundColor: theme.surface,
+      borderRadius: 12,
+      padding: 22,
+      width: '85%',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    helpModalTitle: {
+      color: theme.text,
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 12,
+    },
+    helpModalText: {
+      color: theme.text,
+      fontSize: 16,
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    helpModalButton: {
+      backgroundColor: theme.primary,
+      borderRadius: 8,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+    },
+    helpModalButtonText: {
+      color: theme.text,
+      fontWeight: 'bold',
+    },
+  });
+
   return (
     <View style={styles.card}>
       <View style={styles.titleContainer}>
@@ -45,7 +138,7 @@ export const SecurityTab = ({ log, urls, urlSafety }: SecurityTabProps) => {
           })}
           style={styles.helpButton}
         >
-          <Icon name="information-circle-outline" size={22} color="#4A90E2" />
+          <Icon name="information-circle-outline" size={22} color={theme.primary} />
         </TouchableOpacity>
       </View>
       <Text style={styles.label}>NLP Analysis</Text>
@@ -55,7 +148,7 @@ export const SecurityTab = ({ log, urls, urlSafety }: SecurityTabProps) => {
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
         <Text style={styles.label}>URL Safety Check</Text>
         <Pressable onPress={() => setShowUrlHelp(true)} style={styles.helpIconButton} hitSlop={8}>
-          <Icon name="help-circle-outline" size={18} color="#4A90E2" />
+          <Icon name="help-circle-outline" size={18} color={theme.primary} />
         </Pressable>
       </View>
       {urls.length > 0 ? (
@@ -70,12 +163,12 @@ export const SecurityTab = ({ log, urls, urlSafety }: SecurityTabProps) => {
                   styles.statusBadge,
                   {
                     backgroundColor:
-                      urlSafety[url] === 'loading' ? '#B0BEC5'
-                      : urlSafety[url] === 'safe' ? '#43A047'
-                      : urlSafety[url] === 'malware' ? '#FF6B6B'
-                      : urlSafety[url] === 'phishing' ? '#FFB300'
-                      : urlSafety[url] === 'uncommon' ? '#FF9800'
-                      : '#757575',
+                      urlSafety[url] === 'loading' ? theme.textSecondary
+                      : urlSafety[url] === 'safe' ? theme.success
+                      : urlSafety[url] === 'malware' ? theme.error
+                      : urlSafety[url] === 'phishing' ? theme.warning
+                      : urlSafety[url] === 'uncommon' ? theme.warning
+                      : theme.textTertiary,
                   },
                 ]}
               >
@@ -98,7 +191,7 @@ export const SecurityTab = ({ log, urls, urlSafety }: SecurityTabProps) => {
             <Text style={styles.helpModalText}>This link may be dangerous. Are you sure you want to open it?</Text>
             <Text style={styles.helpModalText}>{pendingUrl}</Text>
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 18 }}>
-              <TouchableOpacity style={[styles.helpModalButton, { backgroundColor: '#FF6B6B', marginRight: 12 }]} onPress={() => setShowUrlWarning(false)}>
+              <TouchableOpacity style={[styles.helpModalButton, { backgroundColor: theme.error, marginRight: 12 }]} onPress={() => setShowUrlWarning(false)}>
                 <Text style={styles.helpModalButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.helpModalButton} onPress={() => {
@@ -126,91 +219,4 @@ export const SecurityTab = ({ log, urls, urlSafety }: SecurityTabProps) => {
       </Modal>
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 12,
-    padding: 18,
-    marginVertical: 8,
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  label: {
-    color: '#B0BEC5',
-    fontSize: 14,
-    marginTop: 10,
-  },
-  value: {
-    color: '#ECEFF1',
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  helpButton: {
-    padding: 4,
-  },
-  helpIconButton: {
-    marginLeft: 8,
-  },
-  urlText: {
-    color: '#4A90E2',
-    textDecorationLine: 'underline',
-    fontSize: 16,
-  },
-  statusBadge: {
-    borderRadius: 12,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    marginLeft: 10,
-  },
-  statusBadgeText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-  helpModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  helpModalContent: {
-    backgroundColor: '#2c2c2c',
-    borderRadius: 12,
-    padding: 22,
-    width: '85%',
-    alignItems: 'center',
-  },
-  helpModalTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  helpModalText: {
-    color: '#ECEFF1',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  helpModalButton: {
-    backgroundColor: '#4A90E2',
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  helpModalButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-}); 
+}; 

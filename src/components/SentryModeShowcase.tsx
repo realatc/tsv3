@@ -3,10 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Dimensions
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useSentryMode } from '../context/SentryModeContext';
 import { navigate } from '../services/navigationService';
+import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 const SentryModeShowcase: React.FC = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const { settings } = useSentryMode();
   const [showFeatureModal, setShowFeatureModal] = useState(false);
 
@@ -15,37 +18,37 @@ const SentryModeShowcase: React.FC = () => {
       icon: 'shield-checkmark-outline',
       title: '24/7 Protection',
       description: 'Continuous monitoring of your messages and communications',
-      color: '#4CAF50'
+      color: theme.success
     },
     {
       icon: 'notifications-outline',
       title: 'Instant Alerts',
       description: 'Immediate notification to trusted contacts when threats are detected',
-      color: '#F44336'
+      color: theme.error
     },
     {
       icon: 'people-outline',
       title: 'Trusted Network',
       description: 'Keep your loved ones informed and ready to help',
-      color: '#2196F3'
+      color: theme.primary
     },
     {
       icon: 'analytics-outline',
       title: 'AI-Powered Analysis',
       description: 'Advanced threat detection using machine learning',
-      color: '#FF9800'
+      color: theme.warning
     },
     {
       icon: 'location-outline',
       title: 'Location Sharing',
       description: 'Share your location with trusted contacts during emergencies',
-      color: '#9C27B0'
+      color: theme.info
     },
     {
       icon: 'settings-outline',
       title: 'Customizable Thresholds',
       description: 'Set your own threat level sensitivity',
-      color: '#607D8B'
+      color: theme.textSecondary
     }
   ];
 
@@ -73,7 +76,7 @@ const SentryModeShowcase: React.FC = () => {
       {/* Hero Section */}
       <View style={styles.heroSection}>
         <View style={styles.heroIcon}>
-          <Icon name="shield-checkmark-outline" size={48} color="#A070F2" />
+          <Icon name="shield-checkmark-outline" size={48} color={theme.primary} />
         </View>
         <Text style={styles.heroTitle}>Sentry Mode</Text>
         <Text style={styles.heroSubtitle}>Your Personal Security Guardian</Text>
@@ -99,7 +102,7 @@ const SentryModeShowcase: React.FC = () => {
         </View>
       </View>
 
-      {/* Features Grid */}
+      {/* Features Section */}
       <View style={styles.featuresSection}>
         <Text style={styles.sectionTitle}>Key Features</Text>
         <View style={styles.featuresGrid}>
@@ -121,7 +124,7 @@ const SentryModeShowcase: React.FC = () => {
         <View style={styles.benefitsList}>
           {benefits.map((benefit, index) => (
             <View key={index} style={styles.benefitItem}>
-              <Icon name="checkmark-circle" size={20} color="#4CAF50" />
+              <Icon name="checkmark-circle" size={16} color={theme.success} />
               <Text style={styles.benefitText}>{benefit}</Text>
             </View>
           ))}
@@ -133,46 +136,33 @@ const SentryModeShowcase: React.FC = () => {
         <Text style={styles.sectionTitle}>Current Status</Text>
         <View style={styles.statusCard}>
           <View style={styles.statusRow}>
-            <Icon name="shield-outline" size={20} color={settings.isEnabled ? '#4CAF50' : '#F44336'} />
-            <Text style={styles.statusLabel}>Sentry Mode:</Text>
-            <Text style={[styles.statusValue, { color: settings.isEnabled ? '#4CAF50' : '#F44336' }]}>
-              {settings.isEnabled ? 'Active' : 'Inactive'}
-            </Text>
+            <Icon name="shield-checkmark" size={16} color={settings.isEnabled ? theme.success : theme.textSecondary} />
+            <Text style={styles.statusLabel}>Sentry Mode</Text>
+            <Text style={styles.statusValue}>{settings.isEnabled ? 'Enabled' : 'Disabled'}</Text>
           </View>
-          {settings.isEnabled && (
-            <>
-              <View style={styles.statusRow}>
-                <Icon name="alert-outline" size={20} color="#FF9800" />
-                <Text style={styles.statusLabel}>Threshold:</Text>
-                <Text style={styles.statusValue}>{settings.threatLevel}</Text>
-              </View>
-              <View style={styles.statusRow}>
-                <Icon name="person-outline" size={20} color="#2196F3" />
-                <Text style={styles.statusLabel}>Contact:</Text>
-                <Text style={styles.statusValue}>
-                  {settings.trustedContact?.name || 'Not Set'}
-                </Text>
-              </View>
-            </>
-          )}
+          <View style={styles.statusRow}>
+            <Icon name="person" size={16} color={settings.trustedContact ? theme.success : theme.textSecondary} />
+            <Text style={styles.statusLabel}>Trusted Contact</Text>
+            <Text style={styles.statusValue}>{settings.trustedContact ? 'Set' : 'Not Set'}</Text>
+          </View>
         </View>
       </View>
 
-      {/* Action Buttons */}
+      {/* Action Section */}
       <View style={styles.actionSection}>
         <TouchableOpacity 
           style={[styles.actionButton, styles.primaryButton]} 
           onPress={() => setShowFeatureModal(true)}
         >
-          <Icon name="play-circle-outline" size={20} color="#fff" />
-          <Text style={styles.primaryButtonText}>Explore Sentry Mode</Text>
+          <Icon name="information-circle" size={20} color={theme.text} />
+          <Text style={styles.primaryButtonText}>Learn More About Sentry Mode</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={[styles.actionButton, styles.secondaryButton]} 
           onPress={() => navigate('Settings')}
         >
-          <Icon name="settings-outline" size={20} color="#A070F2" />
+          <Icon name="settings" size={20} color={theme.primary} />
           <Text style={styles.secondaryButtonText}>Configure Settings</Text>
         </TouchableOpacity>
       </View>
@@ -187,16 +177,13 @@ const SentryModeShowcase: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Icon name="shield-checkmark-outline" size={32} color="#A070F2" />
+              <Icon name="shield-checkmark-outline" size={24} color={theme.primary} />
               <Text style={styles.modalTitle}>Sentry Mode Features</Text>
-              <TouchableOpacity onPress={() => setShowFeatureModal(false)}>
-                <Icon name="close" size={24} color="#fff" />
-              </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.modalBody}>
+            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
               <Text style={styles.modalDescription}>
-                Sentry Mode provides comprehensive protection through intelligent threat detection and immediate emergency notifications.
+                Sentry Mode provides comprehensive protection through advanced monitoring and instant alerting capabilities.
               </Text>
 
               <View style={styles.modalFeatures}>
@@ -219,10 +206,10 @@ const SentryModeShowcase: React.FC = () => {
                 <Text style={styles.modalButtonText}>Learn More</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.modalButton, { backgroundColor: '#A070F2' }]} 
+                style={[styles.modalButton, { backgroundColor: theme.primary }]} 
                 onPress={handleSetupSentryMode}
               >
-                <Text style={[styles.modalButtonText, { color: '#fff' }]}>Setup Now</Text>
+                <Text style={[styles.modalButtonText, { color: theme.text }]}>Setup Now</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -232,9 +219,9 @@ const SentryModeShowcase: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 20,
     marginBottom: 20,
@@ -247,25 +234,25 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#A070F2' + '22',
+    backgroundColor: theme.primary + '22',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
   heroTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   heroSubtitle: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
   },
   heroDescription: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
@@ -274,7 +261,7 @@ const styles = StyleSheet.create({
   heroStats: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
   },
@@ -283,25 +270,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statNumber: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 18,
     fontWeight: 'bold',
   },
   statLabel: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 12,
     marginTop: 4,
   },
   statDivider: {
     width: 1,
     height: 30,
-    backgroundColor: '#444',
+    backgroundColor: theme.border,
   },
   featuresSection: {
     marginBottom: 24,
   },
   sectionTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 16,
@@ -313,7 +300,7 @@ const styles = StyleSheet.create({
   },
   featureCard: {
     width: (width - 60) / 2,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -328,14 +315,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   featureTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 8,
   },
   featureDescription: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 16,
@@ -344,7 +331,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   benefitsList: {
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
   },
@@ -354,7 +341,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   benefitText: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 14,
     marginLeft: 12,
     flex: 1,
@@ -363,7 +350,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   statusCard: {
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
   },
@@ -373,13 +360,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   statusLabel: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 14,
     marginLeft: 12,
     flex: 1,
   },
   statusValue: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -395,10 +382,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   primaryButton: {
-    backgroundColor: '#A070F2',
+    backgroundColor: theme.primary,
   },
   primaryButtonText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -406,10 +393,10 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#A070F2',
+    borderColor: theme.primary,
   },
   secondaryButtonText: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -417,12 +404,12 @@ const styles = StyleSheet.create({
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: theme.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 16,
     width: '90%',
     maxHeight: '80%',
@@ -434,7 +421,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 20,
     fontWeight: '600',
     flex: 1,
@@ -444,7 +431,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modalDescription: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 16,
     lineHeight: 24,
     marginBottom: 20,
@@ -468,13 +455,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modalFeatureTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
   },
   modalFeatureDesc: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -490,11 +477,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#A070F2',
+    borderColor: theme.primary,
     alignItems: 'center',
   },
   modalButtonText: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 16,
     fontWeight: '600',
   },

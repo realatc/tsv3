@@ -11,6 +11,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { useTheme } from '../context/ThemeContext';
 
 const AVATAR_SIZE = 72;
 
@@ -24,6 +25,9 @@ const navItems = [
 ];
 
 const NavigationPanel: React.FC<DrawerContentComponentProps> = ({ navigation, state }) => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+  
   // Animate avatar scale on drawer open
   const scale = useSharedValue(1);
   React.useEffect(() => {
@@ -65,7 +69,7 @@ const NavigationPanel: React.FC<DrawerContentComponentProps> = ({ navigation, st
               <Icon
                 name={item.icon}
                 size={24}
-                color={focused ? '#4A90E2' : '#FFFFFF'}
+                color={focused ? theme.primary : theme.text}
               />
               <Text style={[styles.buttonText, focused && styles.activeButtonText]}>
                 {item.title}
@@ -106,11 +110,11 @@ const NavigationPanel: React.FC<DrawerContentComponentProps> = ({ navigation, st
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 40,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: theme.background,
   },
   avatarContainer: {
     alignItems: 'center',
@@ -123,17 +127,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 8,
     borderWidth: 2,
-    borderColor: '#4A90E2',
-    backgroundColor: '#222',
+    borderColor: theme.primary,
+    backgroundColor: theme.surface,
   },
   avatarName: {
-    color: '#fff',
+    color: theme.text,
     fontWeight: 'bold',
     fontSize: 18,
     marginTop: 4,
   },
   avatarEmail: {
-    color: '#aaa',
+    color: theme.textSecondary,
     fontSize: 13,
     marginBottom: 2,
   },
@@ -144,39 +148,39 @@ const styles = StyleSheet.create({
   navButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: theme.border,
     padding: 15,
     borderRadius: 12,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: theme.border,
   },
   activeNavButton: {
-    backgroundColor: 'rgba(74, 144, 226, 0.18)',
-    borderColor: '#4A90E2',
+    backgroundColor: theme.primaryLight,
+    borderColor: theme.primary,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: theme.text,
     fontSize: 16,
     marginLeft: 15,
     fontWeight: '500',
   },
   activeButtonText: {
-    color: '#4A90E2',
+    color: theme.primary,
   },
   contactContainer: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    borderTopColor: theme.border,
     alignItems: 'center',
   },
   contactLabel: {
-    color: '#aaa',
+    color: theme.textSecondary,
     fontSize: 12,
     marginBottom: 2,
   },
   contactText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 13,
   },
   tosLinkContainer: {
@@ -184,7 +188,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tosLink: {
-    color: '#B0BEC5',
+    color: theme.textSecondary,
     fontSize: 13,
     textAlign: 'center',
     textDecorationLine: 'underline',
@@ -192,43 +196,43 @@ const styles = StyleSheet.create({
   },
   tosModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: theme.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
   tosModalContent: {
-    backgroundColor: '#23294d',
+    backgroundColor: theme.surface,
     borderRadius: 16,
     padding: 24,
     minWidth: 260,
     maxWidth: '85%',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
   },
   tosModalTitle: {
-    color: '#4A90E2',
+    color: theme.primary,
     fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 12,
     textAlign: 'center',
   },
   tosModalText: {
-    color: '#B0BEC5',
+    color: theme.textSecondary,
     fontSize: 14,
     marginBottom: 18,
     textAlign: 'center',
   },
   tosModalButton: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: theme.primary,
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 24,
   },
   tosModalButtonText: {
-    color: '#fff',
+    color: theme.text,
     fontWeight: 'bold',
     fontSize: 15,
   },

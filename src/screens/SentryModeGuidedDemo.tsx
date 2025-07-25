@@ -1,40 +1,44 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-
-const steps = [
-  {
-    title: 'Enable Sentry Mode',
-    icon: 'shield-checkmark-outline',
-    iconColor: '#A070F2',
-    caption: 'Turn on Sentry Mode in your settings to activate monitoring.'
-  },
-  {
-    title: 'Threat Detected & Analyzed',
-    icon: 'analytics-outline',
-    iconColor: '#FF9800',
-    caption: 'ThreatSense monitors your messages and uses AI to detect and analyze threats.'
-  },
-  {
-    title: 'Trusted Contact Alerted',
-    icon: 'notifications-outline',
-    iconColor: '#F44336',
-    caption: 'If a serious threat is found, your trusted contact is instantly notified and can respond.'
-  },
-  {
-    title: "You're Not Alone",
-    icon: 'checkmark-circle-outline',
-    iconColor: '#4CAF50',
-    caption: 'You get confirmation that help is on the way, or the situation is resolved.'
-  },
-];
+import { useTheme } from '../context/ThemeContext';
 
 const SentryModeGuidedDemo = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
+  const steps = [
+    {
+      title: 'Enable Sentry Mode',
+      icon: 'shield-checkmark-outline',
+      iconColor: theme.primary,
+      caption: 'Turn on Sentry Mode in your settings to activate monitoring.'
+    },
+    {
+      title: 'Threat Detected & Analyzed',
+      icon: 'analytics-outline',
+      iconColor: theme.warning,
+      caption: 'ThreatSense monitors your messages and uses AI to detect and analyze threats.'
+    },
+    {
+      title: 'Trusted Contact Alerted',
+      icon: 'notifications-outline',
+      iconColor: theme.error,
+      caption: 'If a serious threat is found, your trusted contact is instantly notified and can respond.'
+    },
+    {
+      title: "You're Not Alone",
+      icon: 'checkmark-circle-outline',
+      iconColor: theme.success,
+      caption: 'You get confirmation that help is on the way, or the situation is resolved.'
+    },
+  ];
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Icon name="shield-checkmark-outline" size={36} color="#A070F2" style={styles.icon} />
+          <Icon name="shield-checkmark-outline" size={36} color={theme.primary} style={styles.icon} />
           <Text style={styles.title}>Sentry Mode Guided Demo</Text>
         </View>
         <Text style={styles.introText}>
@@ -55,10 +59,10 @@ const SentryModeGuidedDemo = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#18181A',
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -66,7 +70,7 @@ const styles = StyleSheet.create({
     paddingTop: 32,
     paddingBottom: 16,
     paddingHorizontal: 20,
-    backgroundColor: '#18181A',
+    backgroundColor: theme.background,
   },
   icon: {
     marginRight: 12,
@@ -74,10 +78,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text,
   },
   introText: {
-    color: '#B0BEC5',
+    color: theme.textSecondary,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 18,
@@ -89,10 +93,10 @@ const styles = StyleSheet.create({
   },
   stepContainer: {
     marginBottom: 32,
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     borderRadius: 16,
     padding: 22,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOpacity: 0.10,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 2 },
@@ -101,27 +105,27 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#A070F2',
+    color: theme.primary,
     marginBottom: 14,
     textAlign: 'center',
   },
   iconWrapper: {
-    backgroundColor: '#18181A',
+    backgroundColor: theme.background,
     borderRadius: 32,
     padding: 16,
     marginBottom: 14,
     borderWidth: 2,
-    borderColor: '#333',
+    borderColor: theme.border,
   },
   caption: {
     fontSize: 16,
-    color: '#fff',
+    color: theme.text,
     marginBottom: 2,
     textAlign: 'center',
   },
   footer: {
     fontSize: 15,
-    color: '#B0BEC5',
+    color: theme.textSecondary,
     textAlign: 'center',
     marginTop: 16,
   },

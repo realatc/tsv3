@@ -18,10 +18,13 @@ import { getLatestScams, ScamAlert } from '../services/perplexity/perplexityServ
 import { HomeStackParamList } from '../types/navigation';
 import { useApp } from '../context/AppContext';
 import { getSeverityColor, getSeverityIcon } from '../utils/threatLevel';
+import { useTheme } from '../context/ThemeContext';
 
 type LatestScamsNavigationProp = StackNavigationProp<HomeStackParamList, 'LatestScams'>;
 
 const LatestScamsScreen: React.FC = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const { settingsSheetRef } = useApp();
   const navigation = useNavigation<LatestScamsNavigationProp>();
   const [scams, setScams] = useState<ScamAlert[]>([]);
@@ -121,7 +124,7 @@ const LatestScamsScreen: React.FC = () => {
     if (loading) {
       return (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#A070F2" />
+          <ActivityIndicator size="large" color={theme.primary} />
           <Text style={styles.loadingText}>Loading latest threats...</Text>
         </View>
       );
@@ -130,7 +133,7 @@ const LatestScamsScreen: React.FC = () => {
     if (error) {
       return (
         <View style={styles.centerContainer}>
-          <Icon name="alert-circle" size={48} color="#FF4444" />
+          <Icon name="alert-circle" size={48} color={theme.error} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => fetchScams()}>
             <Text style={styles.retryButtonText}>Try Again</Text>
@@ -142,7 +145,7 @@ const LatestScamsScreen: React.FC = () => {
     if (filteredScams.length === 0) {
       return (
         <View style={styles.centerContainer}>
-          <Icon name="shield-checkmark" size={48} color="#44AA44" />
+          <Icon name="shield-checkmark" size={48} color={theme.success} />
           <Text style={styles.emptyText}>
             {activeTab === 'personal' ? 'No personal threats detected' : 'No threats detected'}
           </Text>
@@ -161,11 +164,11 @@ const LatestScamsScreen: React.FC = () => {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#A070F2" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
         }
       >
         <View style={styles.infoContainer}>
-          <Icon name="information-circle" size={20} color="#A070F2" />
+          <Icon name="information-circle" size={20} color={theme.primary} />
           <Text style={styles.infoText}>
             These alerts are updated regularly to keep you informed about the latest digital threats.
             {lastUpdated && (
@@ -197,11 +200,11 @@ const LatestScamsScreen: React.FC = () => {
   };
 
   return (
-    <LinearGradient colors={['#1a1a1a', '#0a0a0a']} style={styles.container}>
+    <LinearGradient colors={[theme.background, theme.surface]} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.headerRow}>
           <View style={styles.logoContainer}>
-            <Icon name="flame" size={28} color="#A070F2" />
+            <Icon name="flame" size={28} color={theme.primary} />
             <Text style={styles.headerTitle}>Latest Scams</Text>
           </View>
           <TouchableOpacity
@@ -209,7 +212,7 @@ const LatestScamsScreen: React.FC = () => {
             style={styles.profileButton}
             accessibilityLabel="Open Settings"
           >
-            <Icon name="person-circle-outline" size={34} color="#fff" style={styles.profileImage} />
+            <Icon name="person-circle-outline" size={34} color={theme.text} style={styles.profileImage} />
           </TouchableOpacity>
         </View>
         <Text style={styles.headerSubtitle}>Powered by Perplexity AI</Text>
@@ -231,7 +234,7 @@ const LatestScamsScreen: React.FC = () => {
             <Icon 
               name="person" 
               size={16} 
-              color={activeTab === 'personal' ? '#A070F2' : '#666'} 
+              color={activeTab === 'personal' ? theme.primary : theme.textSecondary} 
             />
             <Text style={[styles.tabText, activeTab === 'personal' && styles.activeTabText]}>
               Personal Threats
@@ -244,7 +247,7 @@ const LatestScamsScreen: React.FC = () => {
             <Icon 
               name="globe" 
               size={16} 
-              color={activeTab === 'all' ? '#A070F2' : '#666'} 
+              color={activeTab === 'all' ? theme.primary : theme.textSecondary} 
             />
             <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>
               All Threats
@@ -258,7 +261,7 @@ const LatestScamsScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -279,7 +282,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 24,
     fontWeight: 'bold',
     marginLeft: 10,
@@ -297,13 +300,13 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 16,
-    color: '#aaa',
+    color: theme.textSecondary,
     marginLeft: 15,
     marginBottom: 4,
   },
   lastUpdatedText: {
     fontSize: 13,
-    color: '#A070F2',
+    color: theme.primary,
     marginLeft: 15,
     marginBottom: 10,
   },
@@ -315,38 +318,38 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     marginTop: 16,
     textAlign: 'center',
   },
   errorText: {
     fontSize: 16,
-    color: '#FF4444',
+    color: theme.error,
     marginTop: 16,
     textAlign: 'center',
     lineHeight: 22,
   },
   retryButton: {
-    backgroundColor: '#A070F2',
+    backgroundColor: theme.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
     marginTop: 16,
   },
   retryButtonText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
   },
   emptyText: {
     fontSize: 18,
-    color: '#E5E5E7',
+    color: theme.text,
     marginTop: 16,
     textAlign: 'center',
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#888',
+    color: theme.textSecondary,
     marginTop: 8,
     textAlign: 'center',
     lineHeight: 20,
@@ -359,7 +362,7 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flexDirection: 'row',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surface,
     padding: 16,
     borderRadius: 12,
     marginBottom: 20,
@@ -367,7 +370,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     marginLeft: 12,
     lineHeight: 20,
   },
@@ -375,38 +378,38 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#2C2C2E',
+    borderTopColor: theme.border,
     marginTop: 20,
   },
   footerText: {
-    color: '#8A8A8E',
+    color: theme.textSecondary,
     fontSize: 12,
   },
   freshIndicator: {
     fontSize: 12,
-    color: '#888',
+    color: theme.textSecondary,
   },
   liveIndicator: {
-    color: '#34C759',
+    color: theme.success,
     fontWeight: 'bold',
   },
   mockDataIndicator: {
     fontSize: 12,
-    color: '#FFAA00',
+    color: theme.warning,
     marginLeft: 15,
     marginBottom: 4,
     fontStyle: 'italic',
   },
   dataSourceIndicator: {
     fontSize: 12,
-    color: '#34C759',
+    color: theme.success,
     marginLeft: 15,
     marginBottom: 4,
     fontWeight: '600',
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surface,
     marginHorizontal: 15,
     marginBottom: 15,
     borderRadius: 12,
@@ -422,16 +425,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeTab: {
-    backgroundColor: '#A070F2',
+    backgroundColor: theme.primary,
   },
   tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: theme.textSecondary,
     marginLeft: 6,
   },
   activeTabText: {
-    color: '#fff',
+    color: theme.text,
   },
 });
 

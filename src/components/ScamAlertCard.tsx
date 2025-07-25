@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ScamAlert } from '../services/perplexity/perplexityService';
 import { getSeverityColor, getSeverityIcon } from '../utils/threatLevel';
+import { useTheme } from '../context/ThemeContext';
 
 interface ScamAlertCardProps {
   scam: ScamAlert;
@@ -22,6 +23,8 @@ const getCategoryIcon = (category: string) => {
 };
 
 export const ScamAlertCard: React.FC<ScamAlertCardProps> = ({ scam, onPress }) => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const severityColor = getSeverityColor(scam.severity);
   const severityIcon = getSeverityIcon(scam.severity);
   const categoryIcon = getCategoryIcon(scam.category);
@@ -41,13 +44,13 @@ export const ScamAlertCard: React.FC<ScamAlertCardProps> = ({ scam, onPress }) =
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
         <View style={styles.titleContainer}>
-          <Icon name={categoryIcon} size={20} color="#E5E5E7" style={styles.categoryIcon} />
+          <Icon name={categoryIcon} size={20} color={theme.text} style={styles.categoryIcon} />
           <Text style={styles.title} numberOfLines={2}>
             {scam.title}
           </Text>
         </View>
         <View style={[styles.severityBadge, { backgroundColor: severityColor }]}>
-          <Icon name={severityIcon} size={16} color="#fff" />
+          <Icon name={severityIcon} size={16} color={theme.text} />
           <Text style={styles.severityText}>{scam.severity.toUpperCase()}</Text>
         </View>
       </View>
@@ -58,7 +61,7 @@ export const ScamAlertCard: React.FC<ScamAlertCardProps> = ({ scam, onPress }) =
       
       {scam.advice && (
         <View style={styles.adviceContainer}>
-          <Icon name="lightbulb-outline" size={16} color="#A070F2" style={styles.adviceIcon} />
+          <Icon name="lightbulb-outline" size={16} color={theme.primary} style={styles.adviceIcon} />
           <Text style={styles.adviceText} numberOfLines={2}>
             {scam.advice}
           </Text>
@@ -69,7 +72,7 @@ export const ScamAlertCard: React.FC<ScamAlertCardProps> = ({ scam, onPress }) =
         <Text style={styles.date}>{formatDate(scam.date)}</Text>
         {scam.sources && scam.sources.length > 0 && (
           <View style={styles.sourcesContainer}>
-            <Icon name="link" size={14} color="#888" />
+            <Icon name="link" size={14} color={theme.textSecondary} />
             <Text style={styles.sourcesText}>{scam.sources.length} source{scam.sources.length !== 1 ? 's' : ''}</Text>
           </View>
         )}
@@ -78,13 +81,13 @@ export const ScamAlertCard: React.FC<ScamAlertCardProps> = ({ scam, onPress }) =
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -109,7 +112,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 17,
     fontWeight: '600',
-    color: '#E5E5E7',
+    color: theme.text,
     lineHeight: 22,
   },
   severityBadge: {
@@ -124,12 +127,12 @@ const styles = StyleSheet.create({
   severityText: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text,
     marginLeft: 4,
   },
   description: {
     fontSize: 15,
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     lineHeight: 22,
     marginBottom: 16,
   },
@@ -140,7 +143,7 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: 13,
-    color: '#888',
+    color: theme.textSecondary,
   },
   sourcesContainer: {
     flexDirection: 'row',
@@ -148,13 +151,13 @@ const styles = StyleSheet.create({
   },
   sourcesText: {
     fontSize: 13,
-    color: '#888',
+    color: theme.textSecondary,
     marginLeft: 6,
   },
   adviceContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#1E1E1E',
+    backgroundColor: theme.surfaceSecondary,
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
@@ -166,7 +169,7 @@ const styles = StyleSheet.create({
   adviceText: {
     flex: 1,
     fontSize: 14,
-    color: '#A070F2',
+    color: theme.primary,
     lineHeight: 20,
     fontStyle: 'italic',
   },

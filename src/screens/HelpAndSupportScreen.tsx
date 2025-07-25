@@ -4,10 +4,13 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from '../types/navigation';
+import { useTheme } from '../context/ThemeContext';
 
 type HelpAndSupportScreenNavigationProp = StackNavigationProp<RootStackParamList, 'HelpAndSupport'>;
 
 const HelpAndSupportScreen = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const navigation = useNavigation<HelpAndSupportScreenNavigationProp>();
 
   const helpSections = [
@@ -85,13 +88,13 @@ const HelpAndSupportScreen = () => {
   const renderHelpItem = (item: any) => (
     <TouchableOpacity key={item.title} style={styles.helpItem} onPress={item.onPress}>
       <View style={styles.helpItemIcon}>
-        <Icon name={item.icon} size={24} color="#A070F2" />
+        <Icon name={item.icon} size={24} color={theme.primary} />
       </View>
       <View style={styles.helpItemContent}>
         <Text style={styles.helpItemTitle}>{item.title}</Text>
         <Text style={styles.helpItemDescription}>{item.description}</Text>
       </View>
-      <Icon name="chevron-forward" size={20} color="#666" />
+      <Icon name="chevron-forward" size={20} color={theme.textSecondary} />
     </TouchableOpacity>
   );
 
@@ -99,7 +102,7 @@ const HelpAndSupportScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-back" size={24} color="#fff" />
+          <Icon name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Help & Support</Text>
         <View style={styles.headerSpacer} />
@@ -107,7 +110,7 @@ const HelpAndSupportScreen = () => {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.welcomeSection}>
-          <Icon name="help-circle" size={48} color="#A070F2" style={styles.welcomeIcon} />
+          <Icon name="help-circle" size={48} color={theme.primary} style={styles.welcomeIcon} />
           <Text style={styles.welcomeTitle}>How can we help you?</Text>
           <Text style={styles.welcomeSubtitle}>
             Find answers to common questions and learn how to use ThreatSense effectively.
@@ -132,7 +135,7 @@ const HelpAndSupportScreen = () => {
             style={styles.contactButton}
             onPress={() => Linking.openURL('mailto:support@threatsense.app')}
           >
-            <Icon name="mail" size={20} color="#fff" />
+            <Icon name="mail" size={20} color={theme.text} />
             <Text style={styles.contactButtonText}>Contact Support</Text>
           </TouchableOpacity>
         </View>
@@ -141,10 +144,10 @@ const HelpAndSupportScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#18181C',
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -152,13 +155,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: theme.border,
   },
   backButton: {
     padding: 8,
   },
   headerTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 20,
     fontWeight: 'bold',
     marginLeft: 16,
@@ -178,14 +181,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   welcomeTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
   },
   welcomeSubtitle: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
@@ -194,14 +197,14 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   sectionTitle: {
-    color: '#A070F2',
+    color: theme.primary,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 16,
     paddingHorizontal: 20,
   },
   sectionContent: {
-    backgroundColor: '#23232A',
+    backgroundColor: theme.surface,
     marginHorizontal: 20,
     borderRadius: 12,
     overflow: 'hidden',
@@ -211,13 +214,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: theme.border,
   },
   helpItemIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: theme.surfaceSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -226,13 +229,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   helpItemTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
   },
   helpItemDescription: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -243,13 +246,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   footerTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   footerText: {
-    color: '#B0B0B0',
+    color: theme.textSecondary,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 24,
@@ -258,13 +261,13 @@ const styles = StyleSheet.create({
   contactButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A070F2',
+    backgroundColor: theme.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
   },
   contactButtonText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,

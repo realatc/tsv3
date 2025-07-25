@@ -1,13 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-
-const categoryColors: Record<string, string> = {
-  Mail: '#4A90E2',
-  Text: '#43A047',
-  'Phone Call': '#FFB300',
-  Default: '#B0BEC5',
-};
+import { useTheme } from '../context/ThemeContext';
 
 const categoryIcons: Record<string, string> = {
   Mail: 'mail',
@@ -18,6 +12,15 @@ const categoryIcons: Record<string, string> = {
 
 // Compact version for log history list
 export const CategoryBadge = ({ category }: { category: string }) => {
+  const { theme } = useTheme();
+  
+  const categoryColors: Record<string, string> = {
+    Mail: theme.primary,
+    Text: theme.success,
+    'Phone Call': theme.warning,
+    Default: theme.textSecondary,
+  };
+  
   const color = categoryColors[category] || categoryColors.Default;
   const icon = categoryIcons[category] || categoryIcons.Default;
   
@@ -30,6 +33,15 @@ export const CategoryBadge = ({ category }: { category: string }) => {
 
 // Detailed version for log details screen
 export const CategoryBadgeDetailed = ({ category }: { category: string }) => {
+  const { theme } = useTheme();
+  
+  const categoryColors: Record<string, string> = {
+    Mail: theme.primary,
+    Text: theme.success,
+    'Phone Call': theme.warning,
+    Default: theme.textSecondary,
+  };
+  
   const color = categoryColors[category] || categoryColors.Default;
   
   return (

@@ -3,9 +3,14 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import KnowledgeBaseArticleTemplate from '../components/KnowledgeBaseArticleTemplate';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types/navigation';
+import { useTheme } from '../context/ThemeContext';
 
 const KnowledgeBaseSentryMode = () => {
-  const navigation = useNavigation();
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const tableOfContents = [
     { id: 'overview', title: 'What is Sentry Mode?', level: 1 },
@@ -93,10 +98,10 @@ const KnowledgeBaseSentryMode = () => {
       <KnowledgeBaseArticleTemplate
         pageTitle="Knowledge Base"
         articleTitle="Sentry Mode: Emergency Notifications"
-        IconComponent={<Icon name="shield-checkmark-outline" size={40} color="#A070F2" />}
+        IconComponent={<Icon name="shield-checkmark-outline" size={40} color={theme.primary} />}
         tableOfContents={tableOfContents}
         articleContent={articleContent}
-        themeColor="#A070F2"
+        themeColor={theme.primary}
         demoCard={
           <View style={styles.demoLinkWrapper}>
             <TouchableOpacity
@@ -104,7 +109,7 @@ const KnowledgeBaseSentryMode = () => {
               onPress={() => navigation.navigate('SentryModeGuidedDemo')}
               activeOpacity={0.7}
             >
-              <Icon name="play-circle-outline" size={18} color="#A070F2" style={{ marginRight: 6 }} />
+              <Icon name="play-circle-outline" size={18} color={theme.primary} style={{ marginRight: 6 }} />
               <Text style={styles.demoLinkButtonText}>View the Sentry Mode Guided Demo</Text>
             </TouchableOpacity>
             <Text style={styles.demoLinkHelpText}>
@@ -117,7 +122,7 @@ const KnowledgeBaseSentryMode = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   demoLinkWrapper: {
     alignItems: 'center',
     marginTop: 4,
@@ -131,12 +136,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   demoLinkButtonText: {
-    color: '#A070F2',
+    color: theme.primary,
     fontWeight: '600',
     fontSize: 15,
   },
   demoLinkHelpText: {
-    color: '#B0BEC5',
+    color: theme.textSecondary,
     fontSize: 12,
     marginTop: 2,
     textAlign: 'center',

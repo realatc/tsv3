@@ -22,6 +22,7 @@ import { CategoryBadge } from '../components/CategoryBadge';
 import { ThreatBadgeCompact } from '../components/ThreatBadge';
 import { AccessibleText } from '../components/AccessibleText';
 import type { LogEntry } from '../context/LogContext';
+import { useTheme } from '../context/ThemeContext';
 
 type SearchResult = {
   type: 'log' | 'knowledge' | 'sender';
@@ -30,6 +31,8 @@ type SearchResult = {
 };
 
 const SearchResultsScreen = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const navigation = useNavigation();
   const { logs } = useLogs();
   const { settingsSheetRef } = useApp();
@@ -156,7 +159,7 @@ const SearchResultsScreen = () => {
           onPress={() => (navigation as any).navigate(item.data.screen)}
         >
           <View style={styles.searchResultHeader}>
-            <Icon name="document-text-outline" size={20} color="#4A90E2" />
+            <Icon name="document-text-outline" size={20} color={theme.primary} />
             <Text style={styles.searchResultTitle}>{item.data.title}</Text>
           </View>
           <Text style={styles.searchResultSubtitle}>Knowledge Base Article</Text>
@@ -171,7 +174,7 @@ const SearchResultsScreen = () => {
     if (isAnalyzing) {
       return (
         <View style={styles.analysisLoading}>
-          <ActivityIndicator size="large" color="#4A90E2" />
+          <ActivityIndicator size="large" color={theme.primary} />
           <Text style={styles.analysisLoadingText}>Analyzing text for threats...</Text>
         </View>
       );
@@ -180,7 +183,7 @@ const SearchResultsScreen = () => {
     if (!analysisResult) {
       return (
         <View style={styles.analysisPlaceholder}>
-          <Icon name="chatbox-ellipses-outline" size={60} color="#444" />
+          <Icon name="chatbox-ellipses-outline" size={60} color={theme.textSecondary} />
           <Text style={styles.analysisPlaceholderText}>
             Enter text above and tap 'Analyze' to check for threats
           </Text>
@@ -219,7 +222,7 @@ const SearchResultsScreen = () => {
       title: 'Live Text Analyzer',
       subtitle: 'Analyze any text for potential threats',
       icon: 'shield-checkmark-outline',
-      color: '#4A90E2',
+      color: theme.primary,
       screen: 'ThreatAnalysis'
     },
     // Future tools can be added here
@@ -238,15 +241,16 @@ const SearchResultsScreen = () => {
           <Text style={styles.searchToolTitle}>{item.title}</Text>
           <Text style={styles.searchToolSubtitle}>{item.subtitle}</Text>
         </View>
-        <Icon name="chevron-forward-outline" size={22} color="#555" />
+        <Icon name="chevron-forward-outline" size={22} color={theme.textSecondary} />
       </View>
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -259,7 +263,7 @@ const SearchResultsScreen = () => {
                 onPress={() => settingsSheetRef.current?.expand()}
                 style={styles.profileButton}
               >
-                <Icon name="person-circle-outline" size={34} color="#fff" />
+                <Icon name="person-circle-outline" size={34} color={theme.text} />
               </TouchableOpacity>
             </View>
 
@@ -272,7 +276,7 @@ const SearchResultsScreen = () => {
                 <TextInput
                   style={styles.searchInput}
                   placeholder="Search logs, senders, articles..."
-                  placeholderTextColor="#666"
+                  placeholderTextColor={theme.textSecondary}
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   onSubmitEditing={handleGeneralSearch}
@@ -283,13 +287,13 @@ const SearchResultsScreen = () => {
                   onPress={handleGeneralSearch}
                   disabled={!searchQuery.trim()}
                 >
-                  <Icon name="search" size={20} color="#fff" />
+                  <Icon name="search" size={20} color={theme.text} />
                 </TouchableOpacity>
               </View>
               
               {isSearching && (
                 <View style={styles.searchLoading}>
-                  <ActivityIndicator size="small" color="#4A90E2" />
+                  <ActivityIndicator size="small" color={theme.primary} />
                   <Text style={styles.searchLoadingText}>Searching...</Text>
                 </View>
               )}
@@ -326,10 +330,10 @@ const SearchResultsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: theme.background,
   },
   scrollView: {
     flex: 1,
@@ -348,7 +352,7 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text,
   },
   profileButton: {
     padding: 5,
@@ -359,13 +363,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.text,
     marginBottom: 4,
     paddingHorizontal: 20,
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: '#aaa',
+    color: theme.textSecondary,
     marginBottom: 15,
     paddingHorizontal: 20,
   },
@@ -376,16 +380,16 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     paddingHorizontal: 15,
     paddingVertical: 12,
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     marginRight: 10,
   },
   searchButton: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: theme.primary,
     borderRadius: 12,
     padding: 12,
     justifyContent: 'center',
@@ -393,7 +397,7 @@ const styles = StyleSheet.create({
     width: 48,
   },
   searchButtonDisabled: {
-    backgroundColor: '#333',
+    backgroundColor: theme.surfaceSecondary,
   },
   searchLoading: {
     flexDirection: 'row',
@@ -402,7 +406,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   searchLoadingText: {
-    color: '#666',
+    color: theme.textSecondary,
     marginLeft: 10,
     fontSize: 14,
   },
@@ -410,13 +414,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   searchResultsTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 10,
   },
   searchResultCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 15,
     marginBottom: 10,
@@ -431,12 +435,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   searchResultDate: {
-    color: '#666',
+    color: theme.textSecondary,
     fontSize: 12,
     marginBottom: 2,
   },
   searchResultSender: {
-    color: '#4A90E2',
+    color: theme.primary,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -445,23 +449,23 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   searchResultMessage: {
-    color: '#ccc',
+    color: theme.text,
     fontSize: 14,
     lineHeight: 20,
   },
   searchResultTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
   },
   searchResultSubtitle: {
-    color: '#666',
+    color: theme.textSecondary,
     fontSize: 12,
     marginTop: 4,
   },
   searchToolsContainer: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 15,
     marginHorizontal: 20,
     overflow: 'hidden',
@@ -470,7 +474,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: theme.border,
   },
   searchToolHeader: {
     flexDirection: 'row',
@@ -488,13 +492,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   searchToolTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 2,
   },
   searchToolSubtitle: {
-    color: '#666',
+    color: theme.textSecondary,
     fontSize: 14,
   },
   analysisLoading: {
@@ -502,7 +506,7 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   analysisLoadingText: {
-    color: '#666',
+    color: theme.textSecondary,
     marginTop: 10,
     fontSize: 14,
   },
@@ -511,13 +515,13 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   analysisPlaceholderText: {
-    color: '#666',
+    color: theme.textSecondary,
     marginTop: 10,
     fontSize: 14,
     textAlign: 'center',
   },
   analysisResultCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: theme.surface,
     borderRadius: 12,
     padding: 15,
     borderWidth: 2,
@@ -536,13 +540,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   analysisSectionTitle: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 5,
   },
   analysisSectionContent: {
-    color: '#ccc',
+    color: theme.text,
     fontSize: 14,
     lineHeight: 20,
   },

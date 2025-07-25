@@ -10,6 +10,7 @@ import { getRelatedSearchResults } from '../services/threatReader/relatedSearch'
 import BottomSheet from '@gorhom/bottom-sheet';
 import { LogEntry, useLogs } from '../context/LogContext';
 import { getAuditLogEntries, AuditLogEntry } from '../utils/auditLog';
+import { useTheme } from '../context/ThemeContext';
 
 type ThreatInfo = {
   level: 'High' | 'Medium' | 'Low' | '';
@@ -22,6 +23,8 @@ type ThreatInfo = {
 
 // Tab Components
 const DetailsTab = ({ log, relatedContent, loadingRelated, handleLinkPress }: { log: LogEntry, relatedContent: any[], loadingRelated: boolean, handleLinkPress: (url: string) => void }) => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const formattedDate = new Date(log.date).toLocaleString();
 
   return (
@@ -49,9 +52,9 @@ const DetailsTab = ({ log, relatedContent, loadingRelated, handleLinkPress }: { 
       <View style={[styles.tabContentContainer, { marginTop: 16 }]}>
         <Text style={styles.relatedContentTitle}>Related Content</Text>
         {loadingRelated ? (
-          <Text style={{ color: '#fff' }}>Loading...</Text>
+          <Text style={{ color: theme.text }}>Loading...</Text>
         ) : relatedContent.length === 0 ? (
-          <Text style={{ color: '#fff' }}>No related content available.</Text>
+          <Text style={{ color: theme.text }}>No related content available.</Text>
         ) : (
           relatedContent
             .filter((item: any) => item.url && item.title) // Only show items with both url and title
@@ -66,68 +69,87 @@ const DetailsTab = ({ log, relatedContent, loadingRelated, handleLinkPress }: { 
   );
 };
 
-const AnalysisTab = ({ log, urls, urlSafety, handleUrlPress }: { log: LogEntry, urls: string[], urlSafety: { [key: string]: string }, handleUrlPress: (url: string) => void }) => (
-  <View style={styles.tabContentContainer}>
-    <View style={styles.analysisSection}>
-      <Text style={styles.analysisTitle}>NLP Analysis</Text>
-      <Text style={styles.analysisContent}>{log.nlpAnalysis}</Text>
-    </View>
-    <View style={styles.analysisSection}>
-      <Text style={styles.analysisTitle}>Behavioral Analysis</Text>
-      <Text style={styles.analysisContent}>{log.behavioralAnalysis}</Text>
-    </View>
-    {urls.length > 0 && (
+const AnalysisTab = ({ log, urls, urlSafety, handleUrlPress }: { log: LogEntry, urls: string[], urlSafety: { [key: string]: string }, handleUrlPress: (url: string) => void }) => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+  
+  return (
+    <View style={styles.tabContentContainer}>
       <View style={styles.analysisSection}>
-        <Text style={styles.analysisTitle}>URL Safety Check</Text>
-        {urls.map((url: string, index: number) => (
-          <View key={index} style={styles.urlCheckContainer}>
-            <TouchableOpacity onPress={() => handleUrlPress(url)}>
-              <Text style={styles.urlText} numberOfLines={1}>{url}</Text>
-            </TouchableOpacity>
-            <Text style={[styles.urlStatus, { color: getStatusColor(urlSafety[url]) }]}>
-              {urlSafety[url] || 'checking...'}
-            </Text>
+        <Text style={styles.analysisTitle}>NLP Analysis</Text>
+        <Text style={styles.analysisContent}>{log.nlpAnalysis}</Text>
+      </View>
+      <View style={styles.analysisSection}>
+        <Text style={styles.analysisTitle}>Behavioral Analysis</Text>
+        <Text style={styles.analysisContent}>{log.behavioralAnalysis}</Text>
+      </View>
+      {urls.length > 0 && (
+        <View style={styles.analysisSection}>
+          <Text style={styles.analysisTitle}>URL Safety Check</Text>
+          {urls.map((url: string, index: number) => (
+            <View key={index} style={styles.urlCheckContainer}>
+              <TouchableOpacity onPress={() => handleUrlPress(url)}>
+                <Text style={styles.urlText} numberOfLines={1}>{url}</Text>
+              </TouchableOpacity>
+              <Text style={[styles.urlStatus, { color: getStatusColor(urlSafety[url]) }]}>
+                {urlSafety[url] || 'checking...'}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
+
+const MetadataTab = ({ log }: { log: LogEntry }) => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+  
+  return (
+    <View style={styles.tabContentContainer}>
+      <View style={styles.metadataRow}>
+        <Text style={styles.metadataKey}>Device</Text>
+        <Text style={styles.metadataValue}>{log.metadata.device}</Text>
+      </View>
+      <View style={styles.metadataRow}>
+        <Text style={styles.metadataKey}>Location</Text>
+        <Text style={styles.metadataValue}>{log.metadata.location}</Text>
+      </View>
+      <View style={styles.metadataRow}>
+        <Text style={styles.metadataKey}>Received At</Text>
+        <Text style={styles.metadataValue}>{new Date(log.metadata.receivedAt).toLocaleString()}</Text>
+      </View>
+      <View style={styles.metadataRow}>
+        <Text style={styles.metadataKey}>Message Length</Text>
+        <Text style={styles.metadataValue}>{log.metadata.messageLength} characters</Text>
+      </View>
+      <View style={styles.metadataRow}>
+        <Text style={styles.metadataKey}>Log ID</Text>
+        <Text style={styles.metadataValue}>{log.id}</Text>
+      </View>
+    </View>
+  );
+};
+
+const ThreatTab = ({ threatInfo }: { threatInfo: ThreatInfo }) => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+  
+  return (
+    <View style={styles.tabContentContainer}>
+      <View style={styles.threatBreakdownSection}>
+        <Text style={styles.threatBreakdownTitle}>Threat Breakdown</Text>
+        {threatInfo.breakdown.map((item, index) => (
+          <View key={index} style={styles.threatBreakdownRow}>
+            <Text style={styles.threatBreakdownItem}>{item.label}</Text>
+            <Text style={styles.threatBreakdownPoints}>+{item.points}</Text>
           </View>
         ))}
       </View>
-    )}
-  </View>
-);
-
-const MetadataTab = ({ log }: { log: LogEntry }) => (
-  <View style={styles.tabContentContainer}>
-    <View style={styles.metadataRow}>
-      <Text style={styles.metadataKey}>Device</Text>
-      <Text style={styles.metadataValue}>{log.metadata.device}</Text>
     </View>
-    <View style={styles.metadataRow}>
-      <Text style={styles.metadataKey}>Location</Text>
-      <Text style={styles.metadataValue}>{log.metadata.location}</Text>
-    </View>
-    <View style={styles.metadataRow}>
-      <Text style={styles.metadataKey}>Received At</Text>
-      <Text style={styles.metadataValue}>{new Date(log.metadata.receivedAt).toLocaleString()}</Text>
-    </View>
-    <View style={styles.metadataRow}>
-      <Text style={styles.metadataKey}>Message Length</Text>
-      <Text style={styles.metadataValue}>{log.metadata.messageLength} characters</Text>
-    </View>
-  </View>
-);
-
-const ThreatTab = ({ threatInfo }: { threatInfo: ThreatInfo }) => (
-  <View style={styles.tabContentContainer}>
-    <View style={styles.threatBreakdownSection}>
-      <Text style={styles.threatBreakdownTitle}>Threat Breakdown</Text>
-      {threatInfo.breakdown.map((item, index) => (
-        <View key={index} style={styles.threatBreakdownRow}>
-          <Text style={styles.threatBreakdownItem}>- {item.label}</Text>
-          <Text style={styles.threatBreakdownPoints}>(+{item.points})</Text>
-        </View>
-      ))}
-    </View>
-  </View>
-);
+  );
+};
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -140,6 +162,8 @@ const getStatusColor = (status: string) => {
 
 // Main Component
 const LogDetailScreen = () => {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const route = useRoute<RouteProp<any>>();
   const navigation = useNavigation();
   const { log } = route.params as { log: LogEntry };
@@ -296,12 +320,12 @@ const LogDetailScreen = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color="#fff" />
+          <Icon name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{log.category} from {log.sender}</Text>
         <Menu>
           <MenuTrigger>
-            <Icon name="ellipsis-vertical" size={24} color="#fff" />
+            <Icon name="ellipsis-vertical" size={24} color={theme.text} />
           </MenuTrigger>
           <MenuOptions customStyles={menuOptionsStyles}>
             <MenuOption onSelect={() => Alert.alert('Add to Contacts', 'This feature is not yet implemented.')}>
@@ -336,7 +360,7 @@ const LogDetailScreen = () => {
                 <Text style={styles.threatScore}>Score: {threatInfo.score}/9</Text>
             </View>
             <TouchableOpacity onPress={showHelpAlert}>
-              <Icon name="help-circle-outline" size={24} color="#aaa" />
+              <Icon name="help-circle-outline" size={24} color={theme.textSecondary} />
             </TouchableOpacity>
         </View>
 
@@ -363,7 +387,7 @@ const LogDetailScreen = () => {
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
             <Text style={styles.auditLogTitle}>Audit Log</Text>
             <TouchableOpacity onPress={refreshAuditLog} style={styles.auditLogRefreshBtn}>
-              <Icon name="refresh" size={18} color="#A070F2" />
+              <Icon name="refresh" size={18} color={theme.primary} />
             </TouchableOpacity>
           </View>
           {sortedAuditLog.length === 0 ? (
@@ -398,52 +422,53 @@ const menuOptionsStyles = {
   optionText: {
     color: '#fff',
     fontSize: 16,
+    padding: 10,
   },
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
+const createStyles = (theme: any) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.background },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
-  headerTitle: { flex:1, marginHorizontal: 16, fontSize: 16, fontWeight: 'bold', color: '#fff', textAlign: 'center' },
+  headerTitle: { flex:1, marginHorizontal: 16, fontSize: 16, fontWeight: 'bold', color: theme.text, textAlign: 'center' },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 100 },
-  threatSection: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1C1C1E', padding: 16, borderRadius: 12, marginBottom: 16 },
+  threatSection: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.surface, padding: 16, borderRadius: 12, marginBottom: 16 },
   threatLevelTitle: { fontSize: 20, fontWeight: 'bold' },
-  threatScore: { fontSize: 14, color: '#aaa' },
-  tabBar: { flexDirection: 'row', marginBottom: 16, backgroundColor: '#1C1C1E', borderRadius: 12, padding: 4 },
+  threatScore: { fontSize: 14, color: theme.textSecondary },
+  tabBar: { flexDirection: 'row', marginBottom: 16, backgroundColor: theme.surface, borderRadius: 12, padding: 4 },
   tab: { flex: 1, paddingVertical: 10, borderRadius: 8 },
-  activeTab: { backgroundColor: '#4A90E2' },
-  tabText: { textAlign: 'center', color: '#aaa', fontWeight: '600' },
-  activeTabText: { color: '#fff' },
-  tabContentContainer: { backgroundColor: '#1C1C1E', padding: 16, borderRadius: 12 },
-  messageText: { fontSize: 16, color: '#fff', lineHeight: 24 },
+  activeTab: { backgroundColor: theme.primary },
+  tabText: { textAlign: 'center', color: theme.textSecondary, fontWeight: '600' },
+  activeTabText: { color: theme.text },
+  tabContentContainer: { backgroundColor: theme.surface, padding: 16, borderRadius: 12 },
+  messageText: { fontSize: 16, color: theme.text, lineHeight: 24 },
   analysisSection: { marginBottom: 16 },
-  analysisTitle: { fontSize: 16, fontWeight: 'bold', color: '#fff', marginBottom: 8 },
-  analysisContent: { fontSize: 14, color: '#aaa' },
+  analysisTitle: { fontSize: 16, fontWeight: 'bold', color: theme.text, marginBottom: 8 },
+  analysisContent: { fontSize: 14, color: theme.textSecondary },
   urlCheckContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
-  urlText: { color: '#4A90E2', textDecorationLine: 'underline' },
+  urlText: { color: theme.primary, textDecorationLine: 'underline' },
   urlStatus: { fontWeight: 'bold' },
-  metadataRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#2C2C2E' },
-  metadataKey: { color: '#B0B0B0', fontSize: 16 },
-  metadataValue: { color: '#FFFFFF', fontSize: 16 },
+  metadataRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border },
+  metadataKey: { color: theme.textSecondary, fontSize: 16 },
+  metadataValue: { color: theme.text, fontSize: 16 },
   threatBreakdownSection: { padding: 16 },
-  threatBreakdownTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
+  threatBreakdownTitle: { color: theme.text, fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
   threatBreakdownRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 4 },
-  threatBreakdownItem: { color: '#E0E0E0', fontSize: 16 },
-  threatBreakdownPoints: { color: '#FF6B6B', fontSize: 16, fontWeight: 'bold' },
-  relatedContentTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff', marginBottom: 12 },
+  threatBreakdownItem: { color: theme.text, fontSize: 16 },
+  threatBreakdownPoints: { color: theme.error, fontSize: 16, fontWeight: 'bold' },
+  relatedContentTitle: { fontSize: 18, fontWeight: 'bold', color: theme.text, marginBottom: 12 },
   relatedContentLink: { 
-    color: '#4A90E2', 
+    color: theme.primary, 
     fontSize: 16, 
     marginBottom: 12,
     paddingVertical: 4,
     paddingHorizontal: 8,
-    backgroundColor: 'rgba(74, 144, 226, 0.1)',
+    backgroundColor: theme.primaryLight,
     borderRadius: 6,
     borderLeftWidth: 3,
-    borderLeftColor: '#4A90E2',
+    borderLeftColor: theme.primary,
   },
   menuOptionText: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 16,
     padding: 10,
   },
@@ -452,43 +477,43 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 18,
     paddingVertical: 12,
-    backgroundColor: '#222',
+    backgroundColor: theme.surfaceSecondary,
     borderRadius: 12,
   },
   auditLogTitle: {
-    color: '#A070F2',
+    color: theme.primary,
     fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 8,
   },
   auditLogEmpty: {
-    color: '#B0BEC5',
+    color: theme.textSecondary,
     fontSize: 15,
     fontStyle: 'italic',
   },
   auditLogEntry: {
     marginBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: theme.border,
     paddingBottom: 6,
   },
   auditLogTimestamp: {
-    color: '#B0BEC5',
+    color: theme.textSecondary,
     fontSize: 13,
     marginBottom: 2,
   },
   auditLogAction: {
-    color: '#fff',
+    color: theme.text,
     fontSize: 15,
     fontWeight: '600',
   },
   auditLogActor: {
-    color: '#A070F2',
+    color: theme.primary,
     fontWeight: '400',
     fontSize: 14,
   },
   auditLogDetails: {
-    color: '#B0BEC5',
+    color: theme.textSecondary,
     fontSize: 14,
     marginTop: 2,
   },

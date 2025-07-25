@@ -54,6 +54,7 @@ import { LogProvider } from './src/context/LogContext';
 import { AccessibilityProvider } from './src/context/AccessibilityContext';
 import { AppProvider, useApp } from './src/context/AppContext';
 import { SentryModeProvider } from './src/context/SentryModeContext';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { navigationRef, navigate } from './src/services/navigationService';
 
 import { 
@@ -129,6 +130,8 @@ function SearchStackNavigator() {
 
 function TabNavigator() {
   const { ezModeEnabled } = useApp();
+  const { theme } = useTheme();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -150,11 +153,11 @@ function TabNavigator() {
           return <Icon name={iconName || 'alert-circle-outline'} size={size} color={color} />;
         },
         tabBarStyle: {
-          backgroundColor: '#1E1E1E',
-          borderTopColor: '#333',
+          backgroundColor: theme.tabBar,
+          borderTopColor: theme.border,
         },
-        tabBarActiveTintColor: '#A070F2',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: theme.tabBarActive,
+        tabBarInactiveTintColor: theme.tabBarInactive,
       })}
     >
       <Tab.Screen
@@ -334,9 +337,9 @@ const AppContent = () => {
                       if (sentryAlertModal?.onOk) {
                         setTimeout(() => {
                           // Only set if not already open for this alertId
-                          const currentAlertId = contactResponseModal?.alertId;
+                          const currentAlertId = contactResponseModal && 'alertId' in contactResponseModal ? contactResponseModal.alertId : undefined;
                           if (!contactResponseModal || currentAlertId !== alertId) {
-                            sentryAlertModal.onOk(alertId);
+                            sentryAlertModal.onOk!(alertId);
                           }
                         }, 10000);
                       }
@@ -350,16 +353,16 @@ const AppContent = () => {
                     <TouchableOpacity 
                       style={{ backgroundColor: '#23232A', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 28, marginTop: 6, borderWidth: 1, borderColor: '#4A90E2' }} 
                       onPress={async () => {
-                        console.log('[SentryAlertModal] navigating to log details for eventId:', sentryAlertModal.details.eventId);
+                        console.log('[SentryAlertModal] navigating to log details for eventId:', sentryAlertModal.details?.eventId);
                         
                         // Trigger the automated contact response (same as OK button)
                         if (sentryAlertModal?.onOk) {
                           const alertId = sentryAlertModal.details?.alertId || sentryAlertModal.alertId || sentryAlertModal.id || Date.now().toString();
                           setTimeout(() => {
                             // Only set if not already open for this alertId
-                            const currentAlertId = contactResponseModal?.alertId;
+                            const currentAlertId = contactResponseModal && 'alertId' in contactResponseModal ? contactResponseModal.alertId : undefined;
                             if (!contactResponseModal || currentAlertId !== alertId) {
-                              sentryAlertModal.onOk(alertId);
+                              sentryAlertModal.onOk!(alertId);
                             }
                           }, 10000);
                         }
@@ -372,13 +375,13 @@ const AppContent = () => {
                           const logsRaw = await AsyncStorage.getItem('@threatsense/logs');
                           if (logsRaw) {
                             const logs = JSON.parse(logsRaw);
-                            const log = logs.find((l: any) => l.id === sentryAlertModal.details.eventId);
+                            const log = logs.find((l: any) => l.id === sentryAlertModal.details?.eventId);
                             if (log) {
                               setTimeout(() => {
                                 navigate('LogDetail', { log });
                               }, 100);
                             } else {
-                              console.log('[SentryAlertModal] Log not found for eventId:', sentryAlertModal.details.eventId);
+                              console.log('[SentryAlertModal] Log not found for eventId:', sentryAlertModal.details?.eventId);
                             }
                           }
                         } catch (error) {
@@ -395,7 +398,7 @@ const AppContent = () => {
                       onPress={() => { 
                         console.log('[SentryAlertModal] closing via call button');
                         setSentryAlertModal(null); 
-                        sentryAlertModal.onCall(); 
+                        sentryAlertModal.onCall!(); 
                       }}
                     >
                       <Text style={{ color: '#A070F2', fontWeight: 'bold', fontSize: 16 }}>Call Contact</Text>
@@ -407,7 +410,7 @@ const AppContent = () => {
                       onPress={() => { 
                         console.log('[SentryAlertModal] closing via text button');
                         setSentryAlertModal(null); 
-                        sentryAlertModal.onText(); 
+                        sentryAlertModal.onText!(); 
                       }}
                     >
                       <Text style={{ color: '#A070F2', fontWeight: 'bold', fontSize: 16 }}>Text Contact</Text>
@@ -432,7 +435,9 @@ const App = () => {
           <AccessibilityProvider>
             <AppProvider>
               <SentryModeProvider>
-                <AppContent />
+                <ThemeProvider>
+                  <AppContent />
+                </ThemeProvider>
               </SentryModeProvider>
             </AppProvider>
           </AccessibilityProvider>
